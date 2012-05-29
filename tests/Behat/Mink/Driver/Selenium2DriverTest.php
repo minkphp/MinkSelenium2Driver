@@ -2,21 +2,20 @@
 
 namespace Tests\Behat\Mink\Driver;
 
-use Behat\Mink\Driver\SeleniumDriver;
+use Behat\Mink\Driver\Selenium2Driver;
 
 require_once 'JavascriptDriverTest.php';
 
 /**
- * @group seleniumdriver
+ * @group selenium2driver
  */
-class SeleniumDriverTest extends JavascriptDriverTest
+class Selenium2DriverTest extends JavascriptDriverTest
 {
     protected static function getDriver()
     {
-        $browser = '*'.$_SERVER['WEB_FIXTURES_BROWSER'];
-        $baseUrl = $_SERVER['WEB_FIXTURES_HOST'];
+        $browser = $_SERVER['WEB_FIXTURES_BROWSER'];
 
-        return new SeleniumDriver($browser, $baseUrl, '127.0.0.1', 4444);
+        return new Selenium2Driver($browser, null, 'http://localhost:4444/wd/hub');
     }
 
     public function testMouseEvents() {} // Right click and blur are not supported
@@ -39,8 +38,20 @@ class SeleniumDriverTest extends JavascriptDriverTest
         $this->assertEquals('mouse overed', $clicker->getText());
     }
 
-    /**
-     * Selenium1 doesn't handle selects without values
-     */
-    public function testIssue193() {}
+    public function testIssue178()
+    {
+        $session = $this->getSession();
+        $session->visit($this->pathTo('/issue178.html'));
+
+        $session->getPage()->findById('source')->setValue('foo');
+        $this->assertEquals('foo', $session->getPage()->findById('target')->getText());
+    }
+
+    public function testIssue215()
+    {
+        $session = $this->getSession();
+        $session->visit($this->pathTo('/issue215.html'));
+
+        $this->assertContains("foo\nbar", $session->getPage()->findById('textarea')->getValue());
+    }
 }
