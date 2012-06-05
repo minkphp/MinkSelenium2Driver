@@ -518,7 +518,7 @@ if (tagName == "INPUT" || "TEXTAREA" == tagName) {
     }
 } else {
     attributeValue = node.getAttribute('value');
-    if(attributeValue) {
+    if(attributeValue!=null) {
         value = "string:" + attributeValue;
     } else if(node.value) {
         value = "string:" + node.value;
