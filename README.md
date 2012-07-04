@@ -1,6 +1,8 @@
 Mink Selenium2 (webdriver) Driver
 =================================
 
+- [![Build Status](https://secure.travis-ci.org/Behat/MinkSelenium2Driver.png?branch=master)](http://travis-ci.org/Behat/MinkSelenium2Driver)
+
 Usage Example
 -------------
 
