@@ -872,4 +872,12 @@ JS;
             sleep(0.1);
         }
     }
+   /**
+    * GET screenshot of the current webpage
+    *
+    * @return base64 encoded image
+    */	
+   public function screenshot(){
+        return $this->wdSession->screenshot();
+    }
 }
