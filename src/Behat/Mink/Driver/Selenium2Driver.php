@@ -43,6 +43,12 @@ class Selenium2Driver implements DriverInterface
     private $webDriver;
 
     /**
+     * The WebDriverSession instance
+     * @var WebDriverSession
+     */
+    private $wdSession;
+
+    /**
      * Instantiates the driver.
      *
      * @param string    $browser Browser name
@@ -90,6 +96,15 @@ class Selenium2Driver implements DriverInterface
         $this->webDriver = $webDriver;
     }
 
+    /**
+     * Gets the WebDriverSession instance
+     *
+     * @param WebDriverSession $webDriver An instance of the WebDriverSession class
+     */
+    public function getWebDriverSession()
+    {
+        return $this->wdSession;
+    }
     /**
      * Returns the default capabilities
      *
