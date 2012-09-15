@@ -77,6 +77,15 @@ class Selenium2Driver implements DriverInterface
         if (null === $desiredCapabilities) {
             $desiredCapabilities = self::getDefaultCapabilities();
         }
+
+        if (isset($desiredCapabilities['chrome'])) {
+            foreach ($desiredCapabilities['chrome'] as $capability => $value) {
+                $desiredCapabilities['chrome.'.$capability] = $value;
+            }
+
+            unset($desiredCapabilities['chrome']);
+        }
+
         $this->desiredCapabilities = $desiredCapabilities;
     }
 
