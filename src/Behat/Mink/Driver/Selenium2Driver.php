@@ -811,34 +811,12 @@ JS;
         $source      = $this->wdSession->element('xpath', $sourceXpath);
         $destination = $this->wdSession->element('xpath', $destinationXpath);
 
-        $sourceSize = $source->size();
-        $sourceX    = $sourceSize['width']/2;
-        $sourceY    = $sourceSize['height']/2;
-
-        $destinationSize = $destination->size();
-        $destinationX    = $destinationSize['width']/2;
-        $destinationY    = $destinationSize['height']/2;
-
         $this->wdSession->moveto(array(
-            'element' => $source->getID(),
-            'xoffset' => $sourceX,
-            'yoffset' => $sourceY
+            'element' => $source->getID()
         ));
         $this->wdSession->buttondown();
         $this->wdSession->moveto(array(
-            'element' => $source->getID(),
-            'xoffset' => $sourceX+1,
-            'yoffset' => $sourceY+1
-        ));
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID(),
-            'xoffset' => $destinationX,
-            'yoffset' => $destinationY
-        ));
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID(),
-            'xoffset' => $destinationX+1,
-            'yoffset' => $destinationY+1
+            'element' => $destination->getID()
         ));
         $this->wdSession->buttonup();
     }
