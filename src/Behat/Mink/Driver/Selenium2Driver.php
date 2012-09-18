@@ -858,4 +858,12 @@ JS;
             sleep(0.1);
         }
     }
+
+    /**
+     * Accept the currently displayed alert dialog
+     */
+    public function acceptAlert()
+    {
+        $this->wdSession->accept_alert();
+    }
 }
