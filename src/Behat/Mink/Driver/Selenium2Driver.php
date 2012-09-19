@@ -815,10 +815,35 @@ JS;
             'element' => $source->getID()
         ));
         $this->wdSession->buttondown();
+
+        $script = <<<JS
+(function (element) {
+    var event = document.createEvent("HTMLEvents");
+
+    event.initEvent("dragstart", true, true);
+    event.dataTransfer = {};
+
+    element.dispatchEvent(event);
+}({{ELEMENT}}));
+JS;
+        $this->withSyn()->executeJsOnXpath($sourceXpath, $script);
+
         $this->wdSession->moveto(array(
             'element' => $destination->getID()
         ));
         $this->wdSession->buttonup();
+
+        $script = <<<JS
+(function (element) {
+    var event = document.createEvent("HTMLEvents");
+
+    event.initEvent("drop", true, true);
+    event.dataTransfer = {};
+
+    element.dispatchEvent(event);
+}({{ELEMENT}}));
+JS;
+        $this->withSyn()->executeJsOnXpath($destinationXpath, $script);
     }
 
     /**
