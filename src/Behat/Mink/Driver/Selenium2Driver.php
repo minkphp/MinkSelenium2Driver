@@ -7,7 +7,8 @@ use Behat\Mink\Session,
     Behat\Mink\Exception\DriverException,
     Behat\Mink\Exception\UnsupportedDriverActionException;
 
-use WebDriver\WebDriver;
+use WebDriver\WebDriver,
+    WebDriver\Exception\UnknownError;
 
 /*
  * This file is part of the Behat\Mink.
@@ -235,7 +236,11 @@ class Selenium2Driver implements DriverInterface
         }
 
         $this->started = false;
-        $this->wdSession->close();
+        try {
+            $this->wdSession->close();
+        } catch (UnknownError $e) {
+            throw new DriverException('Could not close connection');
+        }
     }
 
     /**
