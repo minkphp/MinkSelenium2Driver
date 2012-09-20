@@ -15,7 +15,7 @@ use Behat\Mink\Mink,
 
 use Selenium\Client as SeleniumClient;
 
-$startUrl = 'http://example.com';
+$url = 'http://example.com';
 
 $mink = new Mink(array(
     'selenium2' => new Session(new Selenium2Driver($browser, null, $url)),
@@ -23,6 +23,8 @@ $mink = new Mink(array(
 
 $mink->getSession('selenium2')->getPage()->findLink('Chat')->click();
 ```
+
+Please refer to [MinkExtension-example](https://github.com/Behat/MinkExtension-example) for an executable example.
 
 Installation
 ------------
