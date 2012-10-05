@@ -888,4 +888,16 @@ JS;
             sleep(0.1);
         }
     }
+
+    /**
+     * Set the dimensions of the window.
+     *
+     * @param integer $width set the window width, measured in pixels
+     * @param integer $height set the window height, measured in pixels
+     * @param string $name window name (null for the main window)
+     */
+    public function resizeWindow($width, $height, $name = null)
+    {
+        return $this->wdSession->window($name ? $name : '')->postSize(array('width' => $width, 'height' => $height));
+    }
 }
