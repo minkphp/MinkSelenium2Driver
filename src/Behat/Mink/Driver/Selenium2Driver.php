@@ -408,6 +408,17 @@ class Selenium2Driver implements DriverInterface
     }
 
     /**
+     * Capture a screenshot of the current window.
+     *
+     * @return  string  screenshot of MIME type image/* depending 
+     *   on driver (e.g., image/png, image/jpeg)
+     */
+    public function getScreenshot()
+    {
+        return base64_decode($this->wdSession->screenshot());
+    }
+
+    /**
      * Finds elements with specified XPath query.
      *
      * @param   string  $xpath
