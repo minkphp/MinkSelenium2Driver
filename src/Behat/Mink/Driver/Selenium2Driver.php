@@ -105,6 +105,7 @@ class Selenium2Driver implements DriverInterface
     {
         return $this->wdSession;
     }
+
     /**
      * Returns the default capabilities
      *
