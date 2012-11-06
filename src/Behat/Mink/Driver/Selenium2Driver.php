@@ -872,6 +872,7 @@ JS;
             sleep(0.1);
         }
     }
+
    /**
     * GET screenshot of the current webpage
     *
