@@ -7,7 +7,8 @@ use Behat\Mink\Session,
     Behat\Mink\Exception\DriverException,
     Behat\Mink\Exception\UnsupportedDriverActionException;
 
-use WebDriver\WebDriver;
+use WebDriver\WebDriver,
+    WebDriver\Exception\UnknownError;
 
 /*
  * This file is part of the Behat\Mink.
@@ -77,6 +78,15 @@ class Selenium2Driver implements DriverInterface
         if (null === $desiredCapabilities) {
             $desiredCapabilities = self::getDefaultCapabilities();
         }
+
+        if (isset($desiredCapabilities['chrome'])) {
+            foreach ($desiredCapabilities['chrome'] as $capability => $value) {
+                $desiredCapabilities['chrome.'.$capability] = $value;
+            }
+
+            unset($desiredCapabilities['chrome']);
+        }
+
         $this->desiredCapabilities = $desiredCapabilities;
     }
 
@@ -226,7 +236,11 @@ class Selenium2Driver implements DriverInterface
         }
 
         $this->started = false;
-        $this->wdSession->close();
+        try {
+            $this->wdSession->close();
+        } catch (UnknownError $e) {
+            throw new DriverException('Could not close connection');
+        }
     }
 
     /**
@@ -391,6 +405,17 @@ class Selenium2Driver implements DriverInterface
     public function getContent()
     {
         return $this->wdSession->source();
+    }
+
+    /**
+     * Capture a screenshot of the current window.
+     *
+     * @return  string  screenshot of MIME type image/* depending 
+     *   on driver (e.g., image/png, image/jpeg)
+     */
+    public function getScreenshot()
+    {
+        return base64_decode($this->wdSession->screenshot());
     }
 
     /**
@@ -802,36 +827,39 @@ JS;
         $source      = $this->wdSession->element('xpath', $sourceXpath);
         $destination = $this->wdSession->element('xpath', $destinationXpath);
 
-        $sourceSize = $source->size();
-        $sourceX    = $sourceSize['width']/2;
-        $sourceY    = $sourceSize['height']/2;
-
-        $destinationSize = $destination->size();
-        $destinationX    = $destinationSize['width']/2;
-        $destinationY    = $destinationSize['height']/2;
-
         $this->wdSession->moveto(array(
-            'element' => $source->getID(),
-            'xoffset' => $sourceX,
-            'yoffset' => $sourceY
+            'element' => $source->getID()
         ));
         $this->wdSession->buttondown();
+
+        $script = <<<JS
+(function (element) {
+    var event = document.createEvent("HTMLEvents");
+
+    event.initEvent("dragstart", true, true);
+    event.dataTransfer = {};
+
+    element.dispatchEvent(event);
+}({{ELEMENT}}));
+JS;
+        $this->withSyn()->executeJsOnXpath($sourceXpath, $script);
+
         $this->wdSession->moveto(array(
-            'element' => $source->getID(),
-            'xoffset' => $sourceX+1,
-            'yoffset' => $sourceY+1
-        ));
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID(),
-            'xoffset' => $destinationX,
-            'yoffset' => $destinationY
-        ));
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID(),
-            'xoffset' => $destinationX+1,
-            'yoffset' => $destinationY+1
+            'element' => $destination->getID()
         ));
         $this->wdSession->buttonup();
+
+        $script = <<<JS
+(function (element) {
+    var event = document.createEvent("HTMLEvents");
+
+    event.initEvent("drop", true, true);
+    event.dataTransfer = {};
+
+    element.dispatchEvent(event);
+}({{ELEMENT}}));
+JS;
+        $this->withSyn()->executeJsOnXpath($destinationXpath, $script);
     }
 
     /**
@@ -867,7 +895,6 @@ JS;
         $script = "return $condition;";
         $start = 1000 * microtime(true);
         $end = $start + $time;
-        $count = 0;
         while (1000 * microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
             sleep(0.1);
         }
@@ -882,4 +909,16 @@ JS;
    {
         return $this->wdSession->screenshot();
    }
+    
+    /**
+     * Set the dimensions of the window.
+     *
+     * @param integer $width set the window width, measured in pixels
+     * @param integer $height set the window height, measured in pixels
+     * @param string $name window name (null for the main window)
+     */
+    public function resizeWindow($width, $height, $name = null)
+    {
+        return $this->wdSession->window($name ? $name : '')->postSize(array('width' => $width, 'height' => $height));
+    }
 }
