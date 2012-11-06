@@ -877,7 +877,8 @@ JS;
     *
     * @return base64 encoded image
     */	
-   public function screenshot(){
+   public function getScreenshot()
+   {
         return $this->wdSession->screenshot();
-    }
+   }
 }
