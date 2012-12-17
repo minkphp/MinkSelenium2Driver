@@ -95,6 +95,16 @@ class Selenium2Driver implements DriverInterface
 
         $this->desiredCapabilities = $desiredCapabilities;
     }
+    
+    /**
+     * Gets the desired capabilities
+     * 
+     * @return array
+     */
+    public function getDesiredCapabilities
+    {
+        return $this->desiredCapabilities;
+    }
 
     /**
      * Sets the WebDriver instance
