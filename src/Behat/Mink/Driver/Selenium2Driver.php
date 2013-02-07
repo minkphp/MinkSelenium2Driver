@@ -426,7 +426,7 @@ class Selenium2Driver implements DriverInterface
     /**
      * Capture a screenshot of the current window.
      *
-     * @return  string  screenshot of MIME type image/* depending 
+     * @return  string  screenshot of MIME type image/* depending
      *   on driver (e.g., image/png, image/jpeg)
      */
     public function getScreenshot()
@@ -598,9 +598,10 @@ JS;
     public function setValue($xpath, $value)
     {
         $element = $this->wdSession->element('xpath', $xpath);
+        $elementname = strtolower($element->name());
         if (
-            strtolower($element->name()) != 'input' ||
-            strtolower($element->attribute('type')) != 'file'
+            $elementname == 'textarea' ||
+            ($elementname == 'input' && strtolower($element->attribute('type')) != 'file')
         )
         {
             $element->clear();
