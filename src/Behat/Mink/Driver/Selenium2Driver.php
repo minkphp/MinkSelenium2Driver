@@ -936,6 +936,16 @@ JS;
         }
     }
 
+   /**
+    * GET screenshot of the current webpage
+    *
+    * @return base64 encoded image
+    */	
+   public function getScreenshot()
+   {
+        return $this->wdSession->screenshot();
+   }
+    
     /**
      * Set the dimensions of the window.
      *
