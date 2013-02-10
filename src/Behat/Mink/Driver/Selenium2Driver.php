@@ -140,11 +140,14 @@ class Selenium2Driver implements DriverInterface
     public static function getDefaultCapabilities()
     {
         return array(
-            'browserName'    => 'firefox',
-            'version'        => '9',
-            'platform'       => 'ANY',
-            'browserVersion' => '9',
-            'browser'        => 'firefox'
+            'browserName'       => 'firefox',
+            'version'           => '9',
+            'platform'          => 'ANY',
+            'browserVersion'    => '9',
+            'browser'           => 'firefox',
+            'name'              => 'Behat Test',
+            'deviceOrientation' => 'portrait',
+            'deviceType'        => 'tablet'
         );
     }
 
