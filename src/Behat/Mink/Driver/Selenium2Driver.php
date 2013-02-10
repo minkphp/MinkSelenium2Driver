@@ -76,7 +76,7 @@ class Selenium2Driver implements DriverInterface
     /**
      * Sets the desired capabilities - called on construction.  If null is provided, will set the
      * defaults as dsesired.
-     * 
+     *
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
      * @param   array $desiredCapabilities  an array of capabilities to pass on to the WebDriver server
@@ -86,7 +86,7 @@ class Selenium2Driver implements DriverInterface
         if (null === $desiredCapabilities) {
             $desiredCapabilities = self::getDefaultCapabilities();
         }
-        
+
         if (isset($desiredCapabilities['firefox'])) {
             foreach ($desiredCapabilities['firefox'] as $capability => $value) {
                 switch ($capability) {
@@ -936,16 +936,6 @@ JS;
         }
     }
 
-   /**
-    * GET screenshot of the current webpage
-    *
-    * @return base64 encoded image
-    */	
-   public function getScreenshot()
-   {
-        return $this->wdSession->screenshot();
-   }
-    
     /**
      * Set the dimensions of the window.
      *
