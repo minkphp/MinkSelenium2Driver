@@ -8,6 +8,11 @@
 
     "authors": [
         {
+            "name":      "Pete Otaqui",
+            "email":     "pete@otaqui.com",
+            "homepage":  "https://github.com/pete-otaqui"
+        },
+        {
             "name":      "Konstantin Kudryashov",
             "email":     "ever.zet@gmail.com",
             "homepage":  "http://everzet.com"
