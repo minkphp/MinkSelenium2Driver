@@ -31,7 +31,7 @@ Installation
 
 ``` json
 {
-    "requires": {
+    "require": {
         "behat/mink":                   "1.4.*",
         "behat/mink-selenium2-driver":  "1.0.*@dev"
     }
