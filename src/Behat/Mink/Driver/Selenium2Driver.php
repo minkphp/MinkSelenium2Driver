@@ -866,7 +866,6 @@ JS;
         $this->wdSession->moveto(array(
             'element' => $source->getID()
         ));
-        $this->wdSession->buttondown();
 
         $script = <<<JS
 (function (element) {
@@ -880,6 +879,7 @@ JS;
 JS;
         $this->withSyn()->executeJsOnXpath($sourceXpath, $script);
 
+        $this->wdSession->buttondown();
         $this->wdSession->moveto(array(
             'element' => $destination->getID()
         ));
