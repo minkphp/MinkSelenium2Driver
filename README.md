@@ -33,14 +33,14 @@ Installation
 {
     "requires": {
         "behat/mink":                   "1.4.*",
-        "behat/mink-selenium2-driver":  "*"
+        "behat/mink-selenium2-driver":  "1.0.*@dev"
     }
 }
 ```
 
 ``` bash
-curl http://getcomposer.org/installer | php
-php composer.phar install
+$> curl http://getcomposer.org/installer | php
+$> php composer.phar install
 ```
 
 Copyright
