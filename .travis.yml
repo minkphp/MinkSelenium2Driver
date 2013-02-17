@@ -11,7 +11,6 @@ before_script:
   - curl http://selenium.googlecode.com/files/selenium-server-standalone-2.29.0.jar > selenium.jar
   - java -jar selenium.jar > /dev/null &
 
-  # Install deps
   - curl http://getcomposer.org/installer | php
   - php composer.phar install --prefer-source
 
@@ -22,6 +21,6 @@ before_script:
 
   - sh -e /etc/init.d/xvfb start
 
-  - sleep 5
+  - sleep 15
 
 script: phpunit -v
