@@ -7,15 +7,12 @@ before_script:
   - export WEB_FIXTURES_BROWSER=firefox
 
   - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+  - sudo /etc/init.d/xvfb start
   - sleep 4
 
   - curl http://selenium.googlecode.com/files/selenium-server-standalone-2.29.0.jar > selenium.jar
   - java -jar selenium.jar > /dev/null &
   - sleep 4
-
-  - export $(dbus-launch)
-  - export NSS_USE_SHARED_DB=ENABLED
 
   - curl http://getcomposer.org/installer | php
   - php composer.phar install --prefer-source
