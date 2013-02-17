@@ -6,8 +6,8 @@ before_script:
   - export WEB_FIXTURES_HOST=http://localhost
   - export WEB_FIXTURES_BROWSER=firefox
 
-  - export DISPLAY=:99.0
-  - sudo /etc/init.d/xvfb start
+  - Xvfb :0 -screen 0 1024x768x24 2>&1 >/dev/null &
+  - export DISPLAY=:0
   - sleep 4
 
   - curl http://selenium.googlecode.com/files/selenium-server-standalone-2.29.0.jar > selenium.jar
