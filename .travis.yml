@@ -2,11 +2,6 @@ language: php
 
 php: [5.3, 5.4, 5.5]
 
-env:
-  - SYMFONY_VERSION='2.0.*'
-  - SYMFONY_VERSION='2.1.*'
-  - SYMFONY_VERSION='2.2.*@dev'
-
 before_script:
   - export DISPLAY=:99
   - export WEB_FIXTURES_HOST=http://localhost
@@ -18,7 +13,6 @@ before_script:
 
   # Install deps
   - curl http://getcomposer.org/installer | php
-  - php composer.phar require --no-update symfony/symfony=$SYMFONY_VERSION
   - php composer.phar install --dev --prefer-source
 
   - sudo apt-get update
