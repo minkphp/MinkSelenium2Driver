@@ -33,7 +33,7 @@ Installation
 {
     "require": {
         "behat/mink":                   "1.4.*",
-        "behat/mink-selenium2-driver":  "1.0.*@dev"
+        "behat/mink-selenium2-driver":  "1.0.*"
     }
 }
 ```
