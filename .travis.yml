@@ -18,7 +18,7 @@ before_script:
   - php composer.phar install --prefer-source
 
   - sudo apt-get update > /dev/null
-  - sudo apt-get install -y --force-yes gconf2 apache2 libapache2-mod-php5 > /dev/null
+  - sudo apt-get install -y --force-yes apache2 libapache2-mod-php5 > /dev/null
   - sudo sed -i -e "s,/var/www,$(pwd)/vendor/behat/mink/tests/Behat/Mink/Driver/web-fixtures,g" /etc/apache2/sites-available/default
   - sudo /etc/init.d/apache2 restart
 
