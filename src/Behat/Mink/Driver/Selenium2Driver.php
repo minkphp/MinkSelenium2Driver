@@ -627,8 +627,6 @@ JS;
         }
 
         $element->value(array('value' => array($value)));
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -639,8 +637,6 @@ JS;
     public function check($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -651,8 +647,6 @@ JS;
     public function uncheck($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -952,5 +946,45 @@ JS;
     public function resizeWindow($width, $height, $name = null)
     {
         return $this->wdSession->window($name ? $name : '')->postSize(array('width' => $width, 'height' => $height));
+    }
+    
+    /**
+     * Accepts the currently displayed alert dialog.
+     *
+     * Usually, this is equivalent to clicking on the 'OK' button in the dialog.
+     */
+    public function acceptAlert()
+    {
+        $this->wdSession->accept_alert();
+    }
+
+    /**
+     * Dismiss currently displayed alert dialog.
+     *
+     * Usually, this is equivalent to clicking on the 'X' button in the dialog.
+     */
+    function dismissAlert()
+    {
+        $this->wdSession->dismiss_alert();
+    }
+
+    /**
+     * Get alert dialog text.
+     *
+     * @return string
+     */
+    function getAlertText()
+    {
+        return $this->wdSession->getAlert_text();
+    }
+
+    /**
+     * Set value of alert dialog text.
+     *
+     * @param string $text
+     */
+    function setAlertText($text)
+    {
+        $this->wdSession->postAlert_text($text);
     }
 }
