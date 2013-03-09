@@ -147,7 +147,8 @@ class Selenium2Driver implements DriverInterface
             'browser'           => 'firefox',
             'name'              => 'Behat Test',
             'deviceOrientation' => 'portrait',
-            'deviceType'        => 'tablet'
+            'deviceType'        => 'tablet',
+            'selenium-version'  => '2.31.0'
         );
     }
 
