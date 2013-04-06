@@ -628,6 +628,8 @@ JS;
         }
 
         $element->value(array('value' => array($value)));
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -638,6 +640,8 @@ JS;
     public function check($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -648,6 +652,8 @@ JS;
     public function uncheck($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
