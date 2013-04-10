@@ -23,7 +23,7 @@ use WebDriver\WebDriver,
  *
  * @author Pete Otaqui <pete@otaqui.com>
  */
-class Selenium2Driver implements DriverInterface
+class Selenium2Driver implements DriverInterface, PopupHandlingInterface
 {
     /**
      * The current Mink session
@@ -947,5 +947,37 @@ JS;
     public function resizeWindow($width, $height, $name = null)
     {
         return $this->wdSession->window($name ? $name : '')->postSize(array('width' => $width, 'height' => $height));
+    }
+
+    /**
+     * Returns text of opened popup window
+     */
+    public function getPopupText()
+    {
+        return $this->getWebDriverSession()->alert_text();
+    }
+
+    /**
+     * Fills in text into popup
+     */
+    public function setPopupText($text)
+    {
+        $this->getWebDriverSession()->postAlert_text($text);
+    }
+
+    /**
+     * Accepts popup
+     */
+    public function acceptPopup()
+    {
+        $this->getWebDriverSession()->accept_alert();
+    }
+
+    /**
+     * Dismisses popup
+     */
+    public function dismissPopup()
+    {
+        $this->getWebDriverSession()->dismiss_alert();
     }
 }
