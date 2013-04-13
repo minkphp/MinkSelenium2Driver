@@ -7,8 +7,7 @@ use Behat\Mink\Session,
     Behat\Mink\Exception\DriverException,
     Behat\Mink\Exception\UnsupportedDriverActionException;
 
-use WebDriver\WebDriver,
-    WebDriver\Exception\UnknownError;
+use WebDriver\WebDriver;
 
 /*
  * This file is part of the Behat\Mink.
@@ -27,7 +26,7 @@ class Selenium2Driver implements DriverInterface
 {
     /**
      * The current Mink session
-     * @var Behat\Mink\Session
+     * @var \Behat\Mink\Session
      */
     private $session;
 
@@ -44,15 +43,25 @@ class Selenium2Driver implements DriverInterface
     private $webDriver;
 
     /**
+     * @var string
+     */
+    private $browserName;
+
+    /**
+     * @var array
+     */
+    private $desiredCapabilities;
+
+    /**
      * The WebDriverSession instance
-     * @var WebDriverSession
+     * @var \WebDriver\Session
      */
     private $wdSession;
 
     /**
      * Instantiates the driver.
      *
-     * @param string    $browser Browser name
+     * @param string    $browserName Browser name
      * @param array     $desiredCapabilities The desired capabilities
      * @param string    $wdHost The WebDriver host
      */
@@ -125,7 +134,7 @@ class Selenium2Driver implements DriverInterface
     /**
      * Gets the WebDriverSession instance
      *
-     * @param WebDriverSession $webDriver An instance of the WebDriverSession class
+     * @return \WebDriver\Session
      */
     public function getWebDriverSession()
     {
@@ -135,7 +144,7 @@ class Selenium2Driver implements DriverInterface
     /**
      * Returns the default capabilities
      *
-     * @return  array
+     * @return array
      */
     public static function getDefaultCapabilities()
     {
@@ -156,7 +165,7 @@ class Selenium2Driver implements DriverInterface
      * Makes sure that the Syn event library has been injected into the current page,
      * and return $this for a fluid interface, * $this->withSyn()->executeJsOnXpath($xpath, $script);
      *
-     * @return  mixed
+     * @return Selenium2Driver
      */
     protected function withSyn()
     {
@@ -166,7 +175,7 @@ class Selenium2Driver implements DriverInterface
         ));
 
         if (!$hasSyn) {
-            $synJs = file_get_contents(dirname(__FILE__).DIRECTORY_SEPARATOR.'Selenium2'.DIRECTORY_SEPARATOR.'syn.js');
+            $synJs = file_get_contents(__DIR__.'/Selenium2/syn.js');
             $this->wdSession->execute(array(
                 'script' => $synJs,
                 'args'   => array()
@@ -274,7 +283,7 @@ class Selenium2Driver implements DriverInterface
         $this->started = false;
         try {
             $this->wdSession->close();
-        } catch (UnknownError $e) {
+        } catch (\Exception $e) {
             throw new DriverException('Could not close connection');
         }
     }
