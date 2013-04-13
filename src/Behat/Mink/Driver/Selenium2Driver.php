@@ -4,8 +4,7 @@ namespace Behat\Mink\Driver;
 
 use Behat\Mink\Session,
     Behat\Mink\Element\NodeElement,
-    Behat\Mink\Exception\DriverException,
-    Behat\Mink\Exception\UnsupportedDriverActionException;
+    Behat\Mink\Exception\DriverException;
 
 use WebDriver\WebDriver;
 
@@ -22,7 +21,7 @@ use WebDriver\WebDriver;
  *
  * @author Pete Otaqui <pete@otaqui.com>
  */
-class Selenium2Driver implements DriverInterface
+class Selenium2Driver extends CoreDriver
 {
     /**
      * The current Mink session
@@ -361,38 +360,6 @@ class Selenium2Driver implements DriverInterface
     }
 
     /**
-     * Sets HTTP Basic authentication parameters
-     *
-     * @param   string|false    $user       user name or false to disable authentication
-     * @param   string          $password   password
-     */
-    public function setBasicAuth($user, $password)
-    {
-        throw new UnsupportedDriverActionException('Basic Auth is not supported by %s', $this);
-    }
-
-    /**
-     * Sets specific request header on client.
-     *
-     * @param   string  $name
-     * @param   string  $value
-     */
-    public function setRequestHeader($name, $value)
-    {
-        throw new UnsupportedDriverActionException('Request header is not supported by %s', $this);
-    }
-
-    /**
-     * Returns last response headers.
-     *
-     * @return  array
-     */
-    public function getResponseHeaders()
-    {
-        throw new UnsupportedDriverActionException('Response header is not supported by %s', $this);
-    }
-
-    /**
      * Sets cookie.
      *
      * @param   string  $name
@@ -430,16 +397,6 @@ class Selenium2Driver implements DriverInterface
                 return urldecode($cookie['value']);
             }
         }
-    }
-
-    /**
-     * Returns last response status code.
-     *
-     * @return  integer
-     */
-    public function getStatusCode()
-    {
-        throw new UnsupportedDriverActionException('Status code is not supported by %s', $this);
     }
 
     /**
