@@ -912,6 +912,6 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        return $this->wdSession->window($name ? $name : '')->postSize(array('width' => $width, 'height' => $height));
+        return $this->wdSession->window($name ? $name : 'current')->postSize(array('width' => $width, 'height' => $height));
     }
 }
