@@ -154,7 +154,9 @@ class Selenium2Driver implements DriverInterface
 
     /**
      * Makes sure that the Syn event library has been injected into the current page,
-     * and return $this for a fluid interface, * $this->withSyn()->executeJsOnXpath($xpath, $script);
+     * and return $this for a fluid interface,
+     *
+     *     $this->withSyn()->executeJsOnXpath($xpath, $script);
      *
      * @return  mixed
      */
@@ -930,11 +932,12 @@ JS;
     public function wait($time, $condition)
     {
         $script = "return $condition;";
-        $start = 1000 * microtime(true);
-        $end = $start + $time;
-        while (1000 * microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
-            sleep(0.1);
-        }
+        $start = microtime(true);
+        $end = $start + $time / 1000.0;
+
+        while (microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
+            usleep(100000);
+	}
     }
 
     /**
