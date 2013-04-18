@@ -937,7 +937,7 @@ JS;
 
         while (microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
             usleep(100000);
-	}
+        }
     }
 
     /**
