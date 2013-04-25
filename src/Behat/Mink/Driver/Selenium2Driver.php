@@ -914,4 +914,36 @@ JS;
     {
         return $this->wdSession->window($name ? $name : 'current')->postSize(array('width' => $width, 'height' => $height));
     }
+
+    /**
+     * Returns text of opened popup window
+     */
+    public function getPopupText()
+    {
+        return $this->wdSession->alert_text();
+    }
+
+    /**
+     * Fills in text into popup
+     */
+    public function setPopupText($text)
+    {
+        $this->wdSession->postAlert_text($text);
+    }
+
+    /**
+     * Accepts popup
+     */
+    public function acceptPopup()
+    {
+        $this->wdSession->accept_alert();
+    }
+
+    /**
+     * Dismisses popup
+     */
+    public function dismissPopup()
+    {
+        $this->wdSession->dismiss_alert();
+    }
 }
