@@ -924,9 +924,9 @@ JS;
     }
 
     /**
-     * Fills in text into popup
+     * Fills in text into prompt window
      */
-    public function setPopupText($text)
+    public function setPromptText($text)
     {
         $this->wdSession->postAlert_text($text);
     }
