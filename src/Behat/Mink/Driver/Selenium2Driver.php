@@ -7,6 +7,7 @@ use Behat\Mink\Session,
     Behat\Mink\Exception\DriverException;
 
 use WebDriver\WebDriver;
+use WebDriver\Key;
 
 /*
  * This file is part of the Behat\Mink.
@@ -585,12 +586,17 @@ JS;
     {
         $element = $this->wdSession->element('xpath', $xpath);
         $elementname = strtolower($element->name());
-        if (
-            $elementname == 'textarea' ||
-            ($elementname == 'input' && strtolower($element->attribute('type')) != 'file')
-        )
-        {
-            $element->clear();
+
+        switch (true) {
+            case ($elementname == 'input' && strtolower($element->attribute('type')) == 'text'):
+                for ($i = 0; $i < strlen($element->attribute('value')); $i++) {
+                    $value = Key::BACKSPACE . $value;
+                }
+                break;
+            case ($elementname == 'textarea'):
+            case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
+                $element->clear();
+                break;
         }
 
         $element->value(array('value' => array($value)));
