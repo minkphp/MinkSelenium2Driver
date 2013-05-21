@@ -426,16 +426,15 @@ class Selenium2Driver extends CoreDriver
     /**
      * Returns element's attribute by it's XPath query.
      *
-     * @param string $xpath
+     * @param string $xpath Element's xpath
      *
-     * @return mixed
+     * @param string $name Attribute name
+     *
+     * @return string|null Attribute value
      */
     public function getAttribute($xpath, $name)
     {
-        $attribute = $this->wdSession->element('xpath', $xpath)->attribute($name);
-        if ('' !== $attribute) {
-            return $attribute;
-        }
+        return $this->wdSession->element('xpath', $xpath)->attribute($name);
     }
 
     /**
