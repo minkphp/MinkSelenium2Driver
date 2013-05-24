@@ -13,7 +13,7 @@ use WebDriver\Key;
  * Selenium2 driver.
  *
  * @author Pete Otaqui <pete@otaqui.com>
- * @author Andrey Kolchenko <komexx@gmail.com>
+ * @author Andrey Kolchenko <andrey@kolchenko.me>
  */
 class Selenium2Driver extends CoreDriver
 {
