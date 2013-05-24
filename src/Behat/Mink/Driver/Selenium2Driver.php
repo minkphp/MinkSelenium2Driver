@@ -481,7 +481,7 @@ class Selenium2Driver extends CoreDriver
                         throw new DriverException(sprintf('Unknown input type "%s"', $type));
                 }
             case 'textarea':
-                return $element->text();
+                return $element->attribute('value');
             case 'select':
                 /** @var Element[] $options */
                 $options = $element->elements('tag name', 'option');
