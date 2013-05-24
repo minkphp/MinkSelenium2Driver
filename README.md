@@ -10,7 +10,13 @@ Installation
 {
     "require": {
         "komex/mink-selenium2-driver":  "~1.1.2"
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git://github.com/komex/MinkSelenium2Driver.git"
+        }
+    ]
 }
 ```
 
