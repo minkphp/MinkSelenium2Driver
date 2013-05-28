@@ -584,6 +584,7 @@ JS;
      */
     public function setValue($xpath, $value)
     {
+        $value = strval($value);
         $element = $this->wdSession->element('xpath', $xpath);
         $elementname = strtolower($element->name());
 
