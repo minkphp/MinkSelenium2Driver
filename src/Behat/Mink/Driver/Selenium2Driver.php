@@ -696,6 +696,12 @@ if (node.tagName == 'SELECT') {
             node.checked = true;
         }
     }
+    if (node.tagName == 'INPUT') {
+      var type = node.getAttribute('type');
+      if (type == 'radio') {
+        triggerEvent(node, 'change');
+      }
+    }
 }
 JS;
 
