@@ -916,9 +916,9 @@ JS;
     }
 
     /**
-     * Returns text of opened popup window
+     * Returns text of opened popup dialog window
      */
-    public function getPopupText()
+    public function getDialogText()
     {
         return $this->wdSession->alert_text();
     }
@@ -932,17 +932,17 @@ JS;
     }
 
     /**
-     * Accepts popup
+     * Accepts popup dialog window
      */
-    public function acceptPopup()
+    public function acceptDialog()
     {
         $this->wdSession->accept_alert();
     }
 
     /**
-     * Dismisses popup
+     * Dismisses popup dialog window
      */
-    public function dismissPopup()
+    public function dismissDialog()
     {
         $this->wdSession->dismiss_alert();
     }
