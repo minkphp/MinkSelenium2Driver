@@ -517,6 +517,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function setValue($xpath, $value)
     {
+        $value = strval($value);
         $element = $this->wdSession->element('xpath', $xpath);
         $elementname = strtolower($element->name());
 
@@ -533,6 +534,8 @@ class Selenium2Driver extends CoreDriver
         }
 
         $element->value(array('value' => array($value)));
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -543,6 +546,8 @@ class Selenium2Driver extends CoreDriver
     public function check($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -553,6 +558,8 @@ class Selenium2Driver extends CoreDriver
     public function uncheck($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -619,6 +626,12 @@ if (node.tagName == 'SELECT') {
         if (nodes[i].getAttribute('value') == "$valueEscaped") {
             node.checked = true;
         }
+    }
+    if (node.tagName == 'INPUT') {
+      var type = node.getAttribute('type');
+      if (type == 'radio') {
+        triggerEvent(node, 'change');
+      }
     }
 }
 JS;
