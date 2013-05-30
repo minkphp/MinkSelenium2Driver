@@ -600,6 +600,9 @@ JS;
             case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
                 $element->clear();
                 break;
+            case ($elementname == 'select'):
+                $this->selectOption($xpath, $value);
+                return;
         }
 
         $element->value(array('value' => array($value)));
