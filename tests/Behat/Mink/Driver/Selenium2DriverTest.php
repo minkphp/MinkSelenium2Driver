@@ -55,7 +55,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
     
     public function testGetWindowNames()
     {
-        $windowNames = $this->session->getWindowNames();
+        $windowNames = $this->getSession()->getWindowNames();
         $this->assertArrayHasKey(0, $windowNames);
 
         foreach ($windowNames as $name) {
@@ -65,6 +65,6 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
     public function testGetWindowName()
     {
-        $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $this->session->getWindowName());
+        $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $this->getSession()->getWindowName());
     }
 }
