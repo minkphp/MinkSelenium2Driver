@@ -916,6 +916,8 @@ JS;
      *
      * @param   integer $time       time in milliseconds
      * @param   string  $condition  JS condition
+     *
+     * @return boolean
      */
     public function wait($time, $condition)
     {
@@ -923,9 +925,12 @@ JS;
         $start = microtime(true);
         $end = $start + $time / 1000.0;
 
-        while (microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
+        do {
+            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
             usleep(100000);
-        }
+        } while ( microtime(true) < $end && !$result );
+
+        return (bool)$result;
     }
 
     /**
