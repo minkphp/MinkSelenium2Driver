@@ -259,7 +259,7 @@ class Selenium2Driver extends CoreDriver
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
         } catch (\Exception $e) {
-            throw new DriverException('Could not open connection');
+            throw new DriverException('Could not open connection', 0, $e);
         }
 
         if (!$this->wdSession) {
@@ -291,7 +291,7 @@ class Selenium2Driver extends CoreDriver
         try {
             $this->wdSession->close();
         } catch (\Exception $e) {
-            throw new DriverException('Could not close connection');
+            throw new DriverException('Could not close connection', 0, $e);
         }
     }
 
