@@ -12,7 +12,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
     protected static function getDriver()
     {
         $browser = $_SERVER['WEB_FIXTURES_BROWSER'];
-		$selenium_host = $_SERVER['DRIVER_URL'];
+        $selenium_host = $_SERVER['DRIVER_URL'];
 
         return new Selenium2Driver($browser, null, $selenium_host);
     }
