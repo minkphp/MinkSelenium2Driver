@@ -256,7 +256,12 @@ class Selenium2Driver extends CoreDriver
      */
     public function start()
     {
-        $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
+        try {
+            $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
+        } catch (\Exception $e) {
+            throw new DriverException('Could not open connection', 0, $e);
+        }
+
         if (!$this->wdSession) {
             throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
@@ -286,7 +291,7 @@ class Selenium2Driver extends CoreDriver
         try {
             $this->wdSession->close();
         } catch (\Exception $e) {
-            throw new DriverException('Could not close connection');
+            throw new DriverException('Could not close connection', 0, $e);
         }
     }
 
