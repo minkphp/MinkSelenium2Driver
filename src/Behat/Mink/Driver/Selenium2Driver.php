@@ -163,7 +163,9 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * Makes sure that the Syn event library has been injected into the current page,
-     * and return $this for a fluid interface, * $this->withSyn()->executeJsOnXpath($xpath, $script);
+     * and return $this for a fluid interface,
+     *
+     *     $this->withSyn()->executeJsOnXpath($xpath, $script);
      *
      * @return Selenium2Driver
      */
@@ -589,6 +591,7 @@ JS;
      */
     public function setValue($xpath, $value)
     {
+        $value = strval($value);
         $element = $this->wdSession->element('xpath', $xpath);
         $elementname = strtolower($element->name());
 
@@ -602,9 +605,14 @@ JS;
             case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
                 $element->clear();
                 break;
+            case ($elementname == 'select'):
+                $this->selectOption($xpath, $value);
+                return;
         }
 
         $element->value(array('value' => array($value)));
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -615,6 +623,8 @@ JS;
     public function check($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -625,6 +635,8 @@ JS;
     public function uncheck($xpath)
     {
         $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -691,6 +703,12 @@ if (node.tagName == 'SELECT') {
         if (nodes[i].getAttribute('value') == "$valueEscaped") {
             node.checked = true;
         }
+    }
+    if (node.tagName == 'INPUT') {
+      var type = node.getAttribute('type');
+      if (type == 'radio') {
+        triggerEvent(node, 'change');
+      }
     }
 }
 JS;
@@ -907,10 +925,11 @@ JS;
     public function wait($time, $condition)
     {
         $script = "return $condition;";
-        $start = 1000 * microtime(true);
-        $end = $start + $time;
-        while (1000 * microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
-            sleep(0.1);
+        $start = microtime(true);
+        $end = $start + $time / 1000.0;
+
+        while (microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
+            usleep(100000);
         }
     }
 
