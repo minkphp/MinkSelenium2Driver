@@ -31,7 +31,6 @@ class Selenium2Driver extends CoreDriver
      * @var \Behat\Mink\Session
      */
     private $session;
-
     /**
      * Whether the browser has been started
      *
@@ -546,48 +545,13 @@ class Selenium2Driver extends CoreDriver
                 break;
             case ($elementname == 'select'):
                 $this->selectOption($xpath, $value);
+
                 return;
         }
 
         $element->value(array('value' => array($value)));
         $script = "Syn.trigger('change', {}, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
-    }
-
-    /**
-     * Checks checkbox by it's XPath query.
-     *
-     * @param string $xpath
-     */
-    public function check($xpath)
-    {
-        $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
-    }
-
-    /**
-     * Unchecks checkbox by it's XPath query.
-     *
-     * @param string $xpath
-     */
-    public function uncheck($xpath)
-    {
-        $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
-    }
-
-    /**
-     * Checks whether checkbox checked located by it's XPath query.
-     *
-     * @param string $xpath
-     *
-     * @return Boolean
-     */
-    public function isChecked($xpath)
-    {
-        return $this->wdSession->element('xpath', $xpath)->selected();
     }
 
     /**
@@ -657,27 +621,6 @@ JS;
     }
 
     /**
-     * Clicks button or link located by it's XPath query.
-     *
-     * @param string $xpath
-     */
-    public function click($xpath)
-    {
-        $this->wdSession->element('xpath', $xpath)->click('');
-    }
-
-    /**
-     * Double-clicks button or link located by it's XPath query.
-     *
-     * @param string $xpath
-     */
-    public function doubleClick($xpath)
-    {
-        $script = 'Syn.dblclick({{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
-    }
-
-    /**
      * Makes sure that the Syn event library has been injected into the current page,
      * and return $this for a fluid interface,
      *
@@ -705,6 +648,63 @@ JS;
         }
 
         return $this;
+    }
+
+    /**
+     * Checks checkbox by it's XPath query.
+     *
+     * @param string $xpath
+     */
+    public function check($xpath)
+    {
+        $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
+    }
+
+    /**
+     * Unchecks checkbox by it's XPath query.
+     *
+     * @param string $xpath
+     */
+    public function uncheck($xpath)
+    {
+        $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
+        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
+    }
+
+    /**
+     * Checks whether checkbox checked located by it's XPath query.
+     *
+     * @param string $xpath
+     *
+     * @return Boolean
+     */
+    public function isChecked($xpath)
+    {
+        return $this->wdSession->element('xpath', $xpath)->selected();
+    }
+
+    /**
+     * Clicks button or link located by it's XPath query.
+     *
+     * @param string $xpath
+     */
+    public function click($xpath)
+    {
+        $this->wdSession->element('xpath', $xpath)->click('');
+    }
+
+    /**
+     * Double-clicks button or link located by it's XPath query.
+     *
+     * @param string $xpath
+     */
+    public function doubleClick($xpath)
+    {
+        $script = 'Syn.dblclick({{ELEMENT}})';
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -922,7 +922,7 @@ JS;
      *
      * @param integer $time time in milliseconds
      * @param string $condition JS condition
-     * 
+     *
      * @return boolean
      */
     public function wait($time, $condition)
@@ -934,7 +934,7 @@ JS;
         do {
             $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
             usleep(100000);
-        } while ( microtime(true) < $end && !$result );
+        } while (microtime(true) < $end && !$result);
 
         return (bool)$result;
     }
