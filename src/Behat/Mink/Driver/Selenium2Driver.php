@@ -9,6 +9,14 @@ use WebDriver\Element;
 use WebDriver\WebDriver;
 use WebDriver\Key;
 
+/*
+ * This file is part of the Behat\Mink.
+ * (c) Konstantin Kudryashov <ever.zet@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 /**
  * Selenium2 driver.
  *
@@ -23,6 +31,7 @@ class Selenium2Driver extends CoreDriver
      * @var \Behat\Mink\Session
      */
     private $session;
+
     /**
      * Whether the browser has been started
      *
@@ -172,7 +181,11 @@ class Selenium2Driver extends CoreDriver
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
         } catch (\Exception $e) {
-            throw new DriverException('Could not connect to a Selenium 2 / WebDriver server', 0, $e);
+            throw new DriverException('Could not open connection', 0, $e);
+        }
+
+        if (!$this->wdSession) {
+            throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
         $this->started = true;
     }
@@ -200,7 +213,7 @@ class Selenium2Driver extends CoreDriver
         try {
             $this->wdSession->close();
         } catch (\Exception $e) {
-            throw new DriverException('Could not close connection');
+            throw new DriverException('Could not close connection', 0, $e);
         }
     }
 
@@ -909,6 +922,8 @@ JS;
      *
      * @param integer $time time in milliseconds
      * @param string $condition JS condition
+     * 
+     * @return boolean
      */
     public function wait($time, $condition)
     {
@@ -916,9 +931,12 @@ JS;
         $start = microtime(true);
         $end = $start + $time / 1000.0;
 
-        while (microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array()))) {
+        do {
+            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
             usleep(100000);
-        }
+        } while ( microtime(true) < $end && !$result );
+
+        return (bool)$result;
     }
 
     /**
