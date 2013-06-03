@@ -12,9 +12,9 @@ class Selenium2DriverTest extends JavascriptDriverTest
     protected static function getDriver()
     {
         $browser = $_SERVER['WEB_FIXTURES_BROWSER'];
-        $selenium_host = $_SERVER['DRIVER_URL'];
+        $seleniumHost = $_SERVER['DRIVER_URL'];
 
-        return new Selenium2Driver($browser, null, $selenium_host);
+        return new Selenium2Driver($browser, null, $seleniumHost);
     }
 
     public function testMouseEvents() {} // Right click and blur are not supported
