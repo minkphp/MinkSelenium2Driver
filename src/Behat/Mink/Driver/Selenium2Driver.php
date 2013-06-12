@@ -949,4 +949,14 @@ JS;
     {
         return $this->wdSession->window($name ? $name : 'current')->postSize(array('width' => $width, 'height' => $height));
     }
+
+   /**
+     * Maximize the window.
+     *
+     * @param string $name window name (null for the main window)
+     */
+    public function maximizeWindow($name = null)
+    {
+        return $this->wdSession->window($name ? $name : '')->postMaximize();
+    }
 }
