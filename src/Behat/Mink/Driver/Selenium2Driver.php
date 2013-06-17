@@ -957,6 +957,6 @@ JS;
      */
     public function maximizeWindow($name = null)
     {
-        return $this->wdSession->window($name ? $name : '')->postMaximize();
+        return $this->wdSession->window($name ? $name : 'current')->postMaximize();
     }
 }
