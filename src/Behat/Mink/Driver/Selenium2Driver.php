@@ -426,7 +426,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Return the names of all open windows
      *
-     * @return array    array of all open windows
+     * @return array    Array of all open window's names.
      */
     public function getWindowNames()
     {
@@ -436,7 +436,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Return the name of the currently active window
      *
-     * @return string    the name of the current window
+     * @return string    The name of the current window.
      */
     public function getWindowName()
     {
