@@ -598,7 +598,7 @@ JS;
         switch (true) {
             case ($elementname == 'input' && strtolower($element->attribute('type')) == 'text'):
                 for ($i = 0; $i < strlen($element->attribute('value')); $i++) {
-                    $value = Key::BACKSPACE . $value;
+                    $value = Key::BACKSPACE . Key::DELETE . $value;
                 }
                 break;
             case ($elementname == 'textarea'):
