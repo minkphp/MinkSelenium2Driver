@@ -660,7 +660,7 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
-        $valueEscaped = json_encode("$value");
+        $valueEscaped = json_encode((string)$value);
         $multipleJS   = $multiple ? 'true' : 'false';
 
         $script = <<<JS
