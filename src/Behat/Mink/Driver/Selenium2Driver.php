@@ -83,6 +83,14 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Gets the browser name
+     * @return string the current browser name
+     */
+     public function getBrowserName() {
+       return $this->browserName;
+     }
+
+    /**
      * Sets the desired capabilities - called on construction.  If null is provided, will set the
      * defaults as dsesired.
      *
@@ -129,6 +137,16 @@ class Selenium2Driver extends CoreDriver
     public function setWebDriver(WebDriver $webDriver)
     {
         $this->webDriver = $webDriver;
+    }
+
+    /**
+     * Gets the WebDriver instance
+     *
+     * @return WebDriver The current instance of the WebDriver class
+     */
+    public function getWebDriver()
+    {
+        return $this->webDriver;
     }
 
     /**
@@ -249,6 +267,13 @@ class Selenium2Driver extends CoreDriver
     public function setSession(Session $session)
     {
         $this->session = $session;
+    }
+
+    /**
+     * @return Session
+     */
+    public function getSession() {
+      return $this->session;
     }
 
     /**
