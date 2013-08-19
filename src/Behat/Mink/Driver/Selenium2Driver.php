@@ -676,7 +676,7 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
-        $valueEscaped = str_replace('"', '\"', $value);
+        $valueEscaped = json_encode((string)$value);
         $multipleJS   = $multiple ? 'true' : 'false';
 
         $script = <<<JS
@@ -704,7 +704,7 @@ var node = {{ELEMENT}}
 if (node.tagName == 'SELECT') {
     var i, l = node.length;
     for (i = 0; i < l; i++) {
-        if (node[i].value == "$valueEscaped") {
+        if (node[i].value == $valueEscaped) {
             node[i].selected = true;
         } else if (!$multipleJS) {
             node[i].selected = false;
@@ -716,7 +716,7 @@ if (node.tagName == 'SELECT') {
     var nodes = window.document.getElementsByName(node.getAttribute('name'));
     var i, l = nodes.length;
     for (i = 0; i < l; i++) {
-        if (nodes[i].getAttribute('value') == "$valueEscaped") {
+        if (nodes[i].getAttribute('value') == $valueEscaped) {
             node.checked = true;
         }
     }
