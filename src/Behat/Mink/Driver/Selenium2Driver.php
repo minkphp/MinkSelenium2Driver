@@ -634,9 +634,11 @@ JS;
      */
     public function check($xpath)
     {
-        $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = true');
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        if ( $this->isChecked($xpath) ) {
+            return;
+        }
+
+        $this->click($xpath);
     }
 
     /**
@@ -646,9 +648,11 @@ JS;
      */
     public function uncheck($xpath)
     {
-        $this->executeJsOnXpath($xpath, '{{ELEMENT}}.checked = false');
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        if ( !$this->isChecked($xpath) ) {
+            return;
+        }
+
+        $this->click($xpath);
     }
 
     /**
