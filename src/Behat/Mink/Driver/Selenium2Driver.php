@@ -977,4 +977,14 @@ JS;
     {
         return $this->wdSession->window($name ? $name : 'current')->postSize(array('width' => $width, 'height' => $height));
     }
+
+    /**
+     * Submits the form.
+     *
+     * @param string $xpath Xpath.
+     */
+    public function submitForm($xpath)
+    {
+        $this->wdSession->element('xpath', $xpath)->submit();
+    }
 }
