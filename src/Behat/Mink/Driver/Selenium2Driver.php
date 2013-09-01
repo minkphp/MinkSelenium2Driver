@@ -76,7 +76,6 @@ class Selenium2Driver extends CoreDriver
         $this->setBrowserName($browserName);
         $this->setDesiredCapabilities($desiredCapabilities);
         $this->setWebDriver(new WebDriver($wdHost));
-        $this->timeouts = $timeouts;
     }
 
     /**
