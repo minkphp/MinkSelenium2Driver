@@ -62,7 +62,7 @@ class Selenium2Driver extends CoreDriver
      * The timeout configuration
      * @var array
      */
-    private $timeouts;
+    private $timeouts = array();
 
     /**
      * Instantiates the driver.
