@@ -70,10 +70,8 @@ class Selenium2Driver extends CoreDriver
      * @param string    $browserName Browser name
      * @param array     $desiredCapabilities The desired capabilities
      * @param string    $wdHost The WebDriver host
-     * @param array     $timeouts The session timeout settings
      */
-    public function __construct($browserName = 'firefox', $desiredCapabilities = null, 
-        $wdHost = 'http://localhost:4444/wd/hub', $timeouts = array())
+    public function __construct($browserName = 'firefox', $desiredCapabilities = null, $wdHost = 'http://localhost:4444/wd/hub')
     {
         $this->setBrowserName($browserName);
         $this->setDesiredCapabilities($desiredCapabilities);
@@ -279,7 +277,7 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
-            $this->setTimeouts();
+            $this->applyTimeouts();
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
         }
@@ -291,9 +289,23 @@ class Selenium2Driver extends CoreDriver
     }
     
     /**
-     * Sets any timeouts on the session that are required
+     * Sets the timeouts to apply to the webdriver session
+     *
+     * @param array $timeouts The session timeout settings
      */
-    private function setTimeouts()
+    public function setTimeouts($timeouts)
+    {
+        $this->timeouts = $timeouts;
+        
+        if ($this->isStarted()) {
+            $this->applyTimeouts();
+        }
+    }
+    
+    /**
+     * Applies timeouts to the current session
+     */
+    private function applyTimeouts()
     {
         foreach ($this->timeouts as $type => $param) {
             switch ($type) {
