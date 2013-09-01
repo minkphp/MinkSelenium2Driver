@@ -57,6 +57,12 @@ class Selenium2Driver extends CoreDriver
      * @var \WebDriver\Session
      */
     private $wdSession;
+    
+    /**
+     * The timeout configuration
+     * @var array
+     */
+    private $timeouts;
 
     /**
      * Instantiates the driver.
@@ -64,12 +70,15 @@ class Selenium2Driver extends CoreDriver
      * @param string    $browserName Browser name
      * @param array     $desiredCapabilities The desired capabilities
      * @param string    $wdHost The WebDriver host
+     * @param array     $timeouts The session timeout settings
      */
-    public function __construct($browserName = 'firefox', $desiredCapabilities = null, $wdHost = 'http://localhost:4444/wd/hub')
+    public function __construct($browserName = 'firefox', $desiredCapabilities = null, 
+        $wdHost = 'http://localhost:4444/wd/hub', $timeouts = array())
     {
         $this->setBrowserName($browserName);
         $this->setDesiredCapabilities($desiredCapabilities);
         $this->setWebDriver(new WebDriver($wdHost));
+        $this->timeouts = $timeouts;
     }
 
     /**
@@ -270,6 +279,7 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
+            $this->setTimeouts();
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection', 0, $e);
         }
@@ -278,6 +288,25 @@ class Selenium2Driver extends CoreDriver
             throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
         $this->started = true;
+    }
+    
+    /**
+     * Sets any timeouts on the session that are required
+     */
+    private function setTimeouts()
+    {
+        foreach ($this->timeouts as $type => $param) {
+            switch ($type) {
+                case 'implicit':
+                    $this->wdSession->timeouts()->implicit_wait($param);
+                    break;
+                case 'script':
+                    $this->wdSession->timeouts()->async_script($param);
+                    break;
+                default:
+                    throw new DriverException('Unknown timeout type '.$type);
+            }
+        }
     }
 
     /**
