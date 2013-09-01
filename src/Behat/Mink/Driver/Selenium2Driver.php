@@ -308,16 +308,7 @@ class Selenium2Driver extends CoreDriver
     private function applyTimeouts()
     {
         foreach ($this->timeouts as $type => $param) {
-            switch ($type) {
-                case 'implicit':
-                    $this->wdSession->timeouts()->implicit_wait($param);
-                    break;
-                case 'script':
-                    $this->wdSession->timeouts()->async_script($param);
-                    break;
-                default:
-                    throw new DriverException('Unknown timeout type '.$type);
-            }
+            $this->wdSession->timeouts($type, $param);
         }
     }
 
