@@ -294,9 +294,9 @@ class Selenium2Driver extends CoreDriver
      */
     public function setTimeouts($timeouts)
     {
-        $unknown_keys = array_diff(array_keys($timeouts), array('script', 'implicit', 'page'));
-        if ($unknown_keys) {
-            throw new DriverException('Unknown timeout type(s): '.join(',', $unknown_keys));
+        $unknownKeys = array_diff(array_keys($timeouts), array('script', 'implicit', 'page'));
+        if ($unknownKeys) {
+            throw new DriverException('Unknown timeout type(s): '.implode(',', $unknownKeys));
         }
         
         $this->timeouts = $timeouts;
