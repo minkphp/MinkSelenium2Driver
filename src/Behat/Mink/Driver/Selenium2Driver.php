@@ -184,7 +184,7 @@ class Selenium2Driver extends CoreDriver
     protected function withSyn()
     {
         $hasSyn = $this->wdSession->execute(array(
-            'script' => 'return typeof window["Syn"]!=="undefined"',
+            'script' => 'return typeof window["Syn"]!=="undefined" && typeof window["Syn"].trigger!=="undefined"',
             'args'   => array()
         ));
 
