@@ -65,7 +65,7 @@ class Selenium2Driver extends CoreDriver
         $this->setDesiredCapabilities($desiredCapabilities);
 
         $webDriver = new WebDriver($wdHost, $this->desiredCapabilities);
-        $webDriver->manage()->timeouts()->implicitlyWait(1000);
+        //$webDriver->manage()->timeouts()->implicitlyWait(1000);
         $this->setWebDriver($webDriver);
 
         register_shutdown_function(function () use ($webDriver) {
