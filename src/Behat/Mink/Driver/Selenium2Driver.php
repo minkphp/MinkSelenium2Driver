@@ -616,8 +616,6 @@ JS;
         }
 
         $element->sendKeys($value);
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->executeJsOnXpath($xpath, $script);
     }
 
     /**
