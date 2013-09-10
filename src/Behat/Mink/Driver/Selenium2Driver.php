@@ -2,13 +2,11 @@
 
 namespace Behat\Mink\Driver;
 
-use Behat\Mink\Session,
-Behat\Mink\Element\NodeElement,
-Behat\Mink\Exception\DriverException;
+use Behat\Mink\Session;
+use Behat\Mink\Element\NodeElement;
+use Behat\Mink\Exception\DriverException;
 
-//use WebDriver\WebDriver;
 use RemoteWebDriver as WebDriver;
-//use WebDriver\Key;
 use WebDriverKeys as Key;
 
 /*
@@ -72,7 +70,7 @@ class Selenium2Driver extends CoreDriver
 
         register_shutdown_function(function () use ($webDriver) {
             try {
-                $webDriver->quit();
+                //$webDriver->quit();
             } catch (\UnhandledWebDriverError $e) {
             }
         });
@@ -178,8 +176,7 @@ class Selenium2Driver extends CoreDriver
     protected function withSyn()
     {
         $hasSyn = $this->webDriver->executeScript(
-            'return typeof window["Syn"]!=="undefined"',
-            array()
+            'return typeof window["Syn"]!=="undefined"'
         );
 
         if (!$hasSyn) {
@@ -233,18 +230,17 @@ class Selenium2Driver extends CoreDriver
      */
     protected function executeJsOnXpath($xpath, $script, $sync = true)
     {
+        if (true === $sync) {
+            $this->withSyn();
+        }
+
         $by = \WebDriverBy::xpath($xpath);
         $element   = $this->webDriver->findElement($by);
-        $elementID = $element->getID();
         $subscript = "arguments[0]";
 
         $script  = str_replace('{{ELEMENT}}', $subscript, $script);
-        $execute = ($sync) ? 'execute' : 'execute_async';
 
-        return $this->webDriver->$execute(array(
-                                               'script' => $script,
-                                               'args'   => array(array('ELEMENT' => $elementID))
-                                          ));
+        return $this->webDriver->executeScript($script, array($element));
     }
 
     /**
@@ -284,6 +280,7 @@ class Selenium2Driver extends CoreDriver
         }
 
         $this->started = false;
+
         try {
             $this->webDriver->quit();
         } catch (\Exception $e) {
@@ -296,7 +293,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reset()
     {
-        $this->wdSession->deleteAllCookies();
+        $this->webDriver->manage()->deleteAllCookies();
     }
 
     /**
@@ -372,8 +369,7 @@ class Selenium2Driver extends CoreDriver
     public function setCookie($name, $value = null)
     {
         if (null === $value) {
-            $this->wdSession->deleteCookie($name);
-
+            $this->webDriver->manage()->deleteCookieNamed($name);
             return;
         }
 
@@ -382,8 +378,7 @@ class Selenium2Driver extends CoreDriver
             'value'  => (string) $value,
             'secure' => false, // thanks, chibimagic!
         );
-
-        $this->wdSession->setCookie($cookieArray);
+        $this->webDriver->manage()->addCookie($cookieArray);
     }
 
     /**
@@ -395,7 +390,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCookie($name)
     {
-        $cookies = $this->wdSession->getAllCookies();
+        $cookies = $this->webDriver->manage()->getCookies();
         foreach ($cookies as $cookie) {
             if ($cookie['name'] === $name) {
                 return urldecode($cookie['value']);
@@ -437,6 +432,15 @@ class Selenium2Driver extends CoreDriver
         $nodes = $this->webDriver->findElement($by);
 
         $elements = array();
+
+        if ($nodes instanceof \RemoteWebElement) {
+            $elements[] = new NodeElement(sprintf('(%s)[%d]', $xpath, 1), $this->session);
+            return $elements;
+        }
+
+var_dump("NEED TO FIX MORE IN FIND!!!");
+var_dump($nodes); exit;
+
         foreach ($nodes as $i => $node) {
             $elements[] = new NodeElement(sprintf('(%s)[%d]', $xpath, $i+1), $this->session);
         }
@@ -611,9 +615,9 @@ JS;
             return;
         }
 
-        $element->set(array('value' => array($value)));
+        $element->sendKeys($value);
         $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->executeJsOnXpath($xpath, $script);
     }
 
     /**
@@ -864,39 +868,7 @@ JS;
         $source      = $this->webDriver->findElement(\WebDriverBy::xpath($sourceXpath));
         $destination = $this->webDriver->findElement(\WebDriverBy::xpath($destinationXpath));
 
-        $this->wdSession->moveto(array(
-                                      'element' => $source->getID()
-                                 ));
-
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
-
-    event.initEvent("dragstart", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
-        $this->withSyn()->executeJsOnXpath($sourceXpath, $script);
-
-        $this->wdSession->buttondown();
-        $this->wdSession->moveto(array(
-                                      'element' => $destination->getID()
-                                 ));
-        $this->wdSession->buttonup();
-
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
-
-    event.initEvent("drop", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
-        $this->withSyn()->executeJsOnXpath($destinationXpath, $script);
+        $this->webDriver->action()->dragAndDrop($source, $destination);
     }
 
     /**
@@ -906,7 +878,7 @@ JS;
      */
     public function executeScript($script)
     {
-        $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        $this->webDriver->executeScript($script);
     }
 
     /**
@@ -918,7 +890,7 @@ JS;
      */
     public function evaluateScript($script)
     {
-        return $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        return $this->webDriver->executeScript($script);
     }
 
     /**
@@ -936,7 +908,7 @@ JS;
         $end = $start + $time / 1000.0;
 
         do {
-            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
+            $result = $this->webDriver->executeScript($script);
             usleep(100000);
         } while ( microtime(true) < $end && !$result );
 
