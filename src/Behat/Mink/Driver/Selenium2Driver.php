@@ -367,6 +367,10 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToIFrame($name = null)
     {
+        if (null === $name) {
+            $this->webDriver->switchTo()->window($name);
+            return;
+        }
         $this->webDriver->switchTo()->frame($name);
     }
 
