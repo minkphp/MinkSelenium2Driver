@@ -61,6 +61,17 @@ class Selenium2Driver extends CoreDriver
      */
     public function __construct($browserName = 'firefox', $desiredCapabilities = null, $wdHost = 'http://localhost:4444/wd/hub')
     {
+        if (null === $desiredCapabilities) {
+            $desiredCapabilities = array();
+        }
+
+        if ('firefox' != $browserName) {
+            $desiredCapabilities[\WebDriverCapabilityType::BROWSER_NAME] = $browserName;
+            unset(
+                $desiredCapabilities['browser']
+            );
+        }
+
         $this->setBrowserName($browserName);
         $this->setDesiredCapabilities($desiredCapabilities);
 
@@ -99,7 +110,6 @@ class Selenium2Driver extends CoreDriver
         if (null === $desiredCapabilities) {
             $desiredCapabilities = self::getDefaultCapabilities();
         }
-
         if (isset($desiredCapabilities['firefox'])) {
             foreach ($desiredCapabilities['firefox'] as $capability => $value) {
                 switch ($capability) {
