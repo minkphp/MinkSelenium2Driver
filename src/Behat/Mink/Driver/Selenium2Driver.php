@@ -827,7 +827,10 @@ JS;
         $source      = $this->webDriver->findElement(\WebDriverBy::xpath($sourceXpath));
         $destination = $this->webDriver->findElement(\WebDriverBy::xpath($destinationXpath));
 
-        $this->webDriver->action()->dragAndDrop($source, $destination);
+        $this->webDriver
+            ->action()
+            ->dragAndDrop($source, $destination)
+            ->perform();
     }
 
     /**
