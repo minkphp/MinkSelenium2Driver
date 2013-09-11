@@ -186,7 +186,7 @@ class Selenium2Driver extends CoreDriver
     protected function withSyn()
     {
         $hasSyn = $this->webDriver->executeScript(
-            'return typeof window["Syn"]!=="undefined"'
+            "return typeof window['Syn']!=='undefined';"
         );
 
         if (!$hasSyn) {
@@ -525,60 +525,7 @@ var_dump($nodes); exit;
      */
     public function getValue($xpath)
     {
-        $script = <<<JS
-var node = {{ELEMENT}},
-    tagName = node.tagName;
-
-if (tagName == "INPUT" || "TEXTAREA" == tagName) {
-    var type = node.getAttribute('type');
-    if (type == "checkbox") {
-        value = "boolean:" + node.checked;
-    } else if (type == "radio") {
-        var name = node.getAttribute('name');
-        if (name) {
-            var fields = window.document.getElementsByName(name);
-            var i, l = fields.length;
-            for (i = 0; i < l; i++) {
-                var field = fields.item(i);
-                if (field.checked) {
-                    value = "string:" + field.value;
-                }
-            }
-        }
-    } else {
-        value = "string:" + node.value;
-    }
-} else if (tagName == "SELECT") {
-    if (node.getAttribute('multiple')) {
-        options = [];
-        for (var i = 0; i < node.options.length; i++) {
-            if (node.options[ i ].selected) {
-                options.push(node.options[ i ].value);
-            }
-        }
-        value = "array:" + options.join(',');
-    } else {
-        var idx = node.selectedIndex;
-        if (idx >= 0) {
-            value = "string:" + node.options.item(idx).value;
-        } else {
-            value = null;
-        }
-    }
-} else {
-    attributeValue = node.getAttribute('value');
-    if (attributeValue != null) {
-        value = "string:" + attributeValue;
-    } else if (node.value) {
-        value = "string:" + node.value;
-    } else {
-        return null;
-    }
-}
-
-return value;
-JS;
-
+        $script = file_get_contents(__DIR__ . '/Selenium2/value.js');
         $value = $this->executeJsOnXpath($xpath, $script);
         if ($value) {
             if (preg_match('/^string:(.*)$/ms', $value, $vars)) {
@@ -682,7 +629,7 @@ JS;
 var triggerEvent = function (element, eventName) {
     var event;
     if (document.createEvent) {
-        event = document.createEvent("HTMLEvents");
+        event = document.createEvent('HTMLEvents');
         event.initEvent(eventName, true, true);
     } else {
         event = document.createEventObject();
@@ -694,7 +641,7 @@ var triggerEvent = function (element, eventName) {
     if (document.createEvent) {
         element.dispatchEvent(event);
     } else {
-        element.fireEvent("on" + event.eventType, event);
+        element.fireEvent('on' + event.eventType, event);
     }
 }
 
@@ -702,7 +649,7 @@ var node = {{ELEMENT}}
 if (node.tagName == 'SELECT') {
     var i, l = node.length;
     for (i = 0; i < l; i++) {
-        if (node[i].value == "$valueEscaped") {
+        if (node[i].value == '$valueEscaped') {
             node[i].selected = true;
         } else if (!$multipleJS) {
             node[i].selected = false;
@@ -714,7 +661,7 @@ if (node.tagName == 'SELECT') {
     var nodes = window.document.getElementsByName(node.getAttribute('name'));
     var i, l = nodes.length;
     for (i = 0; i < l; i++) {
-        if (nodes[i].getAttribute('value') == "$valueEscaped") {
+        if (nodes[i].getAttribute('value') == '$valueEscaped') {
             node.checked = true;
         }
     }
@@ -796,7 +743,7 @@ JS;
      */
     public function mouseOver($xpath)
     {
-        $script = 'Syn.trigger("mouseover", {}, {{ELEMENT}})';
+        $script = "Syn.trigger('mouseover', {}, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
@@ -807,7 +754,7 @@ JS;
      */
     public function focus($xpath)
     {
-        $script = 'Syn.trigger("focus", {}, {{ELEMENT}})';
+        $script = "Syn.trigger('focus', {}, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
@@ -818,7 +765,7 @@ JS;
      */
     public function blur($xpath)
     {
-        $script = 'Syn.trigger("blur", {}, {{ELEMENT}})';
+        $script = "Syn.trigger('blur', {}, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
