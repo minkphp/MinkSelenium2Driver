@@ -43,6 +43,17 @@ class Selenium2Driver extends CoreDriver
     private $webDriver;
 
     /**
+     * The WebDriver host
+     * @var string
+     */
+    private $wdHost;
+
+    /**
+     * @var bool
+     */
+    private $implicitWait = false;
+
+    /**
      * @var string
      */
     private $browserName;
@@ -65,26 +76,28 @@ class Selenium2Driver extends CoreDriver
             $desiredCapabilities = array();
         }
 
+        $this->wdHost = $wdHost;
+
+        if (isset($desiredCapabilities['implicit_wait'])) {
+            if (is_numeric($desiredCapabilities['implicit_wait'])) {
+                $this->implicitWait = $desiredCapabilities['implicit_wait'];
+            }
+            unset($desiredCapabilities['implicit_wait']);
+        }
+
         if ('firefox' != $browserName) {
             $desiredCapabilities[\WebDriverCapabilityType::BROWSER_NAME] = $browserName;
-            unset(
-                $desiredCapabilities['browser']
-            );
+            unset($desiredCapabilities['browser']);
+        }
+
+        if (empty($desiredCapabilities)) {
+            $desiredCapabilities = null; // lol
         }
 
         $this->setBrowserName($browserName);
         $this->setDesiredCapabilities($desiredCapabilities);
 
-        $webDriver = new WebDriver($wdHost, $this->desiredCapabilities);
-        //$webDriver->manage()->timeouts()->implicitlyWait(1000);
-        $this->setWebDriver($webDriver);
-
-        register_shutdown_function(function () use ($webDriver) {
-            try {
-                //$webDriver->quit();
-            } catch (\UnhandledWebDriverError $e) {
-            }
-        });
+        $this->start();
     }
 
     /**
@@ -266,7 +279,13 @@ class Selenium2Driver extends CoreDriver
      */
     public function start()
     {
-        // RemoteWebDriver starts session by itself
+        $webDriver = new WebDriver($this->wdHost, $this->desiredCapabilities);
+        if (false !== $this->implicitWait) {
+            $webDriver->manage()->timeouts()->implicitlyWait($this->implicitWait);
+        }
+
+        $this->setWebDriver($webDriver);
+
         $this->started = true;
     }
 
