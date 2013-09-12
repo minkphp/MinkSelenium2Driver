@@ -43,6 +43,14 @@ $> curl http://getcomposer.org/installer | php
 $> php composer.phar install
 ```
 
+Testing
+-------
+
+ 1. Run `./composer.phar install --dev`
+ 2. Start a webserver: php -S 127.0.0.1:31337 -t vendor/behat/mink/tests/Behat/Mink/Driver/web-fixtures
+ 3. Copy `phpunit.xml.dist` to `phpunit.xml` and set `WEB_FIXTURES_HOST` to `http://127.0.0.1:31337`
+ 4. `phpunit --debug`
+
 Copyright
 ---------
 
