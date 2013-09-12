@@ -700,7 +700,7 @@ var_dump($nodes); exit;
     public function attachFile($xpath, $path)
     {
         $by = \WebDriverBy::xpath($xpath);
-        $this->webDriver->findElement($by)->value(array('value'=>str_split($path)));
+        $this->webDriver->findElement($by)->sendKeys($path);
     }
 
     /**
