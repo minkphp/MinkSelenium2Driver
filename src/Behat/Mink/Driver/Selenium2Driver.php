@@ -849,10 +849,15 @@ class Selenium2Driver extends CoreDriver
      *
      * @param integer $width set the window width, measured in pixels
      * @param integer $height set the window height, measured in pixels
-     * @param string $name window name (null for the main window)
+     * @param string $name window name (null for the current window)
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        return $this->wdSession->window($name ? $name : 'current')->postSize(array('width' => $width, 'height' => $height));
+        if (null !== $name) {
+            $this->webDriver->switchTo()->window($name);
+        }
+
+        $dimensions = new \WebDriverDimension($width, $height);
+        return $this->webDriver->manage()->window()->setSize($dimensions);
     }
 }
