@@ -21,6 +21,7 @@ use WebDriverKeys as Key;
  * Selenium2 driver.
  *
  * @author Pete Otaqui <pete@otaqui.com>
+ * @author Till Klampaeckel <till@php.net>
  */
 class Selenium2Driver extends CoreDriver
 {
