@@ -457,22 +457,13 @@ class Selenium2Driver extends CoreDriver
      *
      * @param   string  $xpath
      *
-     * @return  array           array of Behat\Mink\Element\NodeElement
+     * @return  array   array of Behat\Mink\Element\NodeElement
      */
     public function find($xpath)
     {
         $by = \WebDriverBy::xpath($xpath);
-        $nodes = $this->webDriver->findElement($by);
-
+        $nodes = $this->webDriver->findElements($by);
         $elements = array();
-
-        if ($nodes instanceof \RemoteWebElement) {
-            $elements[] = new NodeElement(sprintf('(%s)[%d]', $xpath, 1), $this->session);
-            return $elements;
-        }
-
-var_dump("NEED TO FIX MORE IN FIND!!!");
-var_dump($nodes); exit;
 
         foreach ($nodes as $i => $node) {
             $elements[] = new NodeElement(sprintf('(%s)[%d]', $xpath, $i+1), $this->session);
