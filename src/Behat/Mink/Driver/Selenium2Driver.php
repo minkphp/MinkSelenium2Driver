@@ -271,7 +271,7 @@ class Selenium2Driver extends CoreDriver
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
         } catch (\Exception $e) {
-            throw new DriverException('Could not open connection', 0, $e);
+            throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
         }
 
         if (!$this->wdSession) {
