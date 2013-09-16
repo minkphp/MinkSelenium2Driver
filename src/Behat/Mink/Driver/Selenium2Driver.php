@@ -606,14 +606,16 @@ JS;
         $value = strval($value);
         $element = $this->wdSession->element('xpath', $xpath);
         $elementname = strtolower($element->name());
-
+        $isTextElement = false;
         switch (true) {
             case ($elementname == 'input' && strtolower($element->attribute('type')) == 'text'):
                 for ($i = 0; $i < strlen($element->attribute('value')); $i++) {
                     $value = Key::BACKSPACE . Key::DELETE . $value;
                 }
+                $isTextElement = true;
                 break;
             case ($elementname == 'textarea'):
+                $isTextElement = true;
             case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
                 $element->clear();
                 break;
@@ -622,8 +624,20 @@ JS;
                 return;
         }
 
+        if($isTextElement){
+            $script = "Syn.trigger('keydown', {}, {{ELEMENT}});";
+            $this->withSyn()->executeJsOnXpath($xpath, $script);
+        }
+
         $element->value(array('value' => array($value)));
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
+        $script = "";
+
+        if($isTextElement){
+            $script .= "Syn.trigger('keypress', {}, {{ELEMENT}});";
+            $script .= "Syn.trigger('keyup', {}, {{ELEMENT}});";
+        }
+
+        $script .= "Syn.trigger('change', {}, {{ELEMENT}});";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
