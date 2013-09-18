@@ -987,4 +987,14 @@ JS;
     {
         $this->wdSession->element('xpath', $xpath)->submit();
     }
+
+   /**
+     * Maximize the window.
+     *
+     * @param string $name window name (null for the main window)
+     */
+    public function maximizeWindow($name = null)
+    {
+        return $this->wdSession->window($name ? $name : 'current')->postMaximize();
+    }
 }
