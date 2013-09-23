@@ -53,4 +53,25 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         $this->assertContains("foo\nbar", $session->getPage()->findById('textarea')->getValue());
     }
+
+    /**
+     * @dataProvider booleanAttributeDataProvider
+     */
+    public function testBooleanAttribute($input_id)
+    {
+        $session = $this->getSession();
+        $session->visit($this->pathTo('/boolean_attribute_page.html'));
+
+        $attribute_value = $session->getPage()->findById($input_id)->getAttribute('disabled');
+        $this->assertEquals('true', $attribute_value);
+    }
+
+    public function booleanAttributeDataProvider()
+    {
+        return array(
+            array('d1'),
+            array('d2'),
+            array('d3'),
+        );
+    }
 }
