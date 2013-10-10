@@ -53,4 +53,24 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         $this->assertContains("foo\nbar", $session->getPage()->findById('textarea')->getValue());
     }
+
+    public function testWindowMaximize()
+    {
+        $this->getSession()->visit($this->pathTo('/index.php'));
+        $session = $this->getSession();
+        $driver = $session->getDriver();
+
+        $driver->maximizeWindow();
+        $driver->wait(1000, false);
+
+        $script = <<<JS
+if ( screen.availHeight == window.outerHeight ) {
+    return 'maximized';
+}
+else {
+    return screen.availHeight + '==' + window.outerHeight;
+}
+JS;
+        $this->assertEquals('maximized', $session->evaluateScript($script));
+    }
 }
