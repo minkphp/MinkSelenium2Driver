@@ -698,9 +698,9 @@ var triggerEvent = function (element, eventName) {
     } else {
         element.fireEvent("on" + event.eventType, event);
     }
-}
+};
 
-var node = {{ELEMENT}}
+var node = {{ELEMENT}};
 if (node.tagName == 'SELECT') {
     var i, l = node.length;
     for (i = 0; i < l; i++) {
