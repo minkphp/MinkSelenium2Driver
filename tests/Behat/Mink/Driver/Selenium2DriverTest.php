@@ -55,7 +55,14 @@ class Selenium2DriverTest extends JavascriptDriverTest
     
     public function testGetWindowNames()
     {
-        $windowNames = $this->getSession()->getWindowNames();
+        $session = $this->getSession();
+
+        if (!method_exists($session, 'getWindowNames')) {
+            $this->markTestSkipped('The "getWindowNames method is not available for this session. Skipping this test.');
+            return;
+        }
+
+        $windowNames = $session->getWindowNames();
         $this->assertArrayHasKey(0, $windowNames);
 
         foreach ($windowNames as $name) {
@@ -65,6 +72,13 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
     public function testGetWindowName()
     {
-        $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $this->getSession()->getWindowName());
+        $session = $this->getSession();
+
+        if (!method_exists($session, 'getWindowName')) {
+            $this->markTestSkipped('The "getWindowName method is not available for this session. Skipping this test.');
+            return;
+        }
+
+        $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $session->getWindowName());
     }
 }
