@@ -59,7 +59,6 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         if (!method_exists($session, 'getWindowNames')) {
             $this->markTestSkipped('The "getWindowNames method is not available for this session. Skipping this test.');
-            return;
         }
 
         $windowNames = $session->getWindowNames();
@@ -76,7 +75,6 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         if (!method_exists($session, 'getWindowName')) {
             $this->markTestSkipped('The "getWindowName method is not available for this session. Skipping this test.');
-            return;
         }
 
         $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $session->getWindowName());
