@@ -441,6 +441,26 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Return the names of all open windows
+     *
+     * @return array    Array of all open window's names.
+     */
+    public function getWindowNames()
+    {
+        return $this->wdSession->window_handles();
+    }
+
+    /**
+     * Return the name of the currently active window
+     *
+     * @return string    The name of the current window.
+     */
+    public function getWindowName()
+    {
+        return $this->wdSession->window_handle();
+    }
+
+    /**
      * Finds elements with specified XPath query.
      *
      * @param   string  $xpath
