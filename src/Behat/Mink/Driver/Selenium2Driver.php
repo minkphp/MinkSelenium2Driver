@@ -1017,4 +1017,16 @@ JS;
     {
         return $this->wdSession->window($name ? $name : 'current')->postMaximize();
     }
+
+    /**
+     * Magic method that maps calls to class methods to execute WebDriver\Session methods
+     *
+     * @param string $name      Method name
+     * @param array  $arguments Arguments
+     *
+     * @return mixed
+     */
+    public function __call($name, $arguments) {
+        return $this->wdSession->$name($arguments);
+    }
 }
