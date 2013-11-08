@@ -17,7 +17,71 @@ class Selenium2DriverTest extends JavascriptDriverTest
         return new Selenium2Driver($browser, null, $seleniumHost);
     }
 
-    public function testMouseEvents() {} // Right click and blur are not supported
+    /**
+     * Data provider with "bad" attributes.
+     *
+     * @return array
+     */
+    public function dpGetAttributeWrongBehavior()
+    {
+        return array(
+            array('class', '//input[@id="user-name"]'),
+            array('id', '//div/strong[2]'),
+            array('style', '//input[@id="user-name"]'),
+        );
+    }
+
+    /**
+     * Test for getAttribute wrong behavior.
+     *
+     * @dataProvider dpGetAttributeWrongBehavior
+     */
+    public function testGetAttributeWrongBehavior($attribute, $selector)
+    {
+        $this->getSession()->visit($this->pathTo('/index.php'));
+
+        $page = $this->getSession()->getPage();
+        /**
+         * Next two lines shows that getAttribute returns empty string, instead of null.
+         */
+        $this->assertTrue($page->find('xpath', $selector)->hasAttribute($attribute));
+        $this->assertEquals('', $page->find('xpath', $selector)->getAttribute($attribute));
+    }
+
+    /**
+     * Data provider with "correct" attributes.
+     *
+     * @return array
+     */
+    public function dpGetAttributeCorrectBehavior()
+    {
+        return array(
+            array('value', '//div/strong[2]'),
+            array('name', '//div/strong[2]'),
+            array('data', '//div/strong[2]'),
+        );
+    }
+
+    /**
+     * Test for getAttribute correct behavior.
+     *
+     * @dataProvider dpGetAttributeCorrectBehavior
+     */
+    public function testGetAttributeCorrectBehavior($attribute, $selector)
+    {
+        $this->getSession()->visit($this->pathTo('/index.php'));
+
+        $page = $this->getSession()->getPage();
+        /**
+         * Next two lines shows that getAttribute for others attributes returns null as expected.
+         */
+        $this->assertFalse($page->find('xpath', $selector)->hasAttribute($attribute));
+        $this->assertNull($page->find('xpath', $selector)->getAttribute($attribute));
+    }
+
+    public function testMouseEvents()
+    {
+    } // Right click and blur are not supported
 
     public function testOtherMouseEvents()
     {

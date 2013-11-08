@@ -6,6 +6,7 @@ use Behat\Mink\Session,
     Behat\Mink\Element\NodeElement,
     Behat\Mink\Exception\DriverException;
 
+use WebDriver\Element;
 use WebDriver\WebDriver;
 use WebDriver\Key;
 
@@ -543,75 +544,64 @@ class Selenium2Driver extends CoreDriver
      */
     public function getValue($xpath)
     {
-        $script = <<<JS
-var node = {{ELEMENT}},
-    tagName = node.tagName;
+        $element = $this->wdSession->element('xpath', $xpath);
+        switch (strtolower($element->name())) {
+            case 'input':
+                $type = strtolower($element->attribute('type')) ? : 'text';
+                switch ($type) {
+                    case 'checkbox':
+                        return $element->selected();
+                    case 'radio':
+                        $name = $element->attribute('name');
+                        if (empty($name)) {
+                            return $element->selected() ? $element->attribute('value') : '';
+                        } else {
+                            /** @var Element[] $fields */
+                            $fields = $this->wdSession->elements('name', $name);
+                            foreach ($fields as $field) {
+                                if ($field->selected()) {
+                                    return $field->attribute('value');
+                                }
+                            }
+                        }
 
-if (tagName == "INPUT" || "TEXTAREA" == tagName) {
-    var type = node.getAttribute('type');
-    if (type == "checkbox") {
-        value = "boolean:" + node.checked;
-    } else if (type == "radio") {
-        var name = node.getAttribute('name');
-        if (name) {
-            var fields = window.document.getElementsByName(name);
-            var i, l = fields.length;
-            for (i = 0; i < l; i++) {
-                var field = fields.item(i);
-                if (field.checked) {
-                    value = "string:" + field.value;
+                        return null;
+                    case 'button':
+                    case 'reset':
+                    case 'submit':
+                    case 'hidden':
+                    case 'password':
+                    case 'email':
+                    case 'text':
+                        return $element->attribute('value');
+                    default:
+                        throw new DriverException(sprintf('Unknown input type "%s"', $type));
                 }
-            }
-        }
-    } else {
-        value = "string:" + node.value;
-    }
-} else if (tagName == "SELECT") {
-    if (node.getAttribute('multiple')) {
-        options = [];
-        for (var i = 0; i < node.options.length; i++) {
-            if (node.options[ i ].selected) {
-                options.push(node.options[ i ].value);
-            }
-        }
-        value = "array:" + options.join(',');
-    } else {
-        var idx = node.selectedIndex;
-        if (idx >= 0) {
-            value = "string:" + node.options.item(idx).value;
-        } else {
-            value = null;
-        }
-    }
-} else {
-    attributeValue = node.getAttribute('value');
-    if (attributeValue != null) {
-        value = "string:" + attributeValue;
-    } else if (node.value) {
-        value = "string:" + node.value;
-    } else {
-        return null;
-    }
-}
+            case 'textarea':
+                return $element->attribute('value');
+            case 'select':
+                /** @var Element[] $options */
+                $options = $element->elements('tag name', 'option');
+                if ($element->attribute('multiple')) {
+                    $values = array();
+                    foreach ($options as $option) {
+                        if ($option->selected()) {
+                            array_push($values, $option->attribute('value'));
+                        }
+                    }
 
-return value;
-JS;
+                    return $values;
+                } else {
+                    foreach ($options as $option) {
+                        if ($option->selected()) {
+                            return $option->attribute('value');
+                        }
+                    }
 
-        $value = $this->executeJsOnXpath($xpath, $script);
-        if ($value) {
-            if (preg_match('/^string:(.*)$/ms', $value, $vars)) {
-                return $vars[1];
-            }
-            if (preg_match('/^boolean:(.*)$/', $value, $vars)) {
-                return 'true' === strtolower($vars[1]);
-            }
-            if (preg_match('/^array:(.*)$/', $value, $vars)) {
-                if ('' === trim($vars[1])) {
-                    return array();
+                    return null;
                 }
-
-                return explode(',', $vars[1]);
-            }
+            default:
+                return $element->attribute('value');
         }
     }
 
