@@ -528,10 +528,9 @@ class Selenium2Driver extends CoreDriver
      */
     public function getAttribute($xpath, $name)
     {
-        $attribute = $this->wdSession->element('xpath', $xpath)->attribute($name);
-        if ('' !== $attribute) {
-            return $attribute;
-        }
+        $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string)$name) . ')';
+
+        return $this->executeJsOnXpath($xpath, $script);
     }
 
     /**
