@@ -15,7 +15,7 @@ before_script:
   - sleep 4
 
   - curl http://getcomposer.org/installer | php
-  - php composer.phar require behat/mink:~1.5@dev --prefer-source
+  - php composer.phar install --prefer-source
 
   - sudo apt-get update > /dev/null
   - sudo apt-get install -y --force-yes apache2 libapache2-mod-php5 > /dev/null
