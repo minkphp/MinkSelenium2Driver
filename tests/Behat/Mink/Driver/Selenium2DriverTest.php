@@ -9,6 +9,8 @@ use Behat\Mink\Driver\Selenium2Driver;
  */
 class Selenium2DriverTest extends JavascriptDriverTest
 {
+    const WINDOW_NAME_REGEXP = '/\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}/';
+
     protected static function getDriver()
     {
         $browser = $_SERVER['WEB_FIXTURES_BROWSER'];
@@ -53,7 +55,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         $this->assertContains("foo\nbar", $session->getPage()->findById('textarea')->getValue());
     }
-    
+
     public function testGetWindowNames()
     {
         $session = $this->getSession();
@@ -66,7 +68,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
         $this->assertArrayHasKey(0, $windowNames);
 
         foreach ($windowNames as $name) {
-            $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $name);
+            $this->assertRegExp(self::WINDOW_NAME_REGEXP, $name);
         }
     }
 
@@ -78,6 +80,6 @@ class Selenium2DriverTest extends JavascriptDriverTest
             $this->markTestSkipped('The "getWindowName method is not available for this session. Skipping this test.');
         }
 
-        $this->assertRegExp('\{[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}', $session->getWindowName());
+        $this->assertRegExp(self::WINDOW_NAME_REGEXP, $session->getWindowName());
     }
 }
