@@ -544,74 +544,58 @@ class Selenium2Driver extends CoreDriver
     {
         $script = <<<JS
 var node = {{ELEMENT}},
-    tagName = node.tagName;
+    tagName = node.tagName.toUpperCase(),
+    value = null;
 
-if (tagName == "INPUT" || "TEXTAREA" == tagName) {
+if (tagName == 'INPUT' || tagName == 'TEXTAREA') {
     var type = node.getAttribute('type');
-    if (type == "checkbox") {
-        value = "boolean:" + node.checked;
-    } else if (type == "radio") {
+    if (type == 'checkbox') {
+        value = node.checked;
+    } else if (type == 'radio') {
         var name = node.getAttribute('name');
         if (name) {
-            var fields = window.document.getElementsByName(name);
-            var i, l = fields.length;
+            var fields = window.document.getElementsByName(name),
+                i, l = fields.length;
             for (i = 0; i < l; i++) {
                 var field = fields.item(i);
                 if (field.checked) {
-                    value = "string:" + field.value;
+                    value = field.value;
+                    break;
                 }
             }
         }
     } else {
-        value = "string:" + node.value;
+        value = node.value;
     }
-} else if (tagName == "SELECT") {
+} else if (tagName == 'SELECT') {
     if (node.getAttribute('multiple')) {
-        options = [];
+        value = [];
         for (var i = 0; i < node.options.length; i++) {
-            if (node.options[ i ].selected) {
-                options.push(node.options[ i ].value);
+            if (node.options[i].selected) {
+                value.push(node.options[i].value);
             }
         }
-        value = "array:" + options.join(',');
     } else {
         var idx = node.selectedIndex;
         if (idx >= 0) {
-            value = "string:" + node.options.item(idx).value;
+            value = node.options.item(idx).value;
         } else {
             value = null;
         }
     }
 } else {
-    attributeValue = node.getAttribute('value');
+    var attributeValue = node.getAttribute('value');
     if (attributeValue != null) {
-        value = "string:" + attributeValue;
+        value = attributeValue;
     } else if (node.value) {
-        value = "string:" + node.value;
-    } else {
-        return null;
+        value = node.value;
     }
 }
 
-return value;
+return JSON.stringify(value);
 JS;
 
-        $value = $this->executeJsOnXpath($xpath, $script);
-        if ($value) {
-            if (preg_match('/^string:(.*)$/ms', $value, $vars)) {
-                return $vars[1];
-            }
-            if (preg_match('/^boolean:(.*)$/', $value, $vars)) {
-                return 'true' === strtolower($vars[1]);
-            }
-            if (preg_match('/^array:(.*)$/', $value, $vars)) {
-                if ('' === trim($vars[1])) {
-                    return array();
-                }
-
-                return explode(',', $vars[1]);
-            }
-        }
+        return json_decode($this->executeJsOnXpath($xpath, $script), true);
     }
 
     /**
