@@ -2,6 +2,10 @@ language: php
 
 php: [5.3, 5.4, 5.5]
 
+env:
+  - WEBDRIVER=selenium
+  - WEBDRIVER=phantomjs
+
 before_script:
   - export WEB_FIXTURES_HOST=http://localhost
   - export WEB_FIXTURES_BROWSER=firefox
@@ -10,8 +14,7 @@ before_script:
   - export DISPLAY=:99.0
   - sleep 4
 
-  - curl http://selenium.googlecode.com/files/selenium-server-standalone-2.37.0.jar > selenium.jar
-  - java -jar selenium.jar > /dev/null &
+  - sh bin/run-"$WEBDRIVER".sh
   - sleep 4
 
   - curl http://getcomposer.org/installer | php
