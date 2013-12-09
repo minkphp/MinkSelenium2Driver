@@ -57,6 +57,12 @@ class Selenium2Driver extends CoreDriver
      * @var \WebDriver\Session
      */
     private $wdSession;
+    
+    /**
+     * The timeout configuration
+     * @var array
+     */
+    private $timeouts = array();
 
     /**
      * Instantiates the driver.
@@ -270,6 +276,7 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
+            $this->applyTimeouts();
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
         }
@@ -278,6 +285,35 @@ class Selenium2Driver extends CoreDriver
             throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
         $this->started = true;
+    }
+    
+    /**
+     * Sets the timeouts to apply to the webdriver session
+     *
+     * @param array $timeouts The session timeout settings
+     */
+    public function setTimeouts($timeouts)
+    {
+        $unknownKeys = array_diff(array_keys($timeouts), array('script', 'implicit', 'page'));
+        if ($unknownKeys) {
+            throw new DriverException('Unknown timeout type(s): '.implode(',', $unknownKeys));
+        }
+        
+        $this->timeouts = $timeouts;
+        
+        if ($this->isStarted()) {
+            $this->applyTimeouts();
+        }
+    }
+    
+    /**
+     * Applies timeouts to the current session
+     */
+    private function applyTimeouts()
+    {
+        foreach ($this->timeouts as $type => $param) {
+            $this->wdSession->timeouts($type, $param);
+        }
     }
 
     /**

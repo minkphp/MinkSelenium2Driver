@@ -82,4 +82,19 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         $this->assertRegExp(self::WINDOW_NAME_REGEXP, $session->getWindowName());
     }
+    
+    public function testValidTimeoutSettingsDoNotCauseError()
+    {
+       $session = $this->getSession()->getDriver()
+           ->setTimeouts(array('script'=>1234, 'implicit'=>5678));
+    }
+    
+    /**
+     * @expectedException Behat\Mink\Exception\DriverException
+     */
+    public function testInvalidTimeoutSettingsThrowException()
+    {
+       $session = $this->getSession()->getDriver()
+           ->setTimeouts(array('foo'=>1234));
+    }
 }
