@@ -53,19 +53,4 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         $this->assertContains("foo\nbar", $session->getPage()->findById('textarea')->getValue());
     }
-    
-    public function testValidTimeoutSettingsDoNotCauseError()
-    {
-       $session = $this->getSession()->getDriver()
-           ->setTimeouts(array('script'=>1234, 'implicit'=>5678));
-    }
-    
-    /**
-     * @expectedException Behat\Mink\Exception\DriverException
-     */
-    public function testInvalidTimeoutSettingsThrowException()
-    {
-       $session = $this->getSession()->getDriver()
-           ->setTimeouts(array('foo'=>1234));
-    }
 }
