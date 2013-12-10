@@ -113,4 +113,39 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
         parent::testWindowMaximize();
     }
+
+    /**
+     * @expectedException Behat\Mink\Exception\DriverException
+     */
+    public function testInvalidTimeoutSettingThrowsException()
+    {
+        if ('phantomjs' === getenv('WEBDRIVER')) {
+            $this->markTestSkipped('This test does not work for PhantomJS currently. See https://github.com/detro/ghostdriver/issues/291');
+        }
+
+        $this->getSession()->getDriver()->setTimeouts(array('invalid'=>0));
+    }
+
+    public function testShortTimeoutDoesNotWaitForElementToAppear()
+    {
+        $this->getSession()->getDriver()->setTimeouts(array('implicit'=>0));
+
+        $this->getSession()->visit($this->pathTo('/js_test.php'));
+        $this->getSession()->getPage()->findById('waitable')->click();
+
+        $element = $this->getSession()->getPage()->find('css', '#waitable > div');
+
+        $this->assertNull($element);
+    }
+
+    public function testLongTimeoutWaitsForElementToAppear()
+    {
+        $this->getSession()->getDriver()->setTimeouts(array('implicit'=>5000));
+
+        $this->getSession()->visit($this->pathTo('/js_test.php'));
+        $this->getSession()->getPage()->findById('waitable')->click();
+        $element = $this->getSession()->getPage()->find('css', '#waitable > div');
+
+        $this->assertNotNull($element);
+    }
 }
