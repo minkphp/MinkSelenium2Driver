@@ -69,7 +69,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
         $this->assertContains("foo\nbar", $session->getPage()->findById('textarea')->getValue());
     }
 
-    public function testGetWindowNames()
+    public function testPatternGetWindowNames()
     {
         $session = $this->getSession();
 
