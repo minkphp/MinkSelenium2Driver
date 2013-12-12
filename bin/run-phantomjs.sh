@@ -1,2 +1,5 @@
 #!/usr/bin/env sh
-phantomjs --webdriver=4444 > /dev/null &
+set -e
+
+phantomjs --version
+phantomjs --webdriver=4444 > /tmp/webdriver_output.txt &

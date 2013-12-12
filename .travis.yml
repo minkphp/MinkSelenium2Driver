@@ -14,12 +14,7 @@ before_script:
   - export WEB_FIXTURES_HOST=http://localhost
   - export WEB_FIXTURES_BROWSER=firefox
 
-  - sh -e /etc/init.d/xvfb start
-  - export DISPLAY=:99.0
-  - sleep 4
-
   - sh bin/run-"$WEBDRIVER".sh
-  - sleep 4
 
   - curl http://getcomposer.org/installer | php
   - php composer.phar install --prefer-source
@@ -30,3 +25,6 @@ before_script:
   - sudo /etc/init.d/apache2 restart
 
 script: phpunit -v
+
+after_failure:
+  - cat /tmp/webdriver_output.txt
