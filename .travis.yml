@@ -8,7 +8,7 @@ env:
 
 matrix:
   allow_failures:
-    - WEBDRIVER=phantomjs
+    - env: 'WEBDRIVER=phantomjs'
 
 before_script:
   - export WEB_FIXTURES_HOST=http://localhost
