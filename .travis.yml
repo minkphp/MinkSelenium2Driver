@@ -6,6 +6,10 @@ env:
   - WEBDRIVER=selenium
   - WEBDRIVER=phantomjs
 
+matrix:
+  allow_failures:
+    - env: 'WEBDRIVER=phantomjs'
+
 before_script:
   - export WEB_FIXTURES_HOST=http://localhost
   - export WEB_FIXTURES_BROWSER=firefox
