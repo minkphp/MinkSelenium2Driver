@@ -16,8 +16,7 @@ before_script:
 
   - sh bin/run-"$WEBDRIVER".sh
 
-  - curl http://getcomposer.org/installer | php
-  - php composer.phar install --prefer-source
+  - composer install --prefer-source
 
   - sudo apt-get update > /dev/null
   - sudo apt-get install -y --force-yes apache2 libapache2-mod-php5 > /dev/null
