@@ -2,13 +2,12 @@
 
 namespace Behat\Mink\Driver;
 
-use Behat\Mink\Session,
-    Behat\Mink\Element\NodeElement,
-    Behat\Mink\Exception\DriverException;
-
+use Behat\Mink\Element\NodeElement;
+use Behat\Mink\Exception\DriverException;
+use Behat\Mink\Session;
 use WebDriver\Exception\UnknownError;
-use WebDriver\WebDriver;
 use WebDriver\Key;
+use WebDriver\WebDriver;
 
 /*
  * This file is part of the Behat\Mink.
@@ -85,10 +84,11 @@ class Selenium2Driver extends CoreDriver
      * After a clone, we break our reference to the "old" wdSession and create
      * a new WebDriver.
      */
-    public function __clone() {
-      $this->wdSession = NULL;
-      $this->started = false;
-      $this->setWebDriver(new WebDriver($this->webDriver->getURL()));
+    public function __clone()
+    {
+        $this->wdSession = null;
+        $this->started = false;
+        $this->setWebDriver(new WebDriver($this->webDriver->getURL()));
     }
 
     /**
@@ -215,7 +215,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @return string a json encoded options array for Syn
      */
-    protected static function charToOptions($event, $char, $modifier=null)
+    protected static function charToOptions($event, $char, $modifier = null)
     {
         $ord = ord($char);
         if (is_numeric($char)) {
@@ -674,7 +674,7 @@ JS;
      */
     public function check($xpath)
     {
-        if ( $this->isChecked($xpath) ) {
+        if ($this->isChecked($xpath)) {
             return;
         }
 
@@ -688,7 +688,7 @@ JS;
      */
     public function uncheck($xpath)
     {
-        if ( !$this->isChecked($xpath) ) {
+        if (!$this->isChecked($xpath)) {
             return;
         }
 
@@ -1001,7 +1001,7 @@ JS;
         do {
             $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
             usleep(100000);
-        } while ( microtime(true) < $end && !$result );
+        } while (microtime(true) < $end && !$result);
 
         return (bool)$result;
     }
@@ -1015,7 +1015,9 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        return $this->wdSession->window($name ? $name : 'current')->postSize(array('width' => $width, 'height' => $height));
+        return $this->wdSession->window($name ? $name : 'current')->postSize(
+            array('width' => $width, 'height' => $height)
+        );
     }
 
     /**
