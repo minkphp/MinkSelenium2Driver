@@ -915,7 +915,30 @@ JS;
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
-
+    /**
+     * Drag one element onto another when the elements are already listening for 'drag' and 'drop' events.
+     * 
+     * i.e. jQuery UI draggable / droppable
+     *
+     * @param   string  $sourceXpath
+     * @param   string  $destinationXpath
+     */
+    public function performDragAndDrop($sourceXpath, $destinationXpath)
+    {
+        $source      = $this->wdSession->element('xpath', $sourceXpath);
+        $destination = $this->wdSession->element('xpath', $destinationXpath);
+        
+        $this->wdSession->moveto(array(
+            'element' => $source->getID()
+        ));
+        
+        $this->wdSession->buttondown();
+        $this->wdSession->moveto(array(
+            'element' => $destination->getID()
+        ));
+        $this->wdSession->buttonup();
+    }
+    
     /**
      * Drag one element onto another.
      *
