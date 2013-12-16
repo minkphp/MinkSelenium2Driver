@@ -24,8 +24,9 @@ class Selenium2DriverTest extends JavascriptDriverTest
         $this->markTestIncomplete('testMouseEvents cannot be tested fully for Selenium2Driver. Supported events are currently tested in testOtherMouseEvents');
     }
 
-    public function testOtherMouseEvents() // focus is not supported currently, and PhantomJS requires waiting a bit for Syn-based events
+    public function testOtherMouseEvents()
     {
+        // focus is not supported currently, and PhantomJS requires waiting a bit for Syn-based events
         $this->getSession()->visit($this->pathTo('/js_test.php'));
 
         $clicker = $this->getSession()->getPage()->find('css', '.elements div#clicker');
@@ -115,7 +116,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
     }
 
     /**
-     * @expectedException Behat\Mink\Exception\DriverException
+     * @expectedException \Behat\Mink\Exception\DriverException
      */
     public function testInvalidTimeoutSettingThrowsException()
     {
