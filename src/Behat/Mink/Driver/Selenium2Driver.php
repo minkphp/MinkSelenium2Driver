@@ -581,10 +581,10 @@ class Selenium2Driver extends CoreDriver
     {
         $script = <<<JS
 var node = {{ELEMENT}},
-    tagName = node.tagName.toUpperCase(),
+    tagName = node.tagName.toLowerCase(),
     value = null;
 
-if (tagName == 'INPUT' || tagName == 'TEXTAREA') {
+if (tagName == 'input' || tagName == 'textarea') {
     var type = node.getAttribute('type');
     if (type == 'checkbox') {
         value = node.checked;
@@ -604,7 +604,7 @@ if (tagName == 'INPUT' || tagName == 'TEXTAREA') {
     } else {
         value = node.value;
     }
-} else if (tagName == 'SELECT') {
+} else if (tagName == 'select') {
     if (node.getAttribute('multiple')) {
         value = [];
         for (var i = 0; i < node.options.length; i++) {
@@ -740,8 +740,9 @@ var triggerEvent = function (element, eventName) {
     }
 };
 
-var node = {{ELEMENT}};
-if (node.tagName == 'SELECT') {
+var node = {{ELEMENT}},
+    tagName = node.tagName.toLowerCase();
+if (tagName == 'select') {
     var i, l = node.length;
     for (i = 0; i < l; i++) {
         if (node[i].value == $valueEscaped) {
@@ -760,7 +761,7 @@ if (node.tagName == 'SELECT') {
             node.checked = true;
         }
     }
-    if (node.tagName == 'INPUT') {
+    if (tagName == 'input') {
       var type = node.getAttribute('type');
       if (type == 'radio') {
         triggerEvent(node, 'change');
