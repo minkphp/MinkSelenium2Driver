@@ -6,5 +6,5 @@ if (!is_dir($vendor = __DIR__.'/../vendor')) {
 
 require($vendor.'/autoload.php');
 require($vendor.'/behat/mink/tests/Behat/Mink/Driver/GeneralDriverTest.php');
-require($vendor.'/behat/mink/tests/Behat/Mink/Driver/HeadlessDriverTest.php');
 require($vendor.'/behat/mink/tests/Behat/Mink/Driver/JavascriptDriverTest.php');
+require($vendor.'/behat/mink/tests/Behat/Mink/Driver/CssDriverTest.php');
