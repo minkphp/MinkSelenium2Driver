@@ -24,7 +24,11 @@ before_script:
   - sudo sed -i -e "s,/var/www,$(pwd)/vendor/behat/mink/tests/Behat/Mink/Driver/web-fixtures,g" /etc/apache2/sites-available/default
   - sudo /etc/init.d/apache2 restart
 
-script: phpunit -v
+script: phpunit -v --coverage-clover=coverage.clover
+
+after_script:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 
 after_failure:
   - cat /tmp/webdriver_output.txt
