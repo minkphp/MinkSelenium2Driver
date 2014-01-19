@@ -9,7 +9,6 @@ env:
 matrix:
   allow_failures:
     - env: 'WEBDRIVER=phantomjs'
-    - php: hhvm
   fast_finish: true
 
 before_script:
