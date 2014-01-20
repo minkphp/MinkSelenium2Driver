@@ -67,9 +67,9 @@ class Selenium2Driver extends CoreDriver
     /**
      * Instantiates the driver.
      *
-     * @param string    $browserName Browser name
-     * @param array     $desiredCapabilities The desired capabilities
-     * @param string    $wdHost The WebDriver host
+     * @param string $browserName         Browser name
+     * @param array  $desiredCapabilities The desired capabilities
+     * @param string $wdHost              The WebDriver host
      */
     public function __construct($browserName = 'firefox', $desiredCapabilities = null, $wdHost = 'http://localhost:4444/wd/hub')
     {
@@ -107,7 +107,7 @@ class Selenium2Driver extends CoreDriver
      *
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
-     * @param   array $desiredCapabilities  an array of capabilities to pass on to the WebDriver server
+     * @param array $desiredCapabilities an array of capabilities to pass on to the WebDriver server
      */
     public function setDesiredCapabilities($desiredCapabilities = null)
     {
@@ -209,9 +209,9 @@ class Selenium2Driver extends CoreDriver
     /**
      * Creates some options for key events
      *
-     * @param  string $event         the type of event ('keypress', 'keydown', 'keyup');
-     * @param  string $char          the character or code
-     * @param  string $modifier=null one of 'shift', 'alt', 'ctrl' or 'meta'
+     * @param string $event    the type of event ('keypress', 'keydown', 'keyup');
+     * @param string $char     the character or code
+     * @param string $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
      *
      * @return string a json encoded options array for Syn
      */
@@ -241,9 +241,9 @@ class Selenium2Driver extends CoreDriver
      *
      * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
      *
-     * @param  string   $xpath  the xpath to search with
-     * @param  string   $script the script to execute
-     * @param  Boolean  $sync   whether to run the script synchronously (default is TRUE)
+     * @param string  $xpath  the xpath to search with
+     * @param string  $script the script to execute
+     * @param Boolean $sync   whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -520,7 +520,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getAttribute($xpath, $name)
     {
-        $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string)$name) . ')';
+        $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string) $name) . ')';
 
         return $this->executeJsOnXpath($xpath, $script);
     }
@@ -607,6 +607,7 @@ JS;
                 break;
             case ($elementname == 'select'):
                 $this->selectOption($xpath, $value);
+
                 return;
         }
 
@@ -652,7 +653,7 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
-        $valueEscaped = json_encode((string)$value);
+        $valueEscaped = json_encode((string) $value);
         $multipleJS   = $multiple ? 'true' : 'false';
 
         $script = <<<JS
@@ -890,7 +891,7 @@ JS;
             usleep(100000);
         } while (microtime(true) < $end && !$result);
 
-        return (bool)$result;
+        return (bool) $result;
     }
 
     /**
