@@ -209,18 +209,16 @@ class Selenium2Driver extends CoreDriver
     /**
      * Creates some options for key events
      *
-     * @param string $event    the type of event ('keypress', 'keydown', 'keyup');
      * @param string $char     the character or code
      * @param string $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
      *
      * @return string a json encoded options array for Syn
      */
-    protected static function charToOptions($event, $char, $modifier = null)
+    protected static function charToOptions($char, $modifier = null)
     {
         $ord = ord($char);
         if (is_numeric($char)) {
-            $ord  = $char;
-            $char = chr($char);
+            $ord = $char;
         }
 
         $options = array(
@@ -793,7 +791,7 @@ JS;
      */
     public function keyPress($xpath, $char, $modifier = null)
     {
-        $options = self::charToOptions('keypress', $char, $modifier);
+        $options = self::charToOptions($char, $modifier);
         $script = "Syn.trigger('keypress', $options, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
@@ -803,7 +801,7 @@ JS;
      */
     public function keyDown($xpath, $char, $modifier = null)
     {
-        $options = self::charToOptions('keydown', $char, $modifier);
+        $options = self::charToOptions($char, $modifier);
         $script = "Syn.trigger('keydown', $options, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
@@ -813,7 +811,7 @@ JS;
      */
     public function keyUp($xpath, $char, $modifier = null)
     {
-        $options = self::charToOptions('keyup', $char, $modifier);
+        $options = self::charToOptions($char, $modifier);
         $script = "Syn.trigger('keyup', $options, {{ELEMENT}})";
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
