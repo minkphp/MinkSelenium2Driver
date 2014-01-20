@@ -369,7 +369,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCurrentUrl()
     {
-        return $this->wdSession->url();
+        return $this->wdSession->getUrl();
     }
 
     /**
@@ -1016,7 +1016,7 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        return $this->wdSession->window($name ? $name : 'current')->postSize(
+        $this->wdSession->window($name ? $name : 'current')->postSize(
             array('width' => $width, 'height' => $height)
         );
     }
@@ -1038,6 +1038,6 @@ JS;
      */
     public function maximizeWindow($name = null)
     {
-        return $this->wdSession->window($name ? $name : 'current')->postMaximize();
+        $this->wdSession->window($name ? $name : 'current')->maximize();
     }
 }
