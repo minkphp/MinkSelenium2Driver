@@ -364,7 +364,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCurrentUrl()
     {
-        return $this->wdSession->getUrl();
+        return $this->wdSession->url();
     }
 
     /**
