@@ -50,9 +50,6 @@ class Selenium2DriverTest extends CssDriverTest
         sleep(1);
         $this->assertEquals('blured', $clicker->getText());
 
-        $clicker->mouseOver();
-        sleep(1);
-        $this->assertEquals('mouse overed', $clicker->getText());
     }
 
     public function testIssue178()
