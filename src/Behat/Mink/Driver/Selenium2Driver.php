@@ -600,7 +600,6 @@ JS;
                 }
                 break;
             case ($elementname == 'textarea'):
-            case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
                 $element->clear();
                 break;
             case ($elementname == 'select'):
