@@ -19,40 +19,6 @@ class Selenium2DriverTest extends JavascriptDriverTest
         return new Selenium2Driver($browser, null, $seleniumHost);
     }
 
-    public function testMouseEvents()
-    {
-        $this->markTestIncomplete('testMouseEvents cannot be tested fully for Selenium2Driver. Supported events are currently tested in testOtherMouseEvents');
-    }
-
-    public function testOtherMouseEvents()
-    {
-        // focus is not supported currently, and PhantomJS requires waiting a bit for Syn-based events
-        $this->getSession()->visit($this->pathTo('/js_test.php'));
-
-        $clicker = $this->getSession()->getPage()->find('css', '.elements div#clicker');
-
-        $this->assertEquals('not clicked', $clicker->getText());
-
-        $clicker->click();
-        $this->assertEquals('single clicked', $clicker->getText());
-
-        $clicker->doubleClick();
-        sleep(1);
-        $this->assertEquals('double clicked', $clicker->getText());
-
-        $clicker->rightClick();
-        sleep(1);
-        $this->assertEquals('right clicked', $clicker->getText());
-
-        $clicker->blur();
-        sleep(1);
-        $this->assertEquals('blured', $clicker->getText());
-
-        $clicker->mouseOver();
-        sleep(1);
-        $this->assertEquals('mouse overed', $clicker->getText());
-    }
-
     public function testIssue178()
     {
         $session = $this->getSession();
