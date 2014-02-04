@@ -872,6 +872,10 @@ JS;
      */
     public function evaluateScript($script)
     {
+        if (0 !== strpos(trim($script), 'return ')) {
+            $script = 'return ' . $script;
+        }
+
         return $this->wdSession->execute(array('script' => $script, 'args' => array()));
     }
 
