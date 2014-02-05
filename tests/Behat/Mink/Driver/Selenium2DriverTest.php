@@ -72,24 +72,11 @@ class Selenium2DriverTest extends JavascriptDriverTest
         parent::testHttpOnlyCookieIsDeleted();
     }
 
-    public function testWindowMaximize()
-    {
-        if ('phantomjs' === getenv('WEBDRIVER')) {
-            $this->markTestSkipped('This test does not work for PhantomJS currently. See https://github.com/detro/ghostdriver/issues/287');
-        }
-
-        parent::testWindowMaximize();
-    }
-
     /**
      * @expectedException \Behat\Mink\Exception\DriverException
      */
     public function testInvalidTimeoutSettingThrowsException()
     {
-        if ('phantomjs' === getenv('WEBDRIVER')) {
-            $this->markTestSkipped('This test does not work for PhantomJS currently. See https://github.com/detro/ghostdriver/issues/291');
-        }
-
         $this->getSession()->getDriver()->setTimeouts(array('invalid'=>0));
     }
 
