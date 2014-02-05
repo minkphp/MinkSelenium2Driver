@@ -851,6 +851,11 @@ JS;
      */
     public function executeScript($script)
     {
+        if (preg_match('/^function[\s\(]/', $script)) {
+            $script = preg_replace('/;$/', '', $script);
+            $script = '(' . $script . ')';
+        }
+
         $this->wdSession->execute(array('script' => $script, 'args' => array()));
     }
 
