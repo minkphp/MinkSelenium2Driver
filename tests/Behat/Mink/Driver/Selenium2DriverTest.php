@@ -7,7 +7,7 @@ use Behat\Mink\Driver\Selenium2Driver;
 /**
  * @group selenium2driver
  */
-class Selenium2DriverTest extends JavascriptDriverTest
+class Selenium2DriverTest extends CssDriverTest
 {
     const WINDOW_NAME_REGEXP = '/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/';
 
@@ -28,10 +28,12 @@ class Selenium2DriverTest extends JavascriptDriverTest
     {
         // focus is not supported currently, and PhantomJS requires waiting a bit for Syn-based events
         $this->getSession()->visit($this->pathTo('/js_test.php'));
-
         $clicker = $this->getSession()->getPage()->find('css', '.elements div#clicker');
 
         $this->assertEquals('not clicked', $clicker->getText());
+
+        $clicker->mouseOver();
+        $this->assertEquals('mouse overed', $clicker->getText());
 
         $clicker->click();
         $this->assertEquals('single clicked', $clicker->getText());
@@ -48,9 +50,6 @@ class Selenium2DriverTest extends JavascriptDriverTest
         sleep(1);
         $this->assertEquals('blured', $clicker->getText());
 
-        $clicker->mouseOver();
-        sleep(1);
-        $this->assertEquals('mouse overed', $clicker->getText());
     }
 
     public function testIssue178()

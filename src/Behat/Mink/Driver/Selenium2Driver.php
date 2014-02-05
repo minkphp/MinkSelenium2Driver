@@ -751,8 +751,9 @@ JS;
      */
     public function mouseOver($xpath)
     {
-        $script = 'Syn.trigger("mouseover", {}, {{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->wdSession->moveto(
+            array("element" => $this->wdSession->element('xpath', $xpath)->getId())
+        );
     }
 
     /**
