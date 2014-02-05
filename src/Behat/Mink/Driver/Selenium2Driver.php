@@ -79,19 +79,6 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Cleans up/prepares a new clone.
-     *
-     * After a clone, we break our reference to the "old" wdSession and create
-     * a new WebDriver.
-     */
-    public function __clone()
-    {
-        $this->wdSession = null;
-        $this->started = false;
-        $this->setWebDriver(new WebDriver($this->webDriver->getURL()));
-    }
-
-    /**
      * Sets the browser name
      *
      * @param string $browserName the name of the browser to start, default is 'firefox'
