@@ -19,38 +19,24 @@ class Selenium2DriverTest extends JavascriptDriverTest
         return new Selenium2Driver($browser, null, $seleniumHost);
     }
 
-    public function testMouseEvents()
+    /**
+     * @group mouse-events
+     */
+    public function testFocus()
     {
-        $this->markTestIncomplete('testMouseEvents cannot be tested fully for Selenium2Driver. Supported events are currently tested in testOtherMouseEvents');
+        $this->markTestSkipped('Not supported currently');
     }
 
-    public function testOtherMouseEvents()
+    /**
+     * PhantomJS requires waiting a bit for Syn-based events.
+     *
+     * @param string $action The action being performed
+     */
+    protected function waitBeforeCheckingMouseEvent($action)
     {
-        // focus is not supported currently, and PhantomJS requires waiting a bit for Syn-based events
-        $this->getSession()->visit($this->pathTo('/js_test.php'));
-
-        $clicker = $this->getSession()->getPage()->find('css', '.elements div#clicker');
-
-        $this->assertEquals('not clicked', $clicker->getText());
-
-        $clicker->click();
-        $this->assertEquals('single clicked', $clicker->getText());
-
-        $clicker->doubleClick();
-        sleep(1);
-        $this->assertEquals('double clicked', $clicker->getText());
-
-        $clicker->rightClick();
-        sleep(1);
-        $this->assertEquals('right clicked', $clicker->getText());
-
-        $clicker->blur();
-        sleep(1);
-        $this->assertEquals('blured', $clicker->getText());
-
-        $clicker->mouseOver();
-        sleep(1);
-        $this->assertEquals('mouse overed', $clicker->getText());
+        if ($this->isPhantomJS()) {
+            sleep(1);
+        }
     }
 
     public function testIssue178()
@@ -99,7 +85,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
     public function testHttpOnlyCookieIsDeleted()
     {
-        if ('phantomjs' === getenv('WEBDRIVER')) {
+        if ($this->isPhantomJS()) {
             $this->markTestSkipped('This test does not work for PhantomJS currently. See https://github.com/detro/ghostdriver/issues/170');
         }
 
@@ -108,7 +94,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
 
     public function testWindowMaximize()
     {
-        if ('phantomjs' === getenv('WEBDRIVER')) {
+        if ($this->isPhantomJS()) {
             $this->markTestSkipped('This test does not work for PhantomJS currently. See https://github.com/detro/ghostdriver/issues/287');
         }
 
@@ -120,7 +106,7 @@ class Selenium2DriverTest extends JavascriptDriverTest
      */
     public function testInvalidTimeoutSettingThrowsException()
     {
-        if ('phantomjs' === getenv('WEBDRIVER')) {
+        if ($this->isPhantomJS()) {
             $this->markTestSkipped('This test does not work for PhantomJS currently. See https://github.com/detro/ghostdriver/issues/291');
         }
 
@@ -148,5 +134,10 @@ class Selenium2DriverTest extends JavascriptDriverTest
         $element = $this->getSession()->getPage()->find('css', '#waitable > div');
 
         $this->assertNotNull($element);
+    }
+
+    private function isPhantomJS()
+    {
+        return 'phantomjs' === getenv('WEBDRIVER');
     }
 }
