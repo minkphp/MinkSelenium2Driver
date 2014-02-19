@@ -913,4 +913,14 @@ JS;
     {
         $this->wdSession->window($name ? $name : 'current')->maximize();
     }
+
+    /**
+     * Returns Session ID of WebDriver or `null`, when session not started yet.
+     *
+     * @return string|null
+     */
+    public function getWebDriverSessionId()
+    {
+        return $this->isStarted() ? basename($this->wdSession->getUrl()) : null;
+    }
 }
