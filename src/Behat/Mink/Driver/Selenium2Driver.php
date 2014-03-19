@@ -597,8 +597,6 @@ JS;
         }
 
         $element->value(array('value' => array($value)));
-        $script = "Syn.trigger('change', {}, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
