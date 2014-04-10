@@ -717,8 +717,8 @@ JS;
      */
     public function doubleClick($xpath)
     {
-        $script = 'Syn.dblclick({{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->mouseOver($xpath);
+        $this->wdSession->doubleclick();
     }
 
     /**
@@ -726,8 +726,10 @@ JS;
      */
     public function rightClick($xpath)
     {
-        $script = 'Syn.rightClick({{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->mouseOver($xpath);
+        $this->wdSession->click(array(
+          'button' => 2,
+        ));
     }
 
     /**
@@ -751,8 +753,9 @@ JS;
      */
     public function mouseOver($xpath)
     {
-        $script = 'Syn.trigger("mouseover", {}, {{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->wdSession->moveto(array(
+            'element' => $this->wdSession->element('xpath', $xpath)->getID()
+        ));
     }
 
     /**

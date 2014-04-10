@@ -7,7 +7,7 @@ use Behat\Mink\Driver\Selenium2Driver;
 /**
  * @group selenium2driver
  */
-class Selenium2DriverTest extends JavascriptDriverTest
+class Selenium2DriverTest extends CssDriverTest
 {
     const WINDOW_NAME_REGEXP = '/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/';
 
