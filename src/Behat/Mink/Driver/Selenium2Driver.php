@@ -709,7 +709,8 @@ JS;
      */
     public function click($xpath)
     {
-        $this->wdSession->element('xpath', $xpath)->click('');
+        $this->mouseOver($xpath);
+        $this->wdSession->click(array('button' => 0));
     }
 
     /**
