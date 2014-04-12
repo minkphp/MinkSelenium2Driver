@@ -727,9 +727,8 @@ JS;
     public function rightClick($xpath)
     {
         $this->mouseOver($xpath);
-        $this->wdSession->click(array(
-          'button' => 2,
-        ));
+        $script = 'Syn.rightClick({{ELEMENT}})';
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     /**
