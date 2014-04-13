@@ -877,11 +877,11 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function wait($time, $condition)
+    public function wait($timeout, $condition)
     {
         $script = "return $condition;";
         $start = microtime(true);
-        $end = $start + $time / 1000.0;
+        $end = $start + $timeout / 1000.0;
 
         do {
             $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
