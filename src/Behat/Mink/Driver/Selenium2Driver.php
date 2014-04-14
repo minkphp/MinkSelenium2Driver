@@ -578,19 +578,20 @@ JS;
     {
         $value = strval($value);
         $element = $this->wdSession->element('xpath', $xpath);
-        $elementname = strtolower($element->name());
+        $elementName = strtolower($element->name());
+        $elementType = strtolower($element->attribute('type'));
 
         switch (true) {
-            case ($elementname == 'input' && strtolower($element->attribute('type')) == 'text'):
+            case ($elementName == 'input' && $elementType == 'text'):
                 for ($i = 0; $i < strlen($element->attribute('value')); $i++) {
                     $value = Key::BACKSPACE . Key::DELETE . $value;
                 }
                 break;
-            case ($elementname == 'textarea'):
-            case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
+            case ($elementName == 'textarea'):
+            case ($elementName == 'input' && !in_array($elementType, array('file', 'radio'))):
                 $element->clear();
                 break;
-            case ($elementname == 'select'):
+            case ($elementName == 'select'):
                 $this->selectOption($xpath, $value);
 
                 return;
