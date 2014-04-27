@@ -5,6 +5,7 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Session;
+use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Key;
 use WebDriver\WebDriver;
@@ -234,7 +235,7 @@ class Selenium2Driver extends CoreDriver
      */
     protected function executeJsOnXpath($xpath, $script, $sync = true)
     {
-        $element   = $this->wdSession->element('xpath', $xpath);
+        $element   = $this->findElement($xpath);
         $elementID = $element->getID();
         $subscript = "arguments[0]";
 
@@ -477,7 +478,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getTagName($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->name();
+        return $this->findElement($xpath)->name();
     }
 
     /**
@@ -485,7 +486,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getText($xpath)
     {
-        $node = $this->wdSession->element('xpath', $xpath);
+        $node = $this->findElement($xpath);
         $text = $node->text();
         $text = (string) str_replace(array("\r", "\r\n", "\n"), ' ', $text);
 
@@ -577,7 +578,7 @@ JS;
     public function setValue($xpath, $value)
     {
         $value = strval($value);
-        $element = $this->wdSession->element('xpath', $xpath);
+        $element = $this->findElement($xpath);
         $elementname = strtolower($element->name());
 
         switch (true) {
@@ -630,7 +631,7 @@ JS;
      */
     public function isChecked($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->selected();
+        return $this->findElement($xpath)->selected();
     }
 
     /**
@@ -701,7 +702,7 @@ JS;
      */
     public function isSelected($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->selected();
+        return $this->findElement($xpath)->selected();
     }
 
     /**
@@ -737,7 +738,7 @@ JS;
      */
     public function attachFile($xpath, $path)
     {
-        $this->wdSession->element('xpath', $xpath)->value(array('value'=>str_split($path)));
+        $this->findElement($xpath)->value(array('value' => str_split($path)));
     }
 
     /**
@@ -745,7 +746,7 @@ JS;
      */
     public function isVisible($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->displayed();
+        return $this->findElement($xpath)->displayed();
     }
 
     /**
@@ -754,7 +755,7 @@ JS;
     public function mouseOver($xpath)
     {
         $this->wdSession->moveto(array(
-            'element' => $this->wdSession->element('xpath', $xpath)->getID()
+            'element' => $this->findElement($xpath)->getID()
         ));
     }
 
@@ -811,8 +812,8 @@ JS;
      */
     public function dragTo($sourceXpath, $destinationXpath)
     {
-        $source      = $this->wdSession->element('xpath', $sourceXpath);
-        $destination = $this->wdSession->element('xpath', $destinationXpath);
+        $source      = $this->findElement($sourceXpath);
+        $destination = $this->findElement($destinationXpath);
 
         $this->wdSession->moveto(array(
             'element' => $source->getID()
@@ -906,7 +907,7 @@ JS;
      */
     public function submitForm($xpath)
     {
-        $this->wdSession->element('xpath', $xpath)->submit();
+        $this->findElement($xpath)->submit();
     }
 
     /**
@@ -925,5 +926,21 @@ JS;
     public function getWebDriverSessionId()
     {
         return $this->isStarted() ? basename($this->wdSession->getUrl()) : null;
+    }
+
+    /**
+     * @param string $xpath
+     *
+     * @return \WebDriver\Element
+     *
+     * @throws DriverException when the element is not found
+     */
+    private function findElement($xpath)
+    {
+        try {
+            return $this->wdSession->element('xpath', $xpath);
+        } catch (NoSuchElement $e) {
+            throw new DriverException(sprintf('There is no element matching XPath "%s"', $xpath), 0, $e);
+        }
     }
 }
