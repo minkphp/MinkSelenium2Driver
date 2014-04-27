@@ -7,6 +7,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Session;
 use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
+use WebDriver\Exception;
 use WebDriver\Key;
 use WebDriver\WebDriver;
 
@@ -607,6 +608,8 @@ JS;
      */
     public function check($xpath)
     {
+        $this->ensureCheckboxElement($xpath);
+
         if ($this->isChecked($xpath)) {
             return;
         }
@@ -619,6 +622,8 @@ JS;
      */
     public function uncheck($xpath)
     {
+        $this->ensureCheckboxElement($xpath);
+
         if (!$this->isChecked($xpath)) {
             return;
         }
@@ -639,11 +644,17 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
+        $tagName = strtolower($this->getTagName($xpath));
+
+        if ('select' !== $tagName && !('input' === $tagName && in_array($this->getAttribute($xpath, 'type'), array('checkbox', 'radio')))) {
+            throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
+        }
+
         $valueEscaped = json_encode((string) $value);
         $multipleJS   = $multiple ? 'true' : 'false';
 
         $script = <<<JS
-// Function to triger an event. Cross-browser compliant. See http://stackoverflow.com/a/2490876/135494
+// Function to trigger an event. Cross-browser compliant. See http://stackoverflow.com/a/2490876/135494
 var triggerEvent = function (element, eventName) {
     var event;
     if (document.createEvent) {
@@ -693,7 +704,6 @@ if (tagName == 'select') {
 }
 JS;
 
-
         $this->executeJsOnXpath($xpath, $script);
     }
 
@@ -738,7 +748,13 @@ JS;
      */
     public function attachFile($xpath, $path)
     {
-        $this->findElement($xpath)->value(array('value' => str_split($path)));
+        $element = $this->findElement($xpath);
+
+        if ('input' !== strtolower($element->name()) || 'file' !== strtolower($this->getAttribute($xpath, 'type'))) {
+            throw new DriverException(sprintf('Impossible to attach a file on the element with XPath "%s" as it is not a file input', $xpath));
+        }
+
+        $element->value(array('value' => str_split($path)));
     }
 
     /**
@@ -907,7 +923,11 @@ JS;
      */
     public function submitForm($xpath)
     {
-        $this->findElement($xpath)->submit();
+        try {
+            $this->findElement($xpath)->submit();
+        } catch (Exception $e) {
+            throw new DriverException($e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -941,6 +961,20 @@ JS;
             return $this->wdSession->element('xpath', $xpath);
         } catch (NoSuchElement $e) {
             throw new DriverException(sprintf('There is no element matching XPath "%s"', $xpath), 0, $e);
+        }
+    }
+
+    /**
+     * Ensures the element is a checkbox
+     *
+     * @param string $xpath
+     *
+     * @throws DriverException
+     */
+    private function ensureCheckboxElement($xpath)
+    {
+        if ('input' !== strtolower($this->getTagName($xpath)) || 'checkbox' !== $this->getAttribute($xpath, 'type')) {
+            throw new DriverException(sprintf('Impossible to check the element with XPath "%s" as it is not a checkbox', $xpath));
         }
     }
 }
