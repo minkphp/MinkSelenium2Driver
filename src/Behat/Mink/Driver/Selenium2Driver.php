@@ -5,7 +5,9 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Session;
+use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
+use WebDriver\Exception;
 use WebDriver\Key;
 use WebDriver\WebDriver;
 
@@ -234,7 +236,7 @@ class Selenium2Driver extends CoreDriver
      */
     protected function executeJsOnXpath($xpath, $script, $sync = true)
     {
-        $element   = $this->wdSession->element('xpath', $xpath);
+        $element   = $this->findElement($xpath);
         $elementID = $element->getID();
         $subscript = "arguments[0]";
 
@@ -477,7 +479,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getTagName($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->name();
+        return $this->findElement($xpath)->name();
     }
 
     /**
@@ -485,7 +487,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getText($xpath)
     {
-        $node = $this->wdSession->element('xpath', $xpath);
+        $node = $this->findElement($xpath);
         $text = $node->text();
         $text = (string) str_replace(array("\r", "\r\n", "\n"), ' ', $text);
 
@@ -577,7 +579,7 @@ JS;
     public function setValue($xpath, $value)
     {
         $value = strval($value);
-        $element = $this->wdSession->element('xpath', $xpath);
+        $element = $this->findElement($xpath);
         $elementname = strtolower($element->name());
 
         switch (true) {
@@ -606,6 +608,8 @@ JS;
      */
     public function check($xpath)
     {
+        $this->ensureCheckboxElement($xpath);
+
         if ($this->isChecked($xpath)) {
             return;
         }
@@ -618,6 +622,8 @@ JS;
      */
     public function uncheck($xpath)
     {
+        $this->ensureCheckboxElement($xpath);
+
         if (!$this->isChecked($xpath)) {
             return;
         }
@@ -630,7 +636,7 @@ JS;
      */
     public function isChecked($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->selected();
+        return $this->findElement($xpath)->selected();
     }
 
     /**
@@ -638,11 +644,17 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
+        $tagName = strtolower($this->getTagName($xpath));
+
+        if ('select' !== $tagName && !('input' === $tagName && in_array($this->getAttribute($xpath, 'type'), array('checkbox', 'radio')))) {
+            throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
+        }
+
         $valueEscaped = json_encode((string) $value);
         $multipleJS   = $multiple ? 'true' : 'false';
 
         $script = <<<JS
-// Function to triger an event. Cross-browser compliant. See http://stackoverflow.com/a/2490876/135494
+// Function to trigger an event. Cross-browser compliant. See http://stackoverflow.com/a/2490876/135494
 var triggerEvent = function (element, eventName) {
     var event;
     if (document.createEvent) {
@@ -692,7 +704,6 @@ if (tagName == 'select') {
 }
 JS;
 
-
         $this->executeJsOnXpath($xpath, $script);
     }
 
@@ -701,7 +712,7 @@ JS;
      */
     public function isSelected($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->selected();
+        return $this->findElement($xpath)->selected();
     }
 
     /**
@@ -737,7 +748,13 @@ JS;
      */
     public function attachFile($xpath, $path)
     {
-        $this->wdSession->element('xpath', $xpath)->value(array('value'=>str_split($path)));
+        $element = $this->findElement($xpath);
+
+        if ('input' !== strtolower($element->name()) || 'file' !== strtolower($this->getAttribute($xpath, 'type'))) {
+            throw new DriverException(sprintf('Impossible to attach a file on the element with XPath "%s" as it is not a file input', $xpath));
+        }
+
+        $element->value(array('value' => str_split($path)));
     }
 
     /**
@@ -745,7 +762,7 @@ JS;
      */
     public function isVisible($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath)->displayed();
+        return $this->findElement($xpath)->displayed();
     }
 
     /**
@@ -754,7 +771,7 @@ JS;
     public function mouseOver($xpath)
     {
         $this->wdSession->moveto(array(
-            'element' => $this->wdSession->element('xpath', $xpath)->getID()
+            'element' => $this->findElement($xpath)->getID()
         ));
     }
 
@@ -811,8 +828,8 @@ JS;
      */
     public function dragTo($sourceXpath, $destinationXpath)
     {
-        $source      = $this->wdSession->element('xpath', $sourceXpath);
-        $destination = $this->wdSession->element('xpath', $destinationXpath);
+        $source      = $this->findElement($sourceXpath);
+        $destination = $this->findElement($destinationXpath);
 
         $this->wdSession->moveto(array(
             'element' => $source->getID()
@@ -906,7 +923,11 @@ JS;
      */
     public function submitForm($xpath)
     {
-        $this->wdSession->element('xpath', $xpath)->submit();
+        try {
+            $this->findElement($xpath)->submit();
+        } catch (Exception $e) {
+            throw new DriverException($e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -925,5 +946,35 @@ JS;
     public function getWebDriverSessionId()
     {
         return $this->isStarted() ? basename($this->wdSession->getUrl()) : null;
+    }
+
+    /**
+     * @param string $xpath
+     *
+     * @return \WebDriver\Element
+     *
+     * @throws DriverException when the element is not found
+     */
+    private function findElement($xpath)
+    {
+        try {
+            return $this->wdSession->element('xpath', $xpath);
+        } catch (NoSuchElement $e) {
+            throw new DriverException(sprintf('There is no element matching XPath "%s"', $xpath), 0, $e);
+        }
+    }
+
+    /**
+     * Ensures the element is a checkbox
+     *
+     * @param string $xpath
+     *
+     * @throws DriverException
+     */
+    private function ensureCheckboxElement($xpath)
+    {
+        if ('input' !== strtolower($this->getTagName($xpath)) || 'checkbox' !== $this->getAttribute($xpath, 'type')) {
+            throw new DriverException(sprintf('Impossible to check the element with XPath "%s" as it is not a checkbox', $xpath));
+        }
     }
 }
