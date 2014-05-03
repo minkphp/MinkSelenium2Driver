@@ -505,6 +505,14 @@ class Selenium2Driver extends CoreDriver
     /**
      * {@inheritdoc}
      */
+    public function getOuterHtml($xpath)
+    {
+        return $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.outerHTML;');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getAttribute($xpath, $name)
     {
         $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string) $name) . ')';
