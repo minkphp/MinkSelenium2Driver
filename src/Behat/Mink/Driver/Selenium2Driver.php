@@ -618,6 +618,12 @@ JS;
             case (in_array($elementName, array('input', 'textarea'))):
                 $element->clear();
                 break;
+
+            case ('true' === strtolower($element->attribute('contenteditable'))):
+                for ($i = 0; $i < strlen($element->text()); $i++) {
+                    $value = Key::BACKSPACE . Key::DELETE . $value;
+                }
+                break;
         }
 
         $element->value(array('value' => array($value)));
