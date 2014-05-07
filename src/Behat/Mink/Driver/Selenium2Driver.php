@@ -588,22 +588,36 @@ JS;
     {
         $value = strval($value);
         $element = $this->findElement($xpath);
-        $elementname = strtolower($element->name());
+        $elementName = strtolower($element->name());
+        $elementType = strtolower($element->attribute('type'));
+        $ignoreInputTypes = array('radio', 'checkbox', 'submit', 'image', 'button', 'reset');
+
+        if ('input' === $elementName && in_array($elementType, $ignoreInputTypes)) {
+            throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
+        }
+
+        if ('input' === $elementName && 'file' === $elementType) {
+            $this->attachFile($xpath, $value);
+
+            return;
+        }
+
+        if ('select' === $elementName) {
+            $this->selectOption($xpath, $value);
+
+            return;
+        }
 
         switch (true) {
-            case ($elementname == 'input' && strtolower($element->attribute('type')) == 'text'):
+            case ('input' === $elementName && 'text' === $elementType):
                 for ($i = 0; $i < strlen($element->attribute('value')); $i++) {
                     $value = Key::BACKSPACE . Key::DELETE . $value;
                 }
                 break;
-            case ($elementname == 'textarea'):
-            case ($elementname == 'input' && strtolower($element->attribute('type')) != 'file'):
+
+            case (in_array($elementName, array('input', 'textarea'))):
                 $element->clear();
                 break;
-            case ($elementname == 'select'):
-                $this->selectOption($xpath, $value);
-
-                return;
         }
 
         $element->value(array('value' => array($value)));
