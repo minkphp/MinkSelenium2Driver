@@ -72,6 +72,28 @@ class Selenium2DriverTest extends CssDriverTest
         parent::testHttpOnlyCookieIsDeleted();
     }
 
+    public function testResizeWindow()
+    {
+        if ('phantomjs' === getenv('WEBDRIVER')) {
+            $this->markTestSkipped('PhantomJS is headless so resizing the window does not make sense.');
+        }
+
+        parent::testResizeWindow();
+    }
+
+    public function testWindowMaximize()
+    {
+        if ('phantomjs' === getenv('WEBDRIVER')) {
+            $this->markTestSkipped('PhantomJS is headless so resizing the window does not make sense.');
+        }
+
+        if ('true' === getenv('TRAVIS')) {
+            $this->markTestSkipped('Maximizing the window does not work when running the browser in Xvfb.');
+        }
+
+        parent::testWindowMaximize();
+    }
+
     /**
      * @expectedException \Behat\Mink\Exception\DriverException
      */
