@@ -18,7 +18,7 @@ class TimeoutTest extends TestCase
     {
         $this->getSession()->getDriver()->setTimeouts(array('implicit'=>0));
 
-        $this->getSession()->visit($this->pathTo('/js_test.php'));
+        $this->getSession()->visit($this->pathTo('/js_test.html'));
         $this->getSession()->getPage()->findById('waitable')->click();
 
         $element = $this->getSession()->getPage()->find('css', '#waitable > div');
@@ -30,7 +30,7 @@ class TimeoutTest extends TestCase
     {
         $this->getSession()->getDriver()->setTimeouts(array('implicit'=>5000));
 
-        $this->getSession()->visit($this->pathTo('/js_test.php'));
+        $this->getSession()->visit($this->pathTo('/js_test.html'));
         $this->getSession()->getPage()->findById('waitable')->click();
         $element = $this->getSession()->getPage()->find('css', '#waitable > div');
 
