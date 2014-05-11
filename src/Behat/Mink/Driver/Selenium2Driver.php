@@ -544,60 +544,59 @@ class Selenium2Driver extends CoreDriver
      */
     public function getValue($xpath)
     {
-        $script = <<<JS
+        $element = $this->findElement($xpath);
+        $elementName = strtolower($element->name());
+        $elementType = strtolower($element->attribute('type'));
+
+        // Getting the value of a checkbox returns its selected state in Mink, not the submitted value
+        if ('input' === $elementName && 'checkbox' === $elementType) {
+            return $element->selected();
+        }
+
+        if ('input' === $elementName && 'radio' === $elementType) {
+            $script = <<<JS
 var node = {{ELEMENT}},
-    tagName = node.tagName.toLowerCase(),
     value = null;
 
-if (tagName == 'input' || tagName == 'textarea') {
-    var type = node.getAttribute('type');
-    if (type == 'checkbox') {
-        value = node.checked;
-    } else if (type == 'radio') {
-        var name = node.getAttribute('name');
-        if (name) {
-            var fields = window.document.getElementsByName(name),
-                i, l = fields.length;
-            for (i = 0; i < l; i++) {
-                var field = fields.item(i);
-                if (field.checked) {
-                    value = field.value;
-                    break;
-                }
-            }
+var name = node.getAttribute('name');
+if (name) {
+    var fields = window.document.getElementsByName(name),
+        i, l = fields.length;
+    for (i = 0; i < l; i++) {
+        var field = fields.item(i);
+        if (field.checked) {
+            value = field.value;
+            break;
         }
-    } else {
-        value = node.value;
-    }
-} else if (tagName == 'select') {
-    if (node.getAttribute('multiple')) {
-        value = [];
-        for (var i = 0; i < node.options.length; i++) {
-            if (node.options[i].selected) {
-                value.push(node.options[i].value);
-            }
-        }
-    } else {
-        var idx = node.selectedIndex;
-        if (idx >= 0) {
-            value = node.options.item(idx).value;
-        } else {
-            value = null;
-        }
-    }
-} else {
-    var attributeValue = node.getAttribute('value');
-    if (attributeValue != null) {
-        value = attributeValue;
-    } else if (node.value) {
-        value = node.value;
     }
 }
 
-return JSON.stringify(value);
+return value;
 JS;
 
-        return json_decode($this->executeJsOnXpath($xpath, $script), true);
+            return $this->executeJsOnElement($element, $script);
+        }
+
+        // Using $element->attribute('value') on a select only returns the first selected option
+        // even when it is a multiple select, so a custom retrieval is needed.
+        if ('select' === $elementName && $element->attribute('multiple')) {
+            $script = <<<JS
+var node = {{ELEMENT}},
+    value = [];
+
+for (var i = 0; i < node.options.length; i++) {
+    if (node.options[i].selected) {
+        value.push(node.options[i].value);
+    }
+}
+
+return value;
+JS;
+
+            return $this->executeJsOnElement($element, $script);
+        }
+
+        return $element->attribute('value');
     }
 
     /**
