@@ -616,7 +616,7 @@ JS;
 
         if ('input' === $elementName && 'checkbox' === $elementType) {
             if ($element->selected() xor (bool) $value) {
-                $this->click($xpath);
+                $this->clickOnElement($element);
             }
 
             return;
@@ -658,7 +658,7 @@ JS;
             return;
         }
 
-        $this->click($xpath);
+        $this->clickOnElement($element);
     }
 
     /**
@@ -673,7 +673,7 @@ JS;
             return;
         }
 
-        $this->click($xpath);
+        $this->clickOnElement($element);
     }
 
     /**
@@ -766,7 +766,12 @@ JS;
      */
     public function click($xpath)
     {
-        $this->mouseOver($xpath);
+        $this->clickOnElement($this->findElement($xpath));
+    }
+
+    private function clickOnElement(Element $element)
+    {
+        $this->wdSession->moveto(array('element' => $element->getID()));
         $this->wdSession->click(array('button' => 0));
     }
 
