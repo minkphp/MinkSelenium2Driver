@@ -586,15 +586,24 @@ JS;
      */
     public function setValue($xpath, $value)
     {
-        $value = strval($value);
         $element = $this->findElement($xpath);
         $elementName = strtolower($element->name());
         $elementType = strtolower($element->attribute('type'));
-        $ignoreInputTypes = array('radio', 'checkbox', 'submit', 'image', 'button', 'reset');
+        $ignoreInputTypes = array('submit', 'image', 'button', 'reset');
 
         if ('input' === $elementName && in_array($elementType, $ignoreInputTypes)) {
             throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
         }
+
+        if ('input' === $elementName && 'checkbox' === $elementType) {
+            if ($element->selected() xor (bool) $value) {
+                $this->click($xpath);
+            }
+
+            return;
+        }
+
+        $value = strval($value);
 
         if ('input' === $elementName && 'file' === $elementType) {
             $this->attachFile($xpath, $value);
@@ -602,7 +611,7 @@ JS;
             return;
         }
 
-        if ('select' === $elementName) {
+        if ('select' === $elementName || ('input' === $elementName && 'radio' === $elementType)) {
             $this->selectOption($xpath, $value);
 
             return;
@@ -774,7 +783,7 @@ JS;
             throw new DriverException(sprintf('Impossible to attach a file on the element with XPath "%s" as it is not a file input', $xpath));
         }
 
-        $element->value(array('value' => str_split($path)));
+        $element->postValue(array('value' => str_split($path)));
     }
 
     /**
