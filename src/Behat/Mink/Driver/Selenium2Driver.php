@@ -625,7 +625,7 @@ JS;
         $value = strval($value);
 
         if ('input' === $elementName && 'file' === $elementType) {
-            $this->attachFile($xpath, $value);
+            $element->postValue(array('value' => array($value)));
 
             return;
         }
