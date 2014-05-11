@@ -13,6 +13,7 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Session;
+use WebDriver\Element;
 use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
@@ -28,7 +29,7 @@ class Selenium2Driver extends CoreDriver
 {
     /**
      * The current Mink session
-     * @var \Behat\Mink\Session
+     * @var Session
      */
     private $session;
 
@@ -92,7 +93,7 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * Sets the desired capabilities - called on construction.  If null is provided, will set the
-     * defaults as dsesired.
+     * defaults as desired.
      *
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
@@ -236,17 +237,35 @@ class Selenium2Driver extends CoreDriver
      */
     protected function executeJsOnXpath($xpath, $script, $sync = true)
     {
-        $element   = $this->findElement($xpath);
-        $elementID = $element->getID();
-        $subscript = "arguments[0]";
+        return $this->executeJsOnElement($this->findElement($xpath), $script, $sync);
+    }
 
-        $script  = str_replace('{{ELEMENT}}', $subscript, $script);
-        $execute = ($sync) ? 'execute' : 'execute_async';
+    /**
+     * Executes JS on a given element - pass in a js script string and {{ELEMENT}} will
+     * be replaced with a reference to the element
+     *
+     * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
+     *
+     * @param Element $element the webdriver element
+     * @param string  $script  the script to execute
+     * @param Boolean $sync    whether to run the script synchronously (default is TRUE)
+     *
+     * @return mixed
+     */
+    private function executeJsOnElement(Element $element, $script, $sync = true)
+    {
+        $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
 
-        return $this->wdSession->$execute(array(
+        $options = array(
             'script' => $script,
-            'args'   => array(array('ELEMENT' => $elementID))
-        ));
+            'args'   => array(array('ELEMENT' => $element->getID())),
+        );
+
+        if ($sync) {
+            return $this->wdSession->execute($options);
+        }
+
+        return $this->wdSession->execute_async($options);
     }
 
     /**
@@ -597,7 +616,7 @@ JS;
 
         if ('input' === $elementName && 'checkbox' === $elementType) {
             if ($element->selected() xor (bool) $value) {
-                $this->click($xpath);
+                $this->clickOnElement($element);
             }
 
             return;
@@ -606,7 +625,7 @@ JS;
         $value = strval($value);
 
         if ('input' === $elementName && 'file' === $elementType) {
-            $this->attachFile($xpath, $value);
+            $element->postValue(array('value' => array($value)));
 
             return;
         }
@@ -632,13 +651,14 @@ JS;
      */
     public function check($xpath)
     {
-        $this->ensureCheckboxElement($xpath);
+        $element = $this->findElement($xpath);
+        $this->ensureInputType($element, $xpath, 'checkbox', 'check');
 
-        if ($this->isChecked($xpath)) {
+        if ($element->selected()) {
             return;
         }
 
-        $this->click($xpath);
+        $this->clickOnElement($element);
     }
 
     /**
@@ -646,13 +666,14 @@ JS;
      */
     public function uncheck($xpath)
     {
-        $this->ensureCheckboxElement($xpath);
+        $element = $this->findElement($xpath);
+        $this->ensureInputType($element, $xpath, 'checkbox', 'uncheck');
 
-        if (!$this->isChecked($xpath)) {
+        if (!$element->selected()) {
             return;
         }
 
-        $this->click($xpath);
+        $this->clickOnElement($element);
     }
 
     /**
@@ -668,9 +689,10 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
-        $tagName = strtolower($this->getTagName($xpath));
+        $element = $this->findElement($xpath);
+        $tagName = strtolower($element->name());
 
-        if ('select' !== $tagName && !('input' === $tagName && 'radio' === $this->getAttribute($xpath, 'type'))) {
+        if ('select' !== $tagName && !('input' === $tagName && 'radio' === strtolower($element->attribute('type')))) {
             throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
         }
 
@@ -728,7 +750,7 @@ if (tagName == 'select') {
 }
 JS;
 
-        $this->executeJsOnXpath($xpath, $script);
+        $this->executeJsOnElement($element, $script);
     }
 
     /**
@@ -744,7 +766,12 @@ JS;
      */
     public function click($xpath)
     {
-        $this->mouseOver($xpath);
+        $this->clickOnElement($this->findElement($xpath));
+    }
+
+    private function clickOnElement(Element $element)
+    {
+        $this->wdSession->moveto(array('element' => $element->getID()));
         $this->wdSession->click(array('button' => 0));
     }
 
@@ -763,8 +790,7 @@ JS;
     public function rightClick($xpath)
     {
         $this->mouseOver($xpath);
-        $script = 'Syn.rightClick({{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->wdSession->click(array('button' => 2));
     }
 
     /**
@@ -773,12 +799,9 @@ JS;
     public function attachFile($xpath, $path)
     {
         $element = $this->findElement($xpath);
+        $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
-        if ('input' !== strtolower($element->name()) || 'file' !== strtolower($this->getAttribute($xpath, 'type'))) {
-            throw new DriverException(sprintf('Impossible to attach a file on the element with XPath "%s" as it is not a file input', $xpath));
-        }
-
-        $element->postValue(array('value' => str_split($path)));
+        $element->postValue(array('value' => array($path)));
     }
 
     /**
@@ -869,7 +892,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnXpath($sourceXpath, $script);
+        $this->withSyn()->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
         $this->wdSession->moveto(array(
@@ -887,7 +910,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnXpath($destinationXpath, $script);
+        $this->withSyn()->executeJsOnElement($destination, $script);
     }
 
     /**
@@ -975,7 +998,7 @@ JS;
     /**
      * @param string $xpath
      *
-     * @return \WebDriver\Element
+     * @return Element
      *
      * @throws DriverException when the element is not found
      */
@@ -991,14 +1014,19 @@ JS;
     /**
      * Ensures the element is a checkbox
      *
-     * @param string $xpath
+     * @param Element $element
+     * @param string  $xpath
+     * @param string  $type
+     * @param string  $action
      *
      * @throws DriverException
      */
-    private function ensureCheckboxElement($xpath)
+    private function ensureInputType(Element $element, $xpath, $type, $action)
     {
-        if ('input' !== strtolower($this->getTagName($xpath)) || 'checkbox' !== $this->getAttribute($xpath, 'type')) {
-            throw new DriverException(sprintf('Impossible to check the element with XPath "%s" as it is not a checkbox', $xpath));
+        if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type'))) {
+            $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
+
+            throw new DriverException(sprintf($message, $action, $xpath, $type));
         }
     }
 }
