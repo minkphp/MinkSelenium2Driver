@@ -13,6 +13,7 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Session;
+use WebDriver\Element;
 use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
@@ -28,7 +29,7 @@ class Selenium2Driver extends CoreDriver
 {
     /**
      * The current Mink session
-     * @var \Behat\Mink\Session
+     * @var Session
      */
     private $session;
 
@@ -92,7 +93,7 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * Sets the desired capabilities - called on construction.  If null is provided, will set the
-     * defaults as dsesired.
+     * defaults as desired.
      *
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
@@ -236,17 +237,35 @@ class Selenium2Driver extends CoreDriver
      */
     protected function executeJsOnXpath($xpath, $script, $sync = true)
     {
-        $element   = $this->findElement($xpath);
-        $elementID = $element->getID();
-        $subscript = "arguments[0]";
+        return $this->executeJsOnElement($this->findElement($xpath), $script, $sync);
+    }
 
-        $script  = str_replace('{{ELEMENT}}', $subscript, $script);
-        $execute = ($sync) ? 'execute' : 'execute_async';
+    /**
+     * Executes JS on a given element - pass in a js script string and {{ELEMENT}} will
+     * be replaced with a reference to the element
+     *
+     * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
+     *
+     * @param Element $element the webdriver element
+     * @param string  $script  the script to execute
+     * @param Boolean $sync    whether to run the script synchronously (default is TRUE)
+     *
+     * @return mixed
+     */
+    private function executeJsOnElement(Element $element, $script, $sync = true)
+    {
+        $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
 
-        return $this->wdSession->$execute(array(
+        $options = array(
             'script' => $script,
-            'args'   => array(array('ELEMENT' => $elementID))
-        ));
+            'args'   => array(array('ELEMENT' => $element->getID())),
+        );
+
+        if ($sync) {
+            return $this->wdSession->execute($options);
+        }
+
+        return $this->wdSession->execute_async($options);
     }
 
     /**
@@ -668,7 +687,8 @@ JS;
      */
     public function selectOption($xpath, $value, $multiple = false)
     {
-        $tagName = strtolower($this->getTagName($xpath));
+        $element = $this->findElement($xpath);
+        $tagName = strtolower($element->name());
 
         if ('select' !== $tagName && !('input' === $tagName && 'radio' === $this->getAttribute($xpath, 'type'))) {
             throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
@@ -728,7 +748,7 @@ if (tagName == 'select') {
 }
 JS;
 
-        $this->executeJsOnXpath($xpath, $script);
+        $this->executeJsOnElement($element, $script);
     }
 
     /**
@@ -869,7 +889,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnXpath($sourceXpath, $script);
+        $this->withSyn()->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
         $this->wdSession->moveto(array(
@@ -887,7 +907,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnXpath($destinationXpath, $script);
+        $this->withSyn()->executeJsOnElement($destination, $script);
     }
 
     /**
@@ -975,7 +995,7 @@ JS;
     /**
      * @param string $xpath
      *
-     * @return \WebDriver\Element
+     * @return Element
      *
      * @throws DriverException when the element is not found
      */
