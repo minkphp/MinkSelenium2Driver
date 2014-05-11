@@ -670,7 +670,7 @@ JS;
     {
         $tagName = strtolower($this->getTagName($xpath));
 
-        if ('select' !== $tagName && !('input' === $tagName && in_array($this->getAttribute($xpath, 'type'), array('checkbox', 'radio')))) {
+        if ('select' !== $tagName && !('input' === $tagName && 'radio' === $this->getAttribute($xpath, 'type'))) {
             throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
         }
 
