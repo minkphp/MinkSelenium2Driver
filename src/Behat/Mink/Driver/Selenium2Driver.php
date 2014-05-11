@@ -608,19 +608,14 @@ JS;
             return;
         }
 
-        switch (true) {
-            case ('input' === $elementName && 'text' === $elementType):
-                for ($i = 0; $i < strlen($element->attribute('value')); $i++) {
-                    $value = Key::BACKSPACE . Key::DELETE . $value;
-                }
-                break;
-
-            case (in_array($elementName, array('input', 'textarea'))):
-                $element->clear();
-                break;
+        if (in_array($elementName, array('input', 'textarea'))) {
+            $existingValueLength = strlen($element->attribute('value'));
+            // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
+            // after leaving the field.
+            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value . Key::TAB;
         }
 
-        $element->value(array('value' => array($value)));
+        $element->postValue(array('value' => array($value)));
     }
 
     /**
