@@ -802,7 +802,7 @@ JS;
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
-        $element->postValue(array('value' => str_split($path)));
+        $element->postValue(array('value' => array($path)));
     }
 
     /**
