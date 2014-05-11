@@ -651,9 +651,10 @@ JS;
      */
     public function check($xpath)
     {
-        $this->ensureCheckboxElement($xpath);
+        $element = $this->findElement($xpath);
+        $this->ensureInputType($element, $xpath, 'checkbox', 'check');
 
-        if ($this->isChecked($xpath)) {
+        if ($element->selected()) {
             return;
         }
 
@@ -665,9 +666,10 @@ JS;
      */
     public function uncheck($xpath)
     {
-        $this->ensureCheckboxElement($xpath);
+        $element = $this->findElement($xpath);
+        $this->ensureInputType($element, $xpath, 'checkbox', 'uncheck');
 
-        if (!$this->isChecked($xpath)) {
+        if (!$element->selected()) {
             return;
         }
 
@@ -793,10 +795,7 @@ JS;
     public function attachFile($xpath, $path)
     {
         $element = $this->findElement($xpath);
-
-        if ('input' !== strtolower($element->name()) || 'file' !== strtolower($element->attribute('type'))) {
-            throw new DriverException(sprintf('Impossible to attach a file on the element with XPath "%s" as it is not a file input', $xpath));
-        }
+        $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
         $element->postValue(array('value' => str_split($path)));
     }
@@ -1011,15 +1010,19 @@ JS;
     /**
      * Ensures the element is a checkbox
      *
-     * @param string $xpath
+     * @param Element $element
+     * @param string  $xpath
+     * @param string  $type
+     * @param string  $action
      *
      * @throws DriverException
      */
-    private function ensureCheckboxElement($xpath)
+    private function ensureInputType(Element $element, $xpath, $type, $action)
     {
-        $element = $this->findElement($xpath);
-        if ('input' !== strtolower($element->name()) || 'checkbox' !== strtolower($element->attribute('type'))) {
-            throw new DriverException(sprintf('Impossible to check the element with XPath "%s" as it is not a checkbox', $xpath));
+        if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type'))) {
+            $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
+
+            throw new DriverException(sprintf($message, $action, $xpath, $type));
         }
     }
 }
