@@ -12,6 +12,7 @@ namespace Behat\Mink\Driver;
 
 use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\DriverException;
+use Behat\Mink\Selector\Xpath\Escaper;
 use Behat\Mink\Session;
 use WebDriver\Element;
 use WebDriver\Exception\NoSuchElement;
@@ -68,6 +69,11 @@ class Selenium2Driver extends CoreDriver
     private $timeouts = array();
 
     /**
+     * @var Escaper
+     */
+    private $xpathEscaper;
+
+    /**
      * Instantiates the driver.
      *
      * @param string $browserName         Browser name
@@ -79,6 +85,7 @@ class Selenium2Driver extends CoreDriver
         $this->setBrowserName($browserName);
         $this->setDesiredCapabilities($desiredCapabilities);
         $this->setWebDriver(new WebDriver($wdHost));
+        $this->xpathEscaper = new Escaper();
     }
 
     /**
@@ -630,8 +637,14 @@ JS;
             return;
         }
 
-        if ('select' === $elementName || ('input' === $elementName && 'radio' === $elementType)) {
-            $this->selectOption($xpath, $value);
+        if ('select' === $elementName) {
+            $this->selectOptionOnElement($element, $value);
+
+            return;
+        }
+
+        if ('input' === $elementName && 'radio' === $elementType) {
+            $this->selectRadioValue($element, $value);
 
             return;
         }
@@ -692,65 +705,19 @@ JS;
         $element = $this->findElement($xpath);
         $tagName = strtolower($element->name());
 
-        if ('select' !== $tagName && !('input' === $tagName && 'radio' === strtolower($element->attribute('type')))) {
-            throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
+        if ('input' === $tagName && 'radio' === strtolower($element->attribute('type'))) {
+            $this->selectRadioValue($element, $value);
+
+            return;
         }
 
-        $valueEscaped = json_encode((string) $value);
-        $multipleJS   = $multiple ? 'true' : 'false';
+        if ('select' === $tagName) {
+            $this->selectOptionOnElement($element, $value, $multiple);
 
-        $script = <<<JS
-// Function to trigger an event. Cross-browser compliant. See http://stackoverflow.com/a/2490876/135494
-var triggerEvent = function (element, eventName) {
-    var event;
-    if (document.createEvent) {
-        event = document.createEvent("HTMLEvents");
-        event.initEvent(eventName, true, true);
-    } else {
-        event = document.createEventObject();
-        event.eventType = eventName;
-    }
-
-    event.eventName = eventName;
-
-    if (document.createEvent) {
-        element.dispatchEvent(event);
-    } else {
-        element.fireEvent("on" + event.eventType, event);
-    }
-};
-
-var node = {{ELEMENT}},
-    tagName = node.tagName.toLowerCase();
-if (tagName == 'select') {
-    var i, l = node.length;
-    for (i = 0; i < l; i++) {
-        if (node[i].value == $valueEscaped) {
-            node[i].selected = true;
-        } else if (!$multipleJS) {
-            node[i].selected = false;
+            return;
         }
-    }
-    triggerEvent(node, 'change');
 
-} else {
-    var nodes = window.document.getElementsByName(node.getAttribute('name'));
-    var i, l = nodes.length;
-    for (i = 0; i < l; i++) {
-        if (nodes[i].getAttribute('value') == $valueEscaped) {
-            node.checked = true;
-        }
-    }
-    if (tagName == 'input') {
-      var type = node.getAttribute('type');
-      if (type == 'radio') {
-        triggerEvent(node, 'change');
-      }
-    }
-}
-JS;
-
-        $this->executeJsOnElement($element, $script);
+        throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
     }
 
     /**
@@ -1009,6 +976,52 @@ JS;
         } catch (NoSuchElement $e) {
             throw new DriverException(sprintf('There is no element matching XPath "%s"', $xpath), 0, $e);
         }
+    }
+
+    /**
+     * Selects a value in a radio button group
+     *
+     * TODO this currently does not handle the value properly: https://github.com/Behat/Mink/issues/545
+     *
+     * @param Element $element An element referencing one of the radio buttons of the group
+     * @param string  $value   The value to select
+     */
+    private function selectRadioValue(Element $element, $value)
+    {
+        $element->click();
+    }
+
+    /**
+     * @param Element $element
+     * @param string  $value
+     * @param bool    $multiple
+     */
+    private function selectOptionOnElement(Element $element, $value, $multiple = false)
+    {
+        $escapedValue = $this->xpathEscaper->escapeLiteral($value);
+        // The value of an option is the normalized version of its text when it has no value attribute
+        $optionQuery = sprintf('.//option[@value = %s or (not(@value) and normalize-space(.) = %s)]', $escapedValue, $escapedValue);
+        $option = $element->element('xpath', $optionQuery);
+
+        if ($multiple || !$element->attribute('multiple')) {
+            if (!$option->selected()) {
+                $option->click();
+            }
+
+            return;
+        }
+
+        // Deselect all options before selecting the new one
+        $script = <<<JS
+var node = {{ELEMENT}};
+var i, l = node.options.length;
+for (i = 0; i < l; i++) {
+    node.options[i].selected = false;
+}
+JS;
+
+        $this->executeJsOnElement($element, $script);
+        $option->click();
     }
 
     /**
