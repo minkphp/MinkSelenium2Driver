@@ -690,7 +690,7 @@ JS;
         $element = $this->findElement($xpath);
         $tagName = strtolower($element->name());
 
-        if ('select' !== $tagName && !('input' === $tagName && 'radio' === $this->getAttribute($xpath, 'type'))) {
+        if ('select' !== $tagName && !('input' === $tagName && 'radio' === strtolower($element->attribute('type')))) {
             throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
         }
 
@@ -794,7 +794,7 @@ JS;
     {
         $element = $this->findElement($xpath);
 
-        if ('input' !== strtolower($element->name()) || 'file' !== strtolower($this->getAttribute($xpath, 'type'))) {
+        if ('input' !== strtolower($element->name()) || 'file' !== strtolower($element->attribute('type'))) {
             throw new DriverException(sprintf('Impossible to attach a file on the element with XPath "%s" as it is not a file input', $xpath));
         }
 
@@ -1017,7 +1017,8 @@ JS;
      */
     private function ensureCheckboxElement($xpath)
     {
-        if ('input' !== strtolower($this->getTagName($xpath)) || 'checkbox' !== $this->getAttribute($xpath, 'type')) {
+        $element = $this->findElement($xpath);
+        if ('input' !== strtolower($element->name()) || 'checkbox' !== strtolower($element->attribute('type'))) {
             throw new DriverException(sprintf('Impossible to check the element with XPath "%s" as it is not a checkbox', $xpath));
         }
     }
