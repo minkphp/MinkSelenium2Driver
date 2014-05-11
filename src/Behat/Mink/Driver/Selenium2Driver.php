@@ -613,28 +613,6 @@ JS;
     {
         $element = $this->findElement($xpath);
         $elementName = strtolower($element->name());
-        $elementType = strtolower($element->attribute('type'));
-        $ignoreInputTypes = array('submit', 'image', 'button', 'reset');
-
-        if ('input' === $elementName && in_array($elementType, $ignoreInputTypes)) {
-            throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
-        }
-
-        if ('input' === $elementName && 'checkbox' === $elementType) {
-            if ($element->selected() xor (bool) $value) {
-                $this->clickOnElement($element);
-            }
-
-            return;
-        }
-
-        $value = strval($value);
-
-        if ('input' === $elementName && 'file' === $elementType) {
-            $element->postValue(array('value' => array($value)));
-
-            return;
-        }
 
         if ('select' === $elementName) {
             $this->selectOptionOnElement($element, $value);
@@ -642,11 +620,35 @@ JS;
             return;
         }
 
-        if ('input' === $elementName && 'radio' === $elementType) {
-            $this->selectRadioValue($element, $value);
+        if ('input' === $elementName) {
+            $elementType = strtolower($element->attribute('type'));
 
-            return;
+            if (in_array($elementType, array('submit', 'image', 'button', 'reset'))) {
+                throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
+            }
+
+            if ('checkbox' === $elementType) {
+                if ($element->selected() xor (bool) $value) {
+                    $this->clickOnElement($element);
+                }
+
+                return;
+            }
+
+            if ('radio' === $elementType) {
+                $this->selectRadioValue($element, $value);
+
+                return;
+            }
+
+            if ('file' === $elementType) {
+                $element->postValue(array('value' => array(strval($value))));
+
+                return;
+            }
         }
+
+        $value = strval($value);
 
         if (in_array($elementName, array('input', 'textarea'))) {
             $existingValueLength = strlen($element->attribute('value'));
