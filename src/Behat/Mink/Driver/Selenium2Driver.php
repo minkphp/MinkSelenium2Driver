@@ -982,14 +982,58 @@ JS;
     /**
      * Selects a value in a radio button group
      *
-     * TODO this currently does not handle the value properly: https://github.com/Behat/Mink/issues/545
-     *
      * @param Element $element An element referencing one of the radio buttons of the group
      * @param string  $value   The value to select
+     *
+     * @throws DriverException when the value cannot be found
      */
     private function selectRadioValue(Element $element, $value)
     {
-        $element->click();
+        // short-circuit when we already have the right button of the group to avoid XPath queries
+        if ($element->attribute('value') === $value) {
+            $element->click();
+
+            return;
+        }
+
+        $name = $element->attribute('name');
+
+        if (!$name) {
+            throw new DriverException(sprintf('The radio button does not have the value "%s"', $value));
+        }
+
+        $formId = $element->attribute('form');
+
+        try {
+            if (null !== $formId) {
+                $xpath = <<<'XPATH'
+//form[@id=%1$s]//input[@type="radio" and not(@form) and @name=%2$s and @value = %3$s]
+|
+//input[@type="radio" and @form=%1$s and @name=%2$s and @value = %3$s]
+XPATH;
+
+                $xpath = sprintf(
+                    $xpath,
+                    $this->xpathEscaper->escapeLiteral($formId),
+                    $this->xpathEscaper->escapeLiteral($name),
+                    $this->xpathEscaper->escapeLiteral($value)
+                );
+                $input = $this->wdSession->element('xpath', $xpath);
+            } else {
+                $xpath = sprintf(
+                    './ancestor::form//input[@type="radio" and not(@form) and @name=%s and @value = %s]',
+                    $this->xpathEscaper->escapeLiteral($name),
+                    $this->xpathEscaper->escapeLiteral($value)
+                );
+                $input = $element->element('xpath', $xpath);
+            }
+        } catch (NoSuchElement $e) {
+            $message = sprintf('The radio group "%s" does not have an option "%s"', $name, $value);
+
+            throw new DriverException($message, 0, $e);
+        }
+
+        $input->click();
     }
 
     /**
