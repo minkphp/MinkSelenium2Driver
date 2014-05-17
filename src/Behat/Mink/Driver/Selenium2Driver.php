@@ -615,6 +615,16 @@ JS;
         $elementName = strtolower($element->name());
 
         if ('select' === $elementName) {
+            if (is_array($value)) {
+                $this->deselectAllOptions($element);
+
+                foreach ($value as $option) {
+                    $this->selectOptionOnElement($element, $option, true);
+                }
+
+                return;
+            }
+
             $this->selectOptionOnElement($element, $value);
 
             return;
@@ -1013,6 +1023,19 @@ JS;
         }
 
         // Deselect all options before selecting the new one
+        $this->deselectAllOptions($element);
+        $option->click();
+    }
+
+    /**
+     * Deselects all options of a multiple select
+     *
+     * Note: this implementation does not trigger a change event after deselecting the elements.
+     *
+     * @param Element $element
+     */
+    private function deselectAllOptions(Element $element)
+    {
         $script = <<<JS
 var node = {{ELEMENT}};
 var i, l = node.options.length;
@@ -1022,7 +1045,6 @@ for (i = 0; i < l; i++) {
 JS;
 
         $this->executeJsOnElement($element, $script);
-        $option->click();
     }
 
     /**
