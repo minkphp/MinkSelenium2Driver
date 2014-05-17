@@ -571,7 +571,7 @@ if (name) {
         i, l = fields.length;
     for (i = 0; i < l; i++) {
         var field = fields.item(i);
-        if (field.checked) {
+        if (field.form === node.form && field.checked) {
             value = field.value;
             break;
         }
