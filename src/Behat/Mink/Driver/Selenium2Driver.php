@@ -750,7 +750,7 @@ JS;
     private function clickOnElement(Element $element)
     {
         $this->wdSession->moveto(array('element' => $element->getID()));
-        $this->wdSession->click(array('button' => 0));
+        $element->click();
     }
 
     /**
