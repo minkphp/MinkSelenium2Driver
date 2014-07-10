@@ -673,6 +673,15 @@ JS;
     /**
      * {@inheritdoc}
      */
+    public function getComputedStyle($xpath, $name)
+    {
+        $element = $this->findElement($xpath);
+        return $element->css($name);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function check($xpath)
     {
         $element = $this->findElement($xpath);
