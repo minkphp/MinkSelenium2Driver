@@ -948,11 +948,7 @@ JS;
      */
     public function submitForm($xpath)
     {
-        try {
-            $this->findElement($xpath)->submit();
-        } catch (Exception $e) {
-            throw new DriverException($e->getMessage(), 0, $e);
-        }
+        $this->findElement($xpath)->submit();
     }
 
     /**
@@ -977,16 +973,10 @@ JS;
      * @param string $xpath
      *
      * @return Element
-     *
-     * @throws DriverException when the element is not found
      */
     private function findElement($xpath)
     {
-        try {
-            return $this->wdSession->element('xpath', $xpath);
-        } catch (NoSuchElement $e) {
-            throw new DriverException(sprintf('There is no element matching XPath "%s"', $xpath), 0, $e);
-        }
+        return $this->wdSession->element('xpath', $xpath);
     }
 
     /**
