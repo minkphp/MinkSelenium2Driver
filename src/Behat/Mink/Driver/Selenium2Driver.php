@@ -555,9 +555,9 @@ class Selenium2Driver extends CoreDriver
         $elementName = strtolower($element->name());
         $elementType = strtolower($element->attribute('type'));
 
-        // Getting the value of a checkbox returns its selected state in Mink, not the submitted value
+        // Getting the value of a checkbox returns its value if selected.
         if ('input' === $elementName && 'checkbox' === $elementType) {
-            return $element->selected();
+            return $element->selected() ? $element->attribute('value') : null;
         }
 
         if ('input' === $elementName && 'radio' === $elementType) {
