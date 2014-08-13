@@ -126,10 +126,21 @@ class Selenium2Driver extends CoreDriver
             unset($desiredCapabilities['firefox']);
         }
 
+        // See https://sites.google.com/a/chromium.org/chromedriver/capabilities
         if (isset($desiredCapabilities['chrome'])) {
+
+            $chromeOptions = array();
+
             foreach ($desiredCapabilities['chrome'] as $capability => $value) {
+                if ($capability == 'switches') {
+                    $chromeOptions['args'] = $value;
+                } else {
+                    $chromeOptions[$capability] = $value;
+                }
                 $desiredCapabilities['chrome.'.$capability] = $value;
             }
+
+            $desiredCapabilities['chromeOptions'] = $chromeOptions;
 
             unset($desiredCapabilities['chrome']);
         }
