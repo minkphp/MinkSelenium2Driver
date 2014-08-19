@@ -753,9 +753,13 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function click($xpath)
+    public function click($xpath = null)
     {
-        $this->clickOnElement($this->findElement($xpath));
+        if (null !== $xpath) {
+            $this->clickOnElement($this->findElement($xpath));
+        } else {
+            $this->wdSession->click();
+        }
     }
 
     private function clickOnElement(Element $element)
@@ -767,18 +771,23 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function doubleClick($xpath)
+    public function doubleClick($xpath = null)
     {
-        $this->mouseOver($xpath);
+        if (null !== $xpath) {
+            $this->mouseOver($xpath);
+        }
+
         $this->wdSession->doubleclick();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rightClick($xpath)
+    public function rightClick($xpath = null)
     {
-        $this->mouseOver($xpath);
+        if (null !== $xpath) {
+            $this->mouseOver($xpath);
+        }
         $this->wdSession->click(array('button' => 2));
     }
 
@@ -804,10 +813,23 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function mouseOver($xpath)
+    public function mouseOver($xpath, $x = 0, $y = 0)
     {
         $this->wdSession->moveto(array(
-            'element' => $this->findElement($xpath)->getID()
+            'element' => $this->findElement($xpath)->getID(),
+            'xoffset' => $x,
+            'yoffset' => $y
+        ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function moveTo($x, $y)
+    {
+        $this->wdSession->moveto(array(
+            'xoffset' => $x,
+            'yoffset' => $y
         ));
     }
 
