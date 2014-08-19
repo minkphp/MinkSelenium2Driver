@@ -812,7 +812,7 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
+     * Move the cursor to specific position
      */
     public function moveCursorTo($x, $y)
     {
@@ -823,7 +823,7 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
+     * Perform click on cursor position
      */
     public function clickAtCursor()
     {
@@ -831,7 +831,7 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
+     * Perform double click on cursor position
      */
     public function doubleClickAtCursor()
     {
@@ -839,7 +839,7 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
+     * Perform right click on cursor position
      */
     public function rightClickAtCursor()
     {
