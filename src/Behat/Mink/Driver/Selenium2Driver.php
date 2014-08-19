@@ -812,6 +812,41 @@ JS;
     }
 
     /**
+     * Move the cursor to specific position
+     */
+    public function moveCursorTo($x, $y)
+    {
+        $this->wdSession->moveto(array(
+            'xoffset' => $x,
+            'yoffset' => $y
+        ));
+    }
+
+    /**
+     * Perform click on cursor position
+     */
+    public function clickAtCursor()
+    {
+        $this->wdSession->click();
+    }
+
+    /**
+     * Perform double click on cursor position
+     */
+    public function doubleClickAtCursor()
+    {
+        $this->wdSession->doubleclick();
+    }
+
+    /**
+     * Perform right click on cursor position
+     */
+    public function rightClickAtCursor()
+    {
+        $this->wdSession->click(array('button' => 2));
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function focus($xpath)
