@@ -753,13 +753,9 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function click($xpath = null)
+    public function click($xpath)
     {
-        if (null !== $xpath) {
-            $this->clickOnElement($this->findElement($xpath));
-        } else {
-            $this->wdSession->click();
-        }
+        $this->clickOnElement($this->findElement($xpath));
     }
 
     private function clickOnElement(Element $element)
@@ -771,23 +767,18 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function doubleClick($xpath = null)
+    public function doubleClick($xpath)
     {
-        if (null !== $xpath) {
-            $this->mouseOver($xpath);
-        }
-
+        $this->mouseOver($xpath);
         $this->wdSession->doubleclick();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rightClick($xpath = null)
+    public function rightClick($xpath)
     {
-        if (null !== $xpath) {
-            $this->mouseOver($xpath);
-        }
+        $this->mouseOver($xpath);
         $this->wdSession->click(array('button' => 2));
     }
 
@@ -813,10 +804,19 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function mouseOver($xpath, $x = 0, $y = 0)
+    public function mouseOver($xpath)
     {
         $this->wdSession->moveto(array(
-            'element' => $this->findElement($xpath)->getID(),
+            'element' => $this->findElement($xpath)->getID()
+        ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function moveCursorTo($x, $y)
+    {
+        $this->wdSession->moveto(array(
             'xoffset' => $x,
             'yoffset' => $y
         ));
@@ -825,12 +825,25 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function moveTo($x, $y)
+    public function clickAtCursor()
     {
-        $this->wdSession->moveto(array(
-            'xoffset' => $x,
-            'yoffset' => $y
-        ));
+        $this->wdSession->click();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function doubleClickAtCursor()
+    {
+        $this->wdSession->doubleclick();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function rightClickAtCursor()
+    {
+        $this->wdSession->click(array('button' => 2));
     }
 
     /**
