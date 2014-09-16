@@ -20,6 +20,7 @@ use Behat\Mink\Mink,
 
 use Selenium\Client as SeleniumClient;
 
+$browser = 'chrome'; //a value of null will default to firefox
 $url = 'http://example.com';
 
 $mink = new Mink(array(
