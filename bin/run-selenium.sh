@@ -9,4 +9,4 @@ sleep 4
 echo '    Downloading selenium'
 curl -L http://selenium-release.storage.googleapis.com/2.43/selenium-server-standalone-2.43.1.jar > selenium.jar
 echo '    Running selenium'
-java -jar selenium.jar > /dev/null 2> /tmp/webdriver_output.txt &
+java -jar selenium.jar > /dev/null 2>&1 &
