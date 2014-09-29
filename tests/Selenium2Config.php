@@ -32,6 +32,14 @@ class Selenium2Config extends AbstractConfig
         }
 
         if (
+            'phantomjs' !== getenv('WEBDRIVER')
+            && 'Behat\Mink\Tests\Driver\Form\Html5Test' === $testCase
+            && 'testHtml5Types' === $test
+        ) {
+            return 'WebDriver does not support setting value in color inputs. See https://code.google.com/p/selenium/issues/detail?id=7650';
+        }
+
+        if (
             'Behat\Mink\Tests\Driver\Js\WindowTest' === $testCase
             && 'testWindowMaximize' === $test
             && 'true' === getenv('TRAVIS')
