@@ -481,6 +481,22 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Take a screenshot of the current page.
+     *
+     * @param string $save_as The path of the screenshot to be saved.
+     * @return string The screenshot in PNG format.
+     */
+    public function takeScreenshot($save_as = null) {
+        $screenshot = base64_decode(
+            $this->wdSession->screenshot()
+        );
+        if ($save_as) {
+            file_put_contents($save_as, $screenshot);
+        }
+        return $screenshot;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getWindowNames()
@@ -925,6 +941,23 @@ JS;
         }
 
         return $this->wdSession->execute(array('script' => $script, 'args' => array()));
+    }
+
+    public function acceptAlert()
+    {
+        $this->wdSession->accept_alert();
+    }
+
+
+    public function getAlertText()
+    {
+        return $this->wdSession->getAlert_text();
+    }
+
+
+    public function setAlertText($jsonText)
+    {
+        $this->wdSession->postAlert_text(array("text" => $jsonText));
     }
 
     /**
