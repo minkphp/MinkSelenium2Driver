@@ -3,9 +3,9 @@ Mink Selenium2 (webdriver) Driver
 [![Latest Stable Version](https://poser.pugx.org/behat/mink-selenium2-driver/v/stable.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
 [![Latest Unstable Version](https://poser.pugx.org/behat/mink-selenium2-driver/v/unstable.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
 [![Total Downloads](https://poser.pugx.org/behat/mink-selenium2-driver/downloads.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
-[![Build Status](https://travis-ci.org/Behat/MinkSelenium2Driver.svg?branch=master)](https://travis-ci.org/Behat/MinkSelenium2Driver)
-[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/Behat/MinkSelenium2Driver/badges/quality-score.png?s=04d83b1e7471d2f60174b5ed17cd9dd3c9a0bc30)](https://scrutinizer-ci.com/g/Behat/MinkSelenium2Driver/)
-[![Code Coverage](https://scrutinizer-ci.com/g/Behat/MinkSelenium2Driver/badges/coverage.png?s=abcab4bac44eed7d6e50879b7746e3d3d78e5d6c)](https://scrutinizer-ci.com/g/Behat/MinkSelenium2Driver/)
+[![Build Status](https://travis-ci.org/minkphp/MinkSelenium2Driver.svg?branch=master)](https://travis-ci.org/minkphp/MinkSelenium2Driver)
+[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/)
+[![Code Coverage](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/)
 [![License](https://poser.pugx.org/behat/mink-selenium2-driver/license.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
 
 Usage Example
@@ -56,4 +56,5 @@ Copyright (c) 2012 Pete Otaqui <pete@otaqui.com>.
 Maintainers
 -----------
 
+* Christophe Coevoet [stof](https://github.com/stof)
 * Pete Otaqui [pete-otaqui](http://github.com/pete-otaqui)
