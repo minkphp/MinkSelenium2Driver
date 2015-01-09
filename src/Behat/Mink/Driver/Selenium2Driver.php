@@ -1110,4 +1110,36 @@ JS;
             throw new DriverException(sprintf($message, $action, $xpath, $type));
         }
     }
+
+    /**
+     * Returns text of opened popup dialog window
+     */
+    public function getDialogText()
+    {
+        return $this->wdSession->alert_text();
+    }
+
+    /**
+     * Fills in text into prompt window
+     */
+    public function setPromptText($text)
+    {
+        $this->wdSession->postAlert_text($text);
+    }
+
+    /**
+     * Accepts popup dialog window
+     */
+    public function acceptDialog()
+    {
+        $this->wdSession->accept_alert();
+    }
+
+    /**
+     * Dismisses popup dialog window
+     */
+    public function dismissDialog()
+    {
+        $this->wdSession->dismiss_alert();
+    }
 }
