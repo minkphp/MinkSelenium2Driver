@@ -204,7 +204,7 @@ class Selenium2Driver extends CoreDriver
         ));
 
         if (!$hasSyn) {
-            $synJs = file_get_contents(__DIR__.'/Selenium2/syn.js');
+            $synJs = file_get_contents(__DIR__.'/Resources/syn.js');
             $this->wdSession->execute(array(
                 'script' => $synJs,
                 'args'   => array()
