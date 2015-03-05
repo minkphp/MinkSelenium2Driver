@@ -97,9 +97,15 @@ class Selenium2Driver extends CoreDriver
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
      * @param array $desiredCapabilities an array of capabilities to pass on to the WebDriver server
+     *
+     * @throws DriverException
      */
     public function setDesiredCapabilities($desiredCapabilities = null)
     {
+        if ($this->started) {
+            throw new DriverException("Unable to set desiredCapabilities: the session has already started");
+        }
+
         if (null === $desiredCapabilities) {
             $desiredCapabilities = self::getDefaultCapabilities();
         }
@@ -138,6 +144,15 @@ class Selenium2Driver extends CoreDriver
         }
 
         $this->desiredCapabilities = $desiredCapabilities;
+    }
+
+    /**
+     * Gets the desiredCapabilities
+     *
+     * @return array $desiredCapabilties
+     */
+    public function getDesiredCapabilities() {
+        return $this->desiredCapabilities;
     }
 
     /**
