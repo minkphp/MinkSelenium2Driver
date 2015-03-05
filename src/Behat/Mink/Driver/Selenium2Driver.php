@@ -887,7 +887,6 @@ JS;
         $this->wdSession->moveto(array(
             'element' => $destination->getID()
         ));
-        $this->wdSession->buttonup();
 
         $script = <<<JS
 (function (element) {
@@ -900,6 +899,8 @@ JS;
 }({{ELEMENT}}));
 JS;
         $this->withSyn()->executeJsOnElement($destination, $script);
+        
+        $this->wdSession->buttonup();
     }
 
     /**
