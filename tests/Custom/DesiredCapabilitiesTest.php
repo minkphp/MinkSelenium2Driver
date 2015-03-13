@@ -5,17 +5,32 @@ namespace Behat\Mink\Tests\Driver\Custom;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\TestCase;
 
-class desiredCapabilitieTest extends TestCase
+class DesiredCapabilitiesTest extends TestCase
 {
-
-    public function testGetDesiredCapabilties()
+    public function testGetDesiredCapabilities()
     {
-        $driver = $this->getSession()->getDriver();
+        $caps = array(
+            'browserName'       => 'firefox',
+            'version'           => '30',
+            'platform'          => 'ANY',
+            'browserVersion'    => '30',
+            'browser'           => 'firefox',
+            'name'              => 'Selenium2 Mink Driver Test',
+            'deviceOrientation' => 'portrait',
+            'deviceType'        => 'tablet',
+            'selenium-version'  => '2.45.0'
+        );
+
+        $driver = new Selenium2Driver('firefox', $caps);
         $this->assertNotEmpty($driver->getDesiredCapabilities(), 'desiredCapabilities empty');
         $this->assertTrue(gettype($driver->getDesiredCapabilities()) == 'array');
-        $this->assertEquals(Selenium2Driver::getDefaultCapabilities(), $driver->getDesiredCapabilities(), 'Expected default capabilities');
+        $this->assertEquals($driver->getDesiredCapabilities(), $caps);
     }
 
+    /**
+     * @expectedException           \Behat\Mink\Exception\DriverException
+     * @expectedExceptionMessage    Unable to set desiredCapabilities, the session has already started
+     */
     public function testSetDesiredCapabilities()
     {
         $caps = array(
@@ -27,10 +42,9 @@ class desiredCapabilitieTest extends TestCase
             'name'              => 'Selenium2 Mink Driver Test',
             'deviceOrientation' => 'portrait',
             'deviceType'        => 'tablet',
-            'selenium-version'  => '2.31.0'
+            'selenium-version'  => '2.45.0'
         );
         $driver = $this->getSession()->getDriver();
-        $this->setExpectedException('\Behat\Mink\Exception\DriverException');
         $driver->setDesiredCapabilities($caps);
     }
 }
