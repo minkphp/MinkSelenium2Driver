@@ -8,10 +8,13 @@ env:
 matrix:
   allow_failures:
     - env: 'WEBDRIVER=phantomjs'
+    - env: WEBDRIVER=phantomjs PHANTOM_VERSION=2
   fast_finish: true
   include:
     - php: 5.5
       env: WEBDRIVER=phantomjs
+    - php: 5.5
+      env: WEBDRIVER=phantomjs PHANTOM_VERSION=2
 
 before_script:
   - export WEB_FIXTURES_HOST=http://localhost
