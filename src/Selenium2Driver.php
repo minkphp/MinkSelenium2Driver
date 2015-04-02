@@ -299,7 +299,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Sets the timeouts to apply to the webdriver session
      *
-     * @param array $timeouts The session timeout settings: Array of {script, implicit, page} => time in microsecconds
+     * @param array $timeouts The session timeout settings: Array of {script, implicit, page} => time in milliseconds
      *
      * @throws DriverException
      */
