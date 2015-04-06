@@ -23,8 +23,8 @@ class DesiredCapabilitiesTest extends TestCase
 
         $driver = new Selenium2Driver('firefox', $caps);
         $this->assertNotEmpty($driver->getDesiredCapabilities(), 'desiredCapabilities empty');
-        $this->assertTrue(gettype($driver->getDesiredCapabilities()) == 'array');
-        $this->assertEquals($driver->getDesiredCapabilities(), $caps);
+        $this->assertInternalType('array', $driver->getDesiredCapabilities());
+        $this->assertEquals($caps, $driver->getDesiredCapabilities());
     }
 
     /**

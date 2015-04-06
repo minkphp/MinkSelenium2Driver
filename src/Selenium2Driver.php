@@ -151,7 +151,8 @@ class Selenium2Driver extends CoreDriver
      *
      * @return array $desiredCapabilities
      */
-    public function getDesiredCapabilities() {
+    public function getDesiredCapabilities()
+    {
         return $this->desiredCapabilities;
     }
 
