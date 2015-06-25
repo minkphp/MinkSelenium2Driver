@@ -656,11 +656,17 @@ JS;
         $value = strval($value);
 
         if (in_array($elementName, array('input', 'textarea'))) {
-            $existingValueLength = strlen($element->attribute('value'));
+            $deleteSequence = Key::CONTROL . 'a' . KEY::NULL_KEY . Key::COMMAND . 'a' . KEY::NULL_KEY;
+            if (strlen($value) === 0) {
+                $value = $deleteSequence . Key::BACKSPACE;
+            } else {
+                $value = $deleteSequence . $value;
+            }
             // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
             // after leaving the field.
-            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value . Key::TAB;
+            $value .= Key::TAB;
         }
+
 
         $element->postValue(array('value' => array($value)));
     }
