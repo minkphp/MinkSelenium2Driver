@@ -36,6 +36,8 @@
             "Behat\\Mink\\Tests\\Driver\\": "tests"
         }
     },
+    
+    "bin": {"bin/run-phantomjs.sh", "bin/run-selenium.sh"},
 
     "extra": {
         "branch-alias": {
