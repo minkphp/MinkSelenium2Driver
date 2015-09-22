@@ -657,9 +657,15 @@ JS;
 
         if (in_array($elementName, array('input', 'textarea'))) {
             $existingValueLength = strlen($element->attribute('value'));
+            $deleteAndBackspace = Key::DELETE . Key::BACKSPACE;
+
+            for($i = 0; $i < $existingValueLength; $i++) {
+                $element->postValue(array('value' => array($deleteAndBackspace)));
+            }
+
             // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
             // after leaving the field.
-            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value . Key::TAB;
+            $value = $value . Key::TAB;
         }
 
         $element->postValue(array('value' => array($value)));
