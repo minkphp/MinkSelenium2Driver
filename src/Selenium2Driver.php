@@ -655,8 +655,9 @@ JS;
 
         $value = strval($value);
 
-        if (in_array($elementName, array('input', 'textarea'))) {
-            $existingValueLength = strlen($element->attribute('value'));
+        $existingValueLength = strlen($element->attribute('value'));
+        $clearInputOrTextArea = $existingValueLength > 0 && in_array($elementName, array('input', 'textarea'));
+        if ($clearInputOrTextArea) {
             $deleteAndBackspace = Key::DELETE . Key::BACKSPACE;
 
             for($i = 0; $i < $existingValueLength; $i++) {
