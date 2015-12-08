@@ -325,7 +325,22 @@ class Selenium2Driver extends CoreDriver
             throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
         }
     }
+      /**
+     * {@inheritdoc}
+     */
+    public function acceptAlert()
+    {
+        $this->wdSession->accept_alert();
 
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function dissmissAlert()
+    {
+        $this->wdSession->dismiss_alert();
+    }
+    
     /**
      * {@inheritdoc}
      */
