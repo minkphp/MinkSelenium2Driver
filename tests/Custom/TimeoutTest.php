@@ -11,15 +11,15 @@ class TimeoutTest extends TestCase
      */
     public function testInvalidTimeoutSettingThrowsException()
     {
-        $this->getSession()->getDriver()->setTimeouts(array('invalid'=>0));
+        $this->getSession()->getDriver()->setTimeouts(array('invalid' => 0));
     }
 
     public function testShortTimeoutDoesNotWaitForElementToAppear()
     {
-        $this->getSession()->getDriver()->setTimeouts(array('implicit'=>0));
+        $this->getSession()->getDriver()->setTimeouts(array('implicit' => 0));
 
         $this->getSession()->visit($this->pathTo('/js_test.html'));
-        $this->getSession()->getPage()->findById('waitable')->click();
+        $this->findById('waitable')->click();
 
         $element = $this->getSession()->getPage()->find('css', '#waitable > div');
 
@@ -28,10 +28,10 @@ class TimeoutTest extends TestCase
 
     public function testLongTimeoutWaitsForElementToAppear()
     {
-        $this->getSession()->getDriver()->setTimeouts(array('implicit'=>5000));
+        $this->getSession()->getDriver()->setTimeouts(array('implicit' => 5000));
 
         $this->getSession()->visit($this->pathTo('/js_test.html'));
-        $this->getSession()->getPage()->findById('waitable')->click();
+        $this->findById('waitable')->click();
         $element = $this->getSession()->getPage()->find('css', '#waitable > div');
 
         $this->assertNotNull($element);
