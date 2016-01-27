@@ -428,7 +428,7 @@ class Selenium2Driver extends CoreDriver
 
         $cookieArray = array(
             'name'   => $name,
-            'value'  => (string) $value,
+            'value'  => urlencode($value),
             'secure' => false, // thanks, chibimagic!
         );
 
