@@ -91,6 +91,26 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Get the browser name
+     *
+     * @return string the name of the browser used.
+     */
+    public function getBrowserName()
+    {
+        return $this->browserName;
+    }
+
+    /**
+     * Returns driver status.
+     *
+     * @return array driver status.
+     */
+    public function getStatus()
+    {
+        return $this->webDriver->status();
+    }
+
+    /**
      * Sets the desired capabilities - called on construction.  If null is provided, will set the
      * defaults as desired.
      *
