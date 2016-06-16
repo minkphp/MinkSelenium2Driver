@@ -101,8 +101,11 @@ class Selenium2Driver extends CoreDriver
     public function setDesiredCapabilities($desiredCapabilities = null)
     {
         if (null === $desiredCapabilities) {
-            $desiredCapabilities = self::getDefaultCapabilities();
+            $desiredCapabilities = array();
         }
+
+        // Join $desiredCapabilities with defaultCapabilities
+        $desiredCapabilities = array_replace(self::getDefaultCapabilities(), $desiredCapabilities);
 
         if (isset($desiredCapabilities['firefox'])) {
             foreach ($desiredCapabilities['firefox'] as $capability => $value) {
