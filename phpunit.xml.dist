@@ -4,7 +4,7 @@
     <testsuites>
         <testsuite name="Driver test suite">
             <directory>tests</directory>
-            <directory>vendor/behat/mink/driver-testsuite/tests</directory>
+            <directory>vendor/mink/driver-testsuite/tests</directory>
         </testsuite>
     </testsuites>
 
