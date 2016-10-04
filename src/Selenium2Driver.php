@@ -863,6 +863,21 @@ JS;
     }
 
     /**
+     * Simulates keyboard typing with Syn.type().
+     * See: https://github.com/bitovi/syn/blob/master/src/key.js#L133
+     *
+     * @param string     $xpath
+     * @param string     $text  example: "Firstname\tLast\tmail@example.org\r"
+     *
+     */
+    public function type($xpath, $text)
+    {
+      $text = json_encode($text);
+      $script = "Syn.type({{ELEMENT}}, $text)";
+      $this->withSyn()->executeJsOnXpath($xpath, $script);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function dragTo($sourceXpath, $destinationXpath)
