@@ -678,10 +678,11 @@ JS;
             $existingValueLength = strlen($element->attribute('value'));
             // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
             // after leaving the field.
-            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value . Key::TAB;
+            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
         }
 
         $element->postValue(array('value' => array($value)));
+        $this->trigger($xpath, 'change');
     }
 
     /**
@@ -819,8 +820,7 @@ JS;
      */
     public function focus($xpath)
     {
-        $script = 'Syn.trigger("focus", {}, {{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->trigger($xpath, 'focus');
     }
 
     /**
@@ -828,8 +828,7 @@ JS;
      */
     public function blur($xpath)
     {
-        $script = 'Syn.trigger("blur", {}, {{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->trigger($xpath, 'blur');
     }
 
     /**
@@ -838,8 +837,7 @@ JS;
     public function keyPress($xpath, $char, $modifier = null)
     {
         $options = self::charToOptions($char, $modifier);
-        $script = "Syn.trigger('keypress', $options, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->trigger($xpath, 'keypress', $options);
     }
 
     /**
@@ -848,8 +846,7 @@ JS;
     public function keyDown($xpath, $char, $modifier = null)
     {
         $options = self::charToOptions($char, $modifier);
-        $script = "Syn.trigger('keydown', $options, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->trigger($xpath, 'keydown', $options);
     }
 
     /**
@@ -858,8 +855,7 @@ JS;
     public function keyUp($xpath, $char, $modifier = null)
     {
         $options = self::charToOptions($char, $modifier);
-        $script = "Syn.trigger('keyup', $options, {{ELEMENT}})";
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
+        $this->trigger($xpath, 'keyup', $options);
     }
 
     /**
@@ -1112,5 +1108,16 @@ JS;
 
             throw new DriverException(sprintf($message, $action, $xpath, $type));
         }
+    }
+
+    /**
+     * @param $xpath
+     * @param $event
+     * @param string $options
+     */
+    private function trigger($xpath, $event, $options = '{}')
+    {
+        $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
+        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 }
