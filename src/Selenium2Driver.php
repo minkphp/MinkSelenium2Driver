@@ -794,6 +794,11 @@ JS;
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
+        // Upload the file to Selenium and use the remote path. This will
+        // ensure that Selenium always has access to the file, even if it runs
+        // as a remote instance.
+        $path = $this->uploadFile($path);
+
         $element->postValue(array('value' => array($path)));
     }
 
@@ -1120,4 +1125,39 @@ JS;
         $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
+
+    /**
+     * Uploads a file to the Selenium instance.
+     *
+     * @param string $path     The path to the file to upload.
+     *
+     * @return string          The remote path.
+     *
+     * @throws DriverException When the file is not found.
+     */
+    public function uploadFile($path) {
+        if (!is_file($path)) {
+          throw new DriverException('Could not upload file, the file: ' . $path . '. was not found.');
+        }
+
+        // Selenium only accepts uploads that are compressed as a Zip archive.
+        $temp_filename = tempnam('', 'WebDriverZip');
+
+        $archive = new \ZipArchive();
+        $archive->open($temp_filename, \ZipArchive::CREATE);
+        $archive->addFile($path, basename($path));
+        $archive->close();
+
+        // Note that uploading files is not part of the official WebDriver
+        // specification, but it is supported by Selenium.
+        // @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
+        $remote_path = $this->getWebDriverSession()->file([
+          'file' => base64_encode(file_get_contents($temp_filename)),
+        ]);
+
+        unlink($temp_filename);
+
+        return $remote_path;
+    }
+
 }
