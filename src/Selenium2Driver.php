@@ -1144,14 +1144,18 @@ JS;
      *
      * @return string          The remote path.
      *
-     * @throws DriverException When PHP is compiled without zip support.
+     * @throws DriverException When PHP is compiled without zip support, or the file doesn't exist.
      * @throws UnknownError    When an unknown error occurred during file upload.
      * @throws \Exception      When a known error occurred during file upload.
      */
     public function uploadFile($path)
     {
+        if (!is_file($path)) {
+          throw new DriverException('File does not exist locally and cannot be uploaded to the remote instance.');
+        }
+
         if (!class_exists('ZipArchive')) {
-          throw new DriverException('Could not upload compressed file, PHP is compiled without zip support.');
+          throw new DriverException('Could not compress file, PHP is compiled without zip support.');
         }
 
         // Selenium only accepts uploads that are compressed as a Zip archive.
