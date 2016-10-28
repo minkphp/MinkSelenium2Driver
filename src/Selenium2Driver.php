@@ -13,6 +13,7 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
+use WebDriver\Exception\InvalidRequest;
 use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
@@ -797,9 +798,15 @@ JS;
         // Upload the file to Selenium and use the remote path. This will
         // ensure that Selenium always has access to the file, even if it runs
         // as a remote instance.
-        $path = $this->uploadFile($path);
+        try {
+          $remote_path = $this->uploadFile($path);
+        }
+        catch (InvalidRequest $e) {
+          // File could not be uploaded to remote instance. Use the local path.
+          $remote_path = $path;
+        }
 
-        $element->postValue(array('value' => array($path)));
+        $element->postValue(array('value' => array($remote_path)));
     }
 
     /**
@@ -1129,11 +1136,16 @@ JS;
     /**
      * Uploads a file to the Selenium instance.
      *
+     * Note that uploading files is not part of the official WebDriver
+     * specification, but it is supported by Selenium.
+     * @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
+     *
      * @param string $path     The path to the file to upload.
      *
      * @return string          The remote path.
      *
      * @throws DriverException When the file is not found.
+     * @throws InvalidRequest  When the driver does not support file uploads.
      */
     public function uploadFile($path) {
         if (!is_file($path)) {
@@ -1148,14 +1160,22 @@ JS;
         $archive->addFile($path, basename($path));
         $archive->close();
 
-        // Note that uploading files is not part of the official WebDriver
-        // specification, but it is supported by Selenium.
-        // @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
-        $remote_path = $this->getWebDriverSession()->file([
-          'file' => base64_encode(file_get_contents($temp_filename)),
-        ]);
+        try {
+          $remote_path = $this->getWebDriverSession()->file(array('file' => base64_encode(file_get_contents($temp_filename))));
+        }
+        catch (InvalidRequest $e) {
+          // Catch the error so we can still clean up the temporary archive.
+        }
 
         unlink($temp_filename);
+
+        // If the file upload failed, then probably Selenium was not used but
+        // another web driver such as PhantomJS.
+        // @todo Support other drivers when (if) they get remote file transfer
+        // capability.
+        if (empty($remote_path)) {
+          throw new InvalidRequest();
+        }
 
         return $remote_path;
     }
