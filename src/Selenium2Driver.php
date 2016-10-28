@@ -801,7 +801,7 @@ JS;
         try {
           $remote_path = $this->uploadFile($path);
         }
-        catch (InvalidRequest $e) {
+        catch (\Exception $e) {
           // File could not be uploaded to remote instance. Use the local path.
           $remote_path = $path;
         }
@@ -1144,12 +1144,13 @@ JS;
      *
      * @return string          The remote path.
      *
-     * @throws DriverException When the file is not found.
-     * @throws InvalidRequest  When the driver does not support file uploads.
+     * @throws DriverException When PHP is compiled without zip support.
+     * @throws UnknownError    When an unknown error occurred during file upload.
      */
-    public function uploadFile($path) {
-        if (!is_file($path)) {
-          throw new DriverException('Could not upload file, the file: ' . $path . '. was not found.');
+    public function uploadFile($path)
+    {
+        if (!class_exists('ZipArchive')) {
+          throw new DriverException('Could not upload compressed file, PHP is compiled without zip support.');
         }
 
         // Selenium only accepts uploads that are compressed as a Zip archive.
@@ -1161,20 +1162,25 @@ JS;
         $archive->close();
 
         try {
-          $remote_path = $this->getWebDriverSession()->file(array('file' => base64_encode(file_get_contents($temp_filename))));
+          $remote_path = $this->wdSession->file(array('file' => base64_encode(file_get_contents($temp_filename))));
+
+          // If no path is returned the file upload failed silently. In this
+          // case it is possible Selenium was not used but another web driver
+          // such as PhantomJS.
+          // @todo Support other drivers when (if) they get remote file transfer
+          // capability.
+          if (empty($remote_path)) {
+            throw new UnknownError();
+          }
         }
-        catch (InvalidRequest $e) {
-          // Catch the error so we can still clean up the temporary archive.
+        catch (\Exception $e) {
+          // Catch any error so we can still clean up the temporary archive.
         }
 
         unlink($temp_filename);
 
-        // If the file upload failed, then probably Selenium was not used but
-        // another web driver such as PhantomJS.
-        // @todo Support other drivers when (if) they get remote file transfer
-        // capability.
-        if (empty($remote_path)) {
-          throw new InvalidRequest();
+        if (isset($e)) {
+          throw $e;
         }
 
         return $remote_path;
