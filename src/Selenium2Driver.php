@@ -1146,6 +1146,7 @@ JS;
      *
      * @throws DriverException When PHP is compiled without zip support.
      * @throws UnknownError    When an unknown error occurred during file upload.
+     * @throws \Exception      When a known error occurred during file upload.
      */
     public function uploadFile($path)
     {
