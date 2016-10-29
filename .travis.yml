@@ -21,6 +21,11 @@ matrix:
       env: WEBDRIVER=phantomjs
     - php: 5.5
       env: WEBDRIVER=phantomjs PHANTOM_VERSION=2
+    - php: 7.0
+      env: WEBDRIVER=selenium-remote
+      sudo: required
+      services:
+        - docker
 
 before_script:
   - sh bin/run-"$WEBDRIVER".sh

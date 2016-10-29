@@ -794,7 +794,18 @@ JS;
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
-        $element->postValue(array('value' => array($path)));
+        // Upload the file to Selenium and use the remote path. This will
+        // ensure that Selenium always has access to the file, even if it runs
+        // as a remote instance.
+        try {
+          $remote_path = $this->uploadFile($path);
+        }
+        catch (\Exception $e) {
+          // File could not be uploaded to remote instance. Use the local path.
+          $remote_path = $path;
+        }
+
+        $element->postValue(array('value' => array($remote_path)));
     }
 
     /**
@@ -1120,4 +1131,64 @@ JS;
         $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
+
+    /**
+     * Uploads a file to the Selenium instance.
+     *
+     * Note that uploading files is not part of the official WebDriver
+     * specification, but it is supported by Selenium.
+     *
+     * @param string $path     The path to the file to upload.
+     *
+     * @return string          The remote path.
+     *
+     * @throws DriverException When PHP is compiled without zip support, or the file doesn't exist.
+     * @throws UnknownError    When an unknown error occurred during file upload.
+     * @throws \Exception      When a known error occurred during file upload.
+     *
+     * @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
+     */
+    public function uploadFile($path)
+    {
+        if (!is_file($path)) {
+          throw new DriverException('File does not exist locally and cannot be uploaded to the remote instance.');
+        }
+
+        if (!class_exists('ZipArchive')) {
+          throw new DriverException('Could not compress file, PHP is compiled without zip support.');
+        }
+
+        // Selenium only accepts uploads that are compressed as a Zip archive.
+        $temp_filename = tempnam('', 'WebDriverZip');
+
+        $archive = new \ZipArchive();
+        $archive->open($temp_filename, \ZipArchive::CREATE);
+        $archive->addFile($path, basename($path));
+        $archive->close();
+
+        try {
+          $remote_path = $this->wdSession->file(array('file' => base64_encode(file_get_contents($temp_filename))));
+
+          // If no path is returned the file upload failed silently. In this
+          // case it is possible Selenium was not used but another web driver
+          // such as PhantomJS.
+          // @todo Support other drivers when (if) they get remote file transfer
+          // capability.
+          if (empty($remote_path)) {
+            throw new UnknownError();
+          }
+        }
+        catch (\Exception $e) {
+          // Catch any error so we can still clean up the temporary archive.
+        }
+
+        unlink($temp_filename);
+
+        if (isset($e)) {
+          throw $e;
+        }
+
+        return $remote_path;
+    }
+
 }
