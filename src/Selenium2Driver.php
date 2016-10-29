@@ -13,7 +13,6 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
-use WebDriver\Exception\InvalidRequest;
 use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
@@ -1138,7 +1137,6 @@ JS;
      *
      * Note that uploading files is not part of the official WebDriver
      * specification, but it is supported by Selenium.
-     * @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
      *
      * @param string $path     The path to the file to upload.
      *
@@ -1147,6 +1145,8 @@ JS;
      * @throws DriverException When PHP is compiled without zip support, or the file doesn't exist.
      * @throws UnknownError    When an unknown error occurred during file upload.
      * @throws \Exception      When a known error occurred during file upload.
+     *
+     * @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
      */
     public function uploadFile($path)
     {
