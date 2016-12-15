@@ -798,14 +798,13 @@ JS;
         // ensure that Selenium always has access to the file, even if it runs
         // as a remote instance.
         try {
-          $remote_path = $this->uploadFile($path);
-        }
-        catch (\Exception $e) {
+          $remotePath = $this->uploadFile($path);
+        } catch (\Exception $e) {
           // File could not be uploaded to remote instance. Use the local path.
-          $remote_path = $path;
+          $remotePath = $path;
         }
 
-        $element->postValue(array('value' => array($remote_path)));
+        $element->postValue(array('value' => array($remotePath)));
     }
 
     /**
@@ -1148,7 +1147,7 @@ JS;
      *
      * @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
      */
-    public function uploadFile($path)
+    private function uploadFile($path)
     {
         if (!is_file($path)) {
           throw new DriverException('File does not exist locally and cannot be uploaded to the remote instance.');
@@ -1162,9 +1161,18 @@ JS;
         $temp_filename = tempnam('', 'WebDriverZip');
 
         $archive = new \ZipArchive();
-        $archive->open($temp_filename, \ZipArchive::CREATE);
-        $archive->addFile($path, basename($path));
-        $archive->close();
+        $result = $archive->open($temp_filename, \ZipArchive::CREATE);
+        if (!$result) {
+          throw new DriverException('Zip archive could not be created. Error ' . $result);
+        }
+        $result = $archive->addFile($path, basename($path));
+        if (!$result) {
+          throw new DriverException('File could not be added to zip archive.');
+        }
+        $result = $archive->close();
+        if (!$result) {
+          throw new DriverException('Zip archive could not be closed.');
+        }
 
         try {
           $remote_path = $this->wdSession->file(array('file' => base64_encode(file_get_contents($temp_filename))));
@@ -1177,8 +1185,7 @@ JS;
           if (empty($remote_path)) {
             throw new UnknownError();
           }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
           // Catch any error so we can still clean up the temporary archive.
         }
 
