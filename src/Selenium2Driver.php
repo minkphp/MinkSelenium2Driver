@@ -1158,10 +1158,10 @@ JS;
         }
 
         // Selenium only accepts uploads that are compressed as a Zip archive.
-        $temp_filename = tempnam('', 'WebDriverZip');
+        $tempFilename = tempnam('', 'WebDriverZip');
 
         $archive = new \ZipArchive();
-        $result = $archive->open($temp_filename, \ZipArchive::CREATE);
+        $result = $archive->open($tempFilename, \ZipArchive::CREATE);
         if (!$result) {
           throw new DriverException('Zip archive could not be created. Error ' . $result);
         }
@@ -1175,27 +1175,27 @@ JS;
         }
 
         try {
-          $remote_path = $this->wdSession->file(array('file' => base64_encode(file_get_contents($temp_filename))));
+          $remotePath = $this->wdSession->file(array('file' => base64_encode(file_get_contents($tempFilename))));
 
           // If no path is returned the file upload failed silently. In this
           // case it is possible Selenium was not used but another web driver
           // such as PhantomJS.
           // @todo Support other drivers when (if) they get remote file transfer
           // capability.
-          if (empty($remote_path)) {
+          if (empty($remotePath)) {
             throw new UnknownError();
           }
         } catch (\Exception $e) {
           // Catch any error so we can still clean up the temporary archive.
         }
 
-        unlink($temp_filename);
+        unlink($tempFilename);
 
         if (isset($e)) {
           throw $e;
         }
 
-        return $remote_path;
+        return $remotePath;
     }
 
 }
