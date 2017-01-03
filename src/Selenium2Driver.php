@@ -14,6 +14,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
 use WebDriver\Exception\NoSuchElement;
+use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
 use WebDriver\Key;
@@ -764,7 +765,13 @@ JS;
 
     private function clickOnElement(Element $element)
     {
-        $this->wdSession->moveto(array('element' => $element->getID()));
+        try {
+            // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
+            $this->wdSession->moveto(array('element' => $element->getID()));
+        } catch (UnknownCommand $e) {
+            // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
+        }
+
         $element->click();
     }
 
