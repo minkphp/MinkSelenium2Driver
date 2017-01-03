@@ -6,7 +6,7 @@ use Behat\Mink\Tests\Driver\TestCase;
 
 class WindowNameTest extends TestCase
 {
-    const WINDOW_NAME_REGEXP = '/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/i';
+    const WINDOW_NAME_REGEXP = '/(?:[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}|^\d++$)/i';
 
     public function testPatternGetWindowNames()
     {
