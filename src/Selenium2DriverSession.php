@@ -12,20 +12,21 @@ namespace Behat\Mink\Driver;
 
 use Behat\Mink\Exception\DriverException;
 use Facebook\WebDriver\Remote\DriverCommand;
-use Facebook\WebDriver\WebDriver;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverElement;
 
 class Selenium2DriverSession
 {
     /**
-     * @var WebDriver
+     * @var RemoteWebDriver
      */
     protected $webDriver;
 
     /**
-     * @param WebDriver $webDriver
+     * @param RemoteWebDriver $webDriver
      */
-    public function setWebDriver(WebDriver $webDriver)
+    public function setWebDriver(RemoteWebDriver $webDriver)
     {
         $this->webDriver = $webDriver;
     }
@@ -233,5 +234,53 @@ class Selenium2DriverSession
             default:
                 throw new DriverException("Timeout type \"{$type}\" is not supported.");
         }
+    }
+
+    public function moveto(WebDriverElement $element)
+    {
+        $this->webDriver->action()->moveToElement($element)->perform();
+    }
+
+    public function click()
+    {
+        $this->webDriver->getMouse()->click();
+    }
+
+    public function contextClick()
+    {
+        $this->webDriver->getMouse()->contextClick();
+    }
+
+    public function doubleclick()
+    {
+        $this->webDriver->getMouse()->doubleClick();
+    }
+
+    public function buttonup()
+    {
+        $this->webDriver->getMouse()->mouseUp();
+    }
+
+    public function buttondown()
+    {
+        $this->webDriver->getMouse()->mouseDown();
+    }
+
+    /**
+     * @param string $handle
+     * @return \Facebook\WebDriver\WebDriverWindow
+     */
+    public function window($handle)
+    {
+        $this->webDriver->switchTo()->window($handle);
+        return $this->webDriver->manage()->window();
+    }
+
+    /**
+     * @return string
+     */
+    public function getSessionId()
+    {
+        return $this->webDriver->getSessionID();
     }
 }

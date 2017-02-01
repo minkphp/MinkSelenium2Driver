@@ -15,6 +15,7 @@ use Behat\Mink\Selector\Xpath\Escaper;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverElement as Element;
 use Facebook\WebDriver\Exception\NoSuchElementException as NoSuchElement;
 use Facebook\WebDriver\Exception\UnknownServerException as UnknownError;
@@ -234,10 +235,10 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Executes JS on a given element - pass in a js script string and {{ELEMENT}} will
+     * Executes JS on a given element - pass in a js script string and __ELEMENT__ will
      * be replaced with a reference to the result of the $xpath query
      *
-     * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
+     * @example $this->executeJsOnXpath($xpath, 'return __ELEMENT__.childNodes.length');
      *
      * @param string  $xpath  the xpath to search with
      * @param string  $script the script to execute
@@ -251,10 +252,10 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Executes JS on a given element - pass in a js script string and {{ELEMENT}} will
+     * Executes JS on a given element - pass in a js script string and __ELEMENT__ will
      * be replaced with a reference to the element
      *
-     * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
+     * @example $this->executeJsOnXpath($xpath, 'return __ELEMENT__.childNodes.length');
      *
      * @param Element $element the webdriver element
      * @param string  $script  the script to execute
@@ -264,7 +265,7 @@ class Selenium2Driver extends CoreDriver
      */
     private function executeJsOnElement(Element $element, $script, $sync = true)
     {
-        $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
+        $script  = str_replace('__ELEMENT__', 'arguments[0]', $script);
 
         $options = array(
             'script' => $script,
@@ -543,7 +544,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getHtml($xpath)
     {
-        return $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.innerHTML;');
+        return $this->executeJsOnXpath($xpath, 'return __ELEMENT__.innerHTML;');
     }
 
     /**
@@ -551,7 +552,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getOuterHtml($xpath)
     {
-        return $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.outerHTML;');
+        return $this->executeJsOnXpath($xpath, 'return __ELEMENT__.outerHTML;');
     }
 
     /**
@@ -559,7 +560,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getAttribute($xpath, $name)
     {
-        $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string) $name) . ')';
+        $script = 'return __ELEMENT__.getAttribute(' . json_encode((string) $name) . ')';
 
         return $this->executeJsOnXpath($xpath, $script);
     }
@@ -580,7 +581,7 @@ class Selenium2Driver extends CoreDriver
 
         if ('input' === $elementName && 'radio' === $elementType) {
             $script = <<<JS
-var node = {{ELEMENT}},
+var node = __ELEMENT__,
     value = null;
 
 var name = node.getAttribute('name');
@@ -606,7 +607,7 @@ JS;
         // even when it is a multiple select, so a custom retrieval is needed.
         if ('select' === $elementName && $element->getAttribute('multiple')) {
             $script = <<<JS
-var node = {{ELEMENT}},
+var node = __ELEMENT__,
     value = [];
 
 for (var i = 0; i < node.options.length; i++) {
@@ -670,7 +671,7 @@ JS;
             }
 
             if ('file' === $elementType) {
-                $element->postValue(array('value' => array(strval($value))));
+                $element->sendKeys(strval($value));
 
                 return;
             }
@@ -685,7 +686,7 @@ JS;
             $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
         }
 
-        $element->postValue(array('value' => array($value)));
+        $element->sendKeys($value);
         $this->trigger($xpath, 'change');
     }
 
@@ -770,7 +771,7 @@ JS;
     {
         $element->click();
 
-        $this->wdSession->moveto(array('element' => $element->getID()));
+        $this->wdSession->moveto($element);
         $element->click();
     }
 
@@ -789,7 +790,7 @@ JS;
     public function rightClick($xpath)
     {
         $this->mouseOver($xpath);
-        $this->wdSession->click(array('button' => 2));
+        $this->wdSession->contextClick();
     }
 
     /**
@@ -810,7 +811,7 @@ JS;
           $remotePath = $path;
         }
 
-        $element->postValue(array('value' => array($remotePath)));
+        $element->sendKeys($remotePath);
     }
 
     /**
@@ -826,9 +827,7 @@ JS;
      */
     public function mouseOver($xpath)
     {
-        $this->wdSession->moveto(array(
-            'element' => $this->findElement($xpath)->getID()
-        ));
+        $this->wdSession->moveto($this->findElement($xpath));
     }
 
     /**
@@ -882,9 +881,7 @@ JS;
         $source      = $this->findElement($sourceXpath);
         $destination = $this->findElement($destinationXpath);
 
-        $this->wdSession->moveto(array(
-            'element' => $source->getID()
-        ));
+        $this->wdSession->moveto($source);
 
         $script = <<<JS
 (function (element) {
@@ -894,14 +891,12 @@ JS;
     event.dataTransfer = {};
 
     element.dispatchEvent(event);
-}({{ELEMENT}}));
+}(__ELEMENT__));
 JS;
         $this->withSyn()->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID()
-        ));
+        $this->wdSession->moveto($destination);
         $this->wdSession->buttonup();
 
         $script = <<<JS
@@ -912,7 +907,7 @@ JS;
     event.dataTransfer = {};
 
     element.dispatchEvent(event);
-}({{ELEMENT}}));
+}(__ELEMENT__));
 JS;
         $this->withSyn()->executeJsOnElement($destination, $script);
     }
@@ -964,9 +959,7 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        $this->wdSession->window($name ? $name : 'current')->postSize(
-            array('width' => $width, 'height' => $height)
-        );
+        $this->wdSession->window($name ? $name : 'current')->setSize(new WebDriverDimension($width, $height));
     }
 
     /**
@@ -992,7 +985,7 @@ JS;
      */
     public function getWebDriverSessionId()
     {
-        return $this->isStarted() ? basename($this->wdSession->getUrl()) : null;
+        return $this->isStarted() ? $this->wdSession->getSessionId() : null;
     }
 
     /**
@@ -1097,7 +1090,7 @@ XPATH;
     private function deselectAllOptions(Element $element)
     {
         $script = <<<JS
-var node = {{ELEMENT}};
+var node = __ELEMENT__;
 var i, l = node.options.length;
 for (i = 0; i < l; i++) {
     node.options[i].selected = false;
@@ -1133,7 +1126,7 @@ JS;
      */
     private function trigger($xpath, $event, $options = '{}')
     {
-        $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
+        $script = 'Syn.trigger("' . $event . '", ' . $options . ', __ELEMENT__)';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
