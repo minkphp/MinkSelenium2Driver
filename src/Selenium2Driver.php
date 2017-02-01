@@ -20,7 +20,6 @@ use Facebook\WebDriver\WebDriverElement as Element;
 use Facebook\WebDriver\Exception\NoSuchElementException as NoSuchElement;
 use Facebook\WebDriver\Exception\UnknownServerException as UnknownError;
 use Facebook\WebDriver\WebDriverKeys as Key;
-use Facebook\WebDriver\WebDriver as WebDriver;
 
 /**
  * Selenium2 driver.
@@ -40,12 +39,6 @@ class Selenium2Driver extends CoreDriver
      * @var string
      */
     private $wdHost;
-
-    /**
-     * The WebDriver instance
-     * @var RemoteWebDriver
-     */
-    private $webDriver;
 
     /**
      * @var string
@@ -139,16 +132,6 @@ class Selenium2Driver extends CoreDriver
     public function getDesiredCapabilities()
     {
         return $this->desiredCapabilities;
-    }
-
-    /**
-     * Sets the WebDriver instance
-     *
-     * @param WebDriver $webDriver An instance of the WebDriver class
-     */
-    public function setWebDriver(WebDriver $webDriver)
-    {
-        $this->webDriver = $webDriver;
     }
 
     /**
@@ -285,21 +268,20 @@ class Selenium2Driver extends CoreDriver
      */
     protected function buildWebDriver()
     {
-        if (!$this->webDriver) {
-            $capabilityMethod = array(DesiredCapabilities::class, $this->browserName);
-            if (is_callable($capabilityMethod)) {
-                /** @var DesiredCapabilities $capabilities */
-                $capabilities = call_user_func($capabilityMethod);
-                foreach ($this->desiredCapabilities as $name => $value) {
-                    $capabilities->setCapability($name, $value);
-                }
-                $this->webDriver = RemoteWebDriver::create($this->wdHost, $capabilities);
-            } else {
-                throw new DriverException("Browser \"DesiredCapabilities::{$this->browserName}\" is not supported.");
-            }
-        }
+        $capabilityMethod = array(DesiredCapabilities::class, $this->browserName);
 
-        return $this->webDriver;
+        if (is_callable($capabilityMethod)) {
+            /** @var DesiredCapabilities $capabilities */
+            $capabilities = call_user_func($capabilityMethod);
+
+            foreach ($this->desiredCapabilities as $name => $value) {
+                $capabilities->setCapability($name, $value);
+            }
+
+            return RemoteWebDriver::create($this->wdHost, $capabilities);
+        } else {
+            throw new DriverException("Browser \"DesiredCapabilities::{$this->browserName}\" is not supported.");
+        }
     }
 
     /**
@@ -308,8 +290,7 @@ class Selenium2Driver extends CoreDriver
     public function start()
     {
         try {
-            $this->wdSession = new Selenium2DriverSession();
-            $this->wdSession->setWebDriver($this->buildWebDriver());
+            $this->wdSession = new Selenium2DriverSession($this->buildWebDriver());
             $this->applyTimeouts();
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);

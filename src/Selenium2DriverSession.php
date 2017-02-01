@@ -26,7 +26,7 @@ class Selenium2DriverSession
     /**
      * @param RemoteWebDriver $webDriver
      */
-    public function setWebDriver(RemoteWebDriver $webDriver)
+    public function __construct(RemoteWebDriver $webDriver)
     {
         $this->webDriver = $webDriver;
     }
