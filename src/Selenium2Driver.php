@@ -43,7 +43,7 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * The WebDriver instance
-     * @var WebDriver
+     * @var RemoteWebDriver
      */
     private $webDriver;
 
@@ -279,6 +279,10 @@ class Selenium2Driver extends CoreDriver
         return $this->wdSession->execute_async($options);
     }
 
+    /**
+     * @return RemoteWebDriver
+     * @throws DriverException
+     */
     protected function buildWebDriver()
     {
         if (!$this->webDriver) {
@@ -767,10 +771,12 @@ JS;
         $this->clickOnElement($this->findElement($xpath));
     }
 
+    /**
+     * @param Element $element
+     */
     private function clickOnElement(Element $element)
     {
-        $element->click();
-
+        //$element->click(); // TODO why was this needed?
         $this->wdSession->moveto($element);
         $element->click();
     }
