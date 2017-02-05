@@ -1,0 +1,16 @@
+<?php
+
+return PhpCsFixer\Config::create()
+    ->setRules(array(
+        '@PSR2' => true,
+        'array_syntax' => array('syntax' => 'long'),
+        'concat_with_space' => false,
+        'phpdoc_align' => true,
+        'single_quote' => true,
+        'binary_operator_spaces' => ['align_double_arrow' => true],
+    ))
+    ->setFinder(
+        PhpCsFixer\Finder::create()
+            ->in(__DIR__.'/src')
+    )
+;

@@ -60,7 +60,7 @@ class Selenium2Driver extends CoreDriver
      * The timeout configuration
      * @var array
      */
-    private $timeouts = [];
+    private $timeouts = array();
 
     /**
      * @var Escaper
@@ -70,9 +70,9 @@ class Selenium2Driver extends CoreDriver
     /**
      * Instantiates the driver.
      *
-     * @param string $browserName Browser name
-     * @param array $desiredCapabilities The desired capabilities
-     * @param string $wdHost The WebDriver host
+     * @param string $browserName         Browser name
+     * @param array  $desiredCapabilities The desired capabilities
+     * @param string $wdHost              The WebDriver host
      */
     public function __construct($browserName = 'firefox', $desiredCapabilities = null, $wdHost = 'http://localhost:4444/wd/hub')
     {
@@ -92,7 +92,7 @@ class Selenium2Driver extends CoreDriver
     protected function setBrowserName($browserName = 'firefox')
     {
         if ($this->started) {
-            throw new DriverException("Unable to set browserName, the session has already started");
+            throw new DriverException('Unable to set browserName, the session has already started');
         }
 
         $this->browserName = $browserName;
@@ -111,11 +111,11 @@ class Selenium2Driver extends CoreDriver
     public function setDesiredCapabilities($desiredCapabilities = null)
     {
         if ($this->started) {
-            throw new DriverException("Unable to set desiredCapabilities, the session has already started");
+            throw new DriverException('Unable to set desiredCapabilities, the session has already started');
         }
 
         if (null === $desiredCapabilities) {
-            $desiredCapabilities = [];
+            $desiredCapabilities = array();
         }
 
         // Join $desiredCapabilities with defaultCapabilities
@@ -151,17 +151,17 @@ class Selenium2Driver extends CoreDriver
      */
     public static function getDefaultCapabilities()
     {
-        return [
-            'browserName' => 'firefox',
-            'version' => '9',
-            'platform' => 'ANY',
-            'browserVersion' => '9',
-            'browser' => 'firefox',
-            'name' => 'Behat Test',
+        return array(
+            'browserName'       => 'firefox',
+            'version'           => '9',
+            'platform'          => 'ANY',
+            'browserVersion'    => '9',
+            'browser'           => 'firefox',
+            'name'              => 'Behat Test',
             'deviceOrientation' => 'portrait',
-            'deviceType' => 'tablet',
-            'selenium-version' => '2.31.0'
-        ];
+            'deviceType'        => 'tablet',
+            'selenium-version'  => '2.31.0'
+        );
     }
 
     /**
@@ -174,17 +174,17 @@ class Selenium2Driver extends CoreDriver
      */
     protected function withSyn()
     {
-        $hasSyn = $this->wdSession->execute([
+        $hasSyn = $this->wdSession->execute(array(
             'script' => 'return typeof window["Syn"]!=="undefined" && typeof window["Syn"].trigger!=="undefined"',
-            'args' => [],
-        ]);
+            'args'   => array(),
+        ));
 
         if (!$hasSyn) {
             $synJs = file_get_contents(__DIR__ . '/Resources/syn.js');
-            $this->wdSession->execute([
-                'script' => $synJs,
-                'args' => [],
-            ]);
+            $this->wdSession->execute(array(
+                'script'    => $synJs,
+                'args'      => array(),
+            ));
         }
 
         return $this;
@@ -193,7 +193,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Creates some options for key events
      *
-     * @param string $char the character or code
+     * @param string $char     the character or code
      * @param string $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
      *
      * @return string a json encoded options array for Syn
@@ -205,10 +205,10 @@ class Selenium2Driver extends CoreDriver
             $ord = $char;
         }
 
-        $options = [
-            'keyCode' => $ord,
+        $options = array(
+            'keyCode'  => $ord,
             'charCode' => $ord,
-        ];
+        );
 
         if ($modifier) {
             $options[$modifier . 'Key'] = 1;
@@ -223,9 +223,9 @@ class Selenium2Driver extends CoreDriver
      *
      * @example $this->executeJsOnXpath($xpath, 'return __ELEMENT__.childNodes.length');
      *
-     * @param string $xpath the xpath to search with
-     * @param string $script the script to execute
-     * @param Boolean $sync whether to run the script synchronously (default is TRUE)
+     * @param string  $xpath  the xpath to search with
+     * @param string  $script the script to execute
+     * @param Boolean $sync   whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -241,8 +241,8 @@ class Selenium2Driver extends CoreDriver
      * @example $this->executeJsOnXpath($xpath, 'return __ELEMENT__.childNodes.length');
      *
      * @param Element $element the webdriver element
-     * @param string $script the script to execute
-     * @param Boolean $sync whether to run the script synchronously (default is TRUE)
+     * @param string  $script  the script to execute
+     * @param Boolean $sync    whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -250,10 +250,10 @@ class Selenium2Driver extends CoreDriver
     {
         $script = str_replace('__ELEMENT__', 'arguments[0]', $script);
 
-        $options = [
+        $options = array(
             'script' => $script,
-            'args' => [['ELEMENT' => $element->getID()]],
-        ];
+            'args'   => array(array('ELEMENT' => $element->getID())),
+        );
 
         if ($sync) {
             return $this->wdSession->execute($options);
@@ -268,7 +268,7 @@ class Selenium2Driver extends CoreDriver
      */
     protected function buildWebDriver()
     {
-        $capabilityMethod = [DesiredCapabilities::class, $this->browserName];
+        $capabilityMethod = array(DesiredCapabilities::class, $this->browserName);
 
         if (is_callable($capabilityMethod)) {
             /** @var DesiredCapabilities $capabilities */
@@ -418,7 +418,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToIFrame($name = null)
     {
-        $this->wdSession->frame(['id' => $name]);
+        $this->wdSession->frame(array('id' => $name));
     }
 
     /**
@@ -432,11 +432,11 @@ class Selenium2Driver extends CoreDriver
             return;
         }
 
-        $cookieArray = [
-            'name' => $name,
-            'value' => urlencode($value),
+        $cookieArray = array(
+            'name'   => $name,
+            'value'  => urlencode($value),
             'secure' => false, // thanks, chibimagic!
-        ];
+        );
 
         $this->wdSession->setCookie($cookieArray);
     }
@@ -496,7 +496,7 @@ class Selenium2Driver extends CoreDriver
     {
         $nodes = $this->wdSession->elementsByXpath($xpath);
 
-        $elements = [];
+        $elements = array();
         foreach ($nodes as $i => $node) {
             $elements[] = sprintf('(%s)[%d]', $xpath, $i + 1);
         }
@@ -519,7 +519,7 @@ class Selenium2Driver extends CoreDriver
     {
         $node = $this->findElement($xpath);
         $text = $node->getText();
-        $text = (string)str_replace(["\r\n", "\r", "\n"], ' ', $text);
+        $text = (string)str_replace(array("\r\n", "\r", "\n"), ' ', $text);
 
         return $text;
     }
@@ -637,7 +637,7 @@ JS;
         if ('input' === $elementName) {
             $elementType = strtolower($element->getAttribute('type'));
 
-            if (in_array($elementType, ['submit', 'image', 'button', 'reset'])) {
+            if (in_array($elementType, array('submit', 'image', 'button', 'reset'))) {
                 throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
             }
 
@@ -664,7 +664,7 @@ JS;
 
         $value = strval($value);
 
-        if (in_array($elementName, ['input', 'textarea'])) {
+        if (in_array($elementName, array('input', 'textarea'))) {
             $existingValueLength = strlen($element->getAttribute('value'));
             // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
             // after leaving the field.
@@ -757,7 +757,6 @@ JS;
      */
     private function clickOnElement(Element $element)
     {
-        //$element->click(); // TODO why was this needed?
         $this->wdSession->moveto($element);
         $element->click();
     }
@@ -898,7 +897,7 @@ JS;
             $script = '(' . $script . ')';
         }
 
-        $this->wdSession->execute(['script' => $script, 'args' => []]);
+        $this->wdSession->execute(array('script' => $script, 'args' => array()));
     }
 
     /**
@@ -910,7 +909,7 @@ JS;
             $script = 'return ' . $script;
         }
 
-        return $this->wdSession->execute(['script' => $script, 'args' => []]);
+        return $this->wdSession->execute(array('script' => $script, 'args' => array()));
     }
 
     /**
@@ -923,7 +922,7 @@ JS;
         $end = $start + $timeout / 1000.0;
 
         do {
-            $result = $this->wdSession->execute(['script' => $script, 'args' => []]);
+            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
             usleep(100000);
         } while (microtime(true) < $end && !$result);
 
@@ -978,7 +977,7 @@ JS;
      * Selects a value in a radio button group
      *
      * @param Element $element An element referencing one of the radio buttons of the group
-     * @param string $value The value to select
+     * @param string  $value   The value to select
      *
      * @throws DriverException when the value cannot be found
      */
@@ -1033,8 +1032,8 @@ XPATH;
 
     /**
      * @param Element $element
-     * @param string $value
-     * @param bool $multiple
+     * @param string  $value
+     * @param bool    $multiple
      */
     private function selectOptionOnElement(Element $element, $value, $multiple = false)
     {
@@ -1080,9 +1079,9 @@ JS;
      * Ensures the element is a checkbox
      *
      * @param Element $element
-     * @param string $xpath
-     * @param string $type
-     * @param string $action
+     * @param string  $xpath
+     * @param string  $type
+     * @param string  $action
      *
      * @throws DriverException
      */

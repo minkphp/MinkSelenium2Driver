@@ -32,7 +32,7 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param array $params
+     * @param  array $params
      * @return mixed
      */
     public function execute($params)
@@ -41,7 +41,7 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param array $params
+     * @param  array $params
      * @return mixed
      */
     public function execute_async($params)
@@ -130,7 +130,7 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param array $spec
+     * @param  array           $spec
      * @throws DriverException
      */
     public function frame($spec)
@@ -159,8 +159,8 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param string $type
-     * @param mixed $query
+     * @param  string          $type
+     * @param  mixed           $query
      * @return WebDriverBy
      * @throws DriverException
      */
@@ -175,8 +175,8 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param string $type
-     * @param mixed $query
+     * @param  string                                 $type
+     * @param  mixed                                  $query
      * @return \Facebook\WebDriver\WebDriverElement[]
      * @deprecated To be removed.
      */
@@ -186,8 +186,8 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param string $type
-     * @param mixed $query
+     * @param  string                               $type
+     * @param  mixed                                $query
      * @return \Facebook\WebDriver\WebDriverElement
      * @deprecated To be removed.
      */
@@ -197,7 +197,7 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param mixed $query
+     * @param  mixed                                  $query
      * @return \Facebook\WebDriver\WebDriverElement[]
      */
     public function elementsByXpath($query)
@@ -206,7 +206,7 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param mixed $query
+     * @param  mixed                                $query
      * @return \Facebook\WebDriver\WebDriverElement
      */
     public function elementByXpath($query)
@@ -215,8 +215,8 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param string $type
-     * @param int $param
+     * @param  string          $type
+     * @param  int             $param
      * @throws DriverException
      */
     public function timeouts($type, $param)
@@ -267,7 +267,7 @@ class Selenium2DriverSession
     }
 
     /**
-     * @param string $handle
+     * @param  string                              $handle
      * @return \Facebook\WebDriver\WebDriverWindow
      */
     public function window($handle)
