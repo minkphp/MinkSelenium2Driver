@@ -692,7 +692,7 @@ JS;
     public function check($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->ensureInputType($element, $xpath, 'checkbox', 'check');
+        $this->ensureInputType($element, $xpath, array('checkbox','radio'), 'check');
 
         if ($element->selected()) {
             return;
@@ -707,7 +707,7 @@ JS;
     public function uncheck($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->ensureInputType($element, $xpath, 'checkbox', 'uncheck');
+        $this->ensureInputType($element, $xpath, array('checkbox','radio'), 'uncheck');
 
         if (!$element->selected()) {
             return;
@@ -1113,17 +1113,21 @@ JS;
      *
      * @param Element $element
      * @param string  $xpath
-     * @param string  $type
+     * @param string|array  $type
      * @param string  $action
      *
      * @throws DriverException
      */
     private function ensureInputType(Element $element, $xpath, $type, $action)
     {
-        if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type'))) {
-            $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
+        if(false === is_array($type)){
+            $type = array($type);
+        }
+        $elementType = strtolower($element->attribute('type'));
+        if ('input' !== strtolower($element->name()) || false === in_array($elementType,$type)) {
+            $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input it\'s a %s';
 
-            throw new DriverException(sprintf($message, $action, $xpath, $type));
+            throw new DriverException(sprintf($message, $action, $xpath, join(',',$type),$elementType));
         }
     }
 
