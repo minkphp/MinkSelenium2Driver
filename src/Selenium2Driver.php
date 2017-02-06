@@ -377,6 +377,7 @@ class Selenium2Driver extends CoreDriver
     public function reset()
     {
         $this->wdSession->deleteAllCookies();
+        $this->switchToWindow(null);
     }
 
     /**
