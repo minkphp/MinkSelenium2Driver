@@ -21,12 +21,12 @@
 
     "require": {
         "php":                       ">=5.3.1",
-        "behat/mink":                "~1.7@dev",
+        "behat/mink":                "dev-session-autostart as 1.7.x-dev",
         "instaclick/php-webdriver":  "~1.1"
     },
 
     "require-dev": {
-        "mink/driver-testsuite": "dev-master"
+        "mink/driver-testsuite": "dev-window-tests"
     },
 
     "autoload": {
@@ -45,5 +45,16 @@
         "branch-alias": {
             "dev-master": "1.3.x-dev"
         }
-    }
+    },
+
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/peterrehm/driver-testsuite"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/peterrehm/Mink"
+        }
+    ]
 }
