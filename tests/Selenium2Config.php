@@ -41,7 +41,7 @@ class Selenium2Config extends AbstractConfig
 
         if (
             'Behat\Mink\Tests\Driver\Js\WindowTest' === $testCase
-            && 'testWindowMaximize' === $test
+            && ('testWindowMaximize' === $test || 'testWindowMaximizeBeforePageVisit' === $test)
             && 'true' === getenv('TRAVIS')
         ) {
             return 'Maximizing the window does not work when running the browser in Xvfb.';
