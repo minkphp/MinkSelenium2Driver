@@ -952,7 +952,7 @@ JS;
         $start = microtime(true);
         $end = $start + $timeout / 1000.0;
 
-        while (microtime(true) < $end && !$this->wdSession->execute(array('script' => $script, 'args' => array())))
+        while (!($result=$this->wdSession->execute(array('script' => $script, 'args' => array()))) && (microtime(true) < $end))
         {
             usleep(100000);
         }
