@@ -12,13 +12,14 @@ namespace Behat\Mink\Driver;
 
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
-use WebDriver\Element;
-use WebDriver\Exception\NoSuchElement;
-use WebDriver\Exception\UnknownCommand;
-use WebDriver\Exception\UnknownError;
-use WebDriver\Exception;
-use WebDriver\Key;
-use WebDriver\WebDriver;
+use Exception;
+use Facebook\WebDriver\Exception\NoSuchElementException;
+use Facebook\WebDriver\Exception\WebDriverException;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Facebook\WebDriver\Remote\RemoteWebElement;
+use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\WebDriverDimension;
 
 /**
  * Selenium2 driver.
@@ -28,6 +29,13 @@ use WebDriver\WebDriver;
 class Selenium2Driver extends CoreDriver
 {
     /**
+     * Hostname of driver
+     *
+     * @var string
+     */
+    private $webDriverHost = null;
+
+    /**
      * Whether the browser has been started
      * @var Boolean
      */
@@ -35,7 +43,8 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * The WebDriver instance
-     * @var WebDriver
+     *
+     * @var RemoteWebDriver
      */
     private $webDriver;
 
@@ -45,15 +54,9 @@ class Selenium2Driver extends CoreDriver
     private $browserName;
 
     /**
-     * @var array
+     * @var DesiredCapabilities
      */
     private $desiredCapabilities;
-
-    /**
-     * The WebDriverSession instance
-     * @var \WebDriver\Session
-     */
-    private $wdSession;
 
     /**
      * The timeout configuration
@@ -69,91 +72,110 @@ class Selenium2Driver extends CoreDriver
     /**
      * Instantiates the driver.
      *
-     * @param string $browserName         Browser name
-     * @param array  $desiredCapabilities The desired capabilities
-     * @param string $wdHost              The WebDriver host
+     * @param string $browserName Browser name
+     * @param array $desiredCapabilities The desired capabilities
+     * @param string $wdHost The WebDriver host
      */
-    public function __construct($browserName = 'firefox', $desiredCapabilities = null, $wdHost = 'http://localhost:4444/wd/hub')
-    {
+    public function __construct(
+        $browserName = 'firefox',
+        $desiredCapabilities = [],
+        $wdHost = 'http://localhost:4444/wd/hub'
+    ) {
         $this->setBrowserName($browserName);
-        $this->setDesiredCapabilities($desiredCapabilities);
-        $this->setWebDriver(new WebDriver($wdHost));
+        $caps = $this->initCapabilities($desiredCapabilities);
+        $this->setDesiredCapabilities($caps);
+        $this->setWebDriverHost($wdHost);
         $this->xpathEscaper = new Escaper();
+    }
+
+    /**
+     * @return string
+     */
+    protected function getWebDriverHost()
+    {
+        return $this->webDriverHost;
+    }
+
+    /**
+     * @param string $webDriverHost
+     * @return $this
+     */
+    protected function setWebDriverHost($webDriverHost)
+    {
+        $this->webDriverHost = $webDriverHost;
+        return $this;
+    }
+
+    /**
+     * Detect and assign appropriate browser capabilities
+     *
+     * @link https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
+     *
+     * @param array $desiredCapabilities
+     * @return DesiredCapabilities
+     */
+    protected function initCapabilities($desiredCapabilities = [])
+    {
+        // Build base capabilities
+        $browserName = $this->getBrowserName();
+        if ($browserName && method_exists(DesiredCapabilities::class, $browserName)) {
+            /** @var DesiredCapabilities $caps */
+            $caps = DesiredCapabilities::$browserName();
+        } else {
+            $caps = new DesiredCapabilities();
+        }
+
+        // Set defaults
+        foreach ($this->getDefaultCapabilities() as $key => $value) {
+            if (is_null($caps->getCapability($key))) {
+                $caps->setCapability($key, $value);
+            }
+        }
+
+        // Merge in other requested types
+        foreach ($desiredCapabilities as $key => $value) {
+            switch ($key) {
+                case 'firefox':
+                    $this->initFirefoxCapabilities($caps, $value);
+                    break;
+                case 'chrome':
+                    $this->initChromeCapabilities($caps, $value);
+                    break;
+                default:
+                    $caps->setCapability($key, $value);
+                    break;
+            }
+        }
+
+        return $caps;
+    }
+
+    /**
+     * Get browser name
+     *
+     * @return string
+     */
+    protected function getBrowserName()
+    {
+        return $this->browserName;
     }
 
     /**
      * Sets the browser name
      *
      * @param string $browserName the name of the browser to start, default is 'firefox'
+     * @return $this
      */
     protected function setBrowserName($browserName = 'firefox')
     {
         $this->browserName = $browserName;
-    }
-
-    /**
-     * Sets the desired capabilities - called on construction.  If null is provided, will set the
-     * defaults as desired.
-     *
-     * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
-     *
-     * @param array $desiredCapabilities an array of capabilities to pass on to the WebDriver server
-     *
-     * @throws DriverException
-     */
-    public function setDesiredCapabilities($desiredCapabilities = null)
-    {
-        if ($this->started) {
-            throw new DriverException("Unable to set desiredCapabilities, the session has already started");
-        }
-
-        if (null === $desiredCapabilities) {
-            $desiredCapabilities = array();
-        }
-
-        // Join $desiredCapabilities with defaultCapabilities
-        $desiredCapabilities = array_replace(self::getDefaultCapabilities(), $desiredCapabilities);
-
-        if (isset($desiredCapabilities['firefox'])) {
-            foreach ($desiredCapabilities['firefox'] as $capability => $value) {
-                switch ($capability) {
-                    case 'profile':
-                        $desiredCapabilities['firefox_'.$capability] = base64_encode(file_get_contents($value));
-                        break;
-                    default:
-                        $desiredCapabilities['firefox_'.$capability] = $value;
-                }
-            }
-
-            unset($desiredCapabilities['firefox']);
-        }
-
-        // See https://sites.google.com/a/chromium.org/chromedriver/capabilities
-        if (isset($desiredCapabilities['chrome'])) {
-
-            $chromeOptions = array();
-
-            foreach ($desiredCapabilities['chrome'] as $capability => $value) {
-                if ($capability == 'switches') {
-                    $chromeOptions['args'] = $value;
-                } else {
-                    $chromeOptions[$capability] = $value;
-                }
-                $desiredCapabilities['chrome.'.$capability] = $value;
-            }
-
-            $desiredCapabilities['chromeOptions'] = $chromeOptions;
-
-            unset($desiredCapabilities['chrome']);
-        }
-
-        $this->desiredCapabilities = $desiredCapabilities;
+        return $this;
     }
 
     /**
      * Gets the desiredCapabilities
      *
-     * @return array $desiredCapabilities
+     * @return DesiredCapabilities
      */
     public function getDesiredCapabilities()
     {
@@ -161,27 +183,76 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Sets the WebDriver instance
+     * Sets the desired capabilities - called on construction.
      *
-     * @param WebDriver $webDriver An instance of the WebDriver class
+     * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
+     *
+     * @param DesiredCapabilities $desiredCapabilities an array of capabilities to pass on to the WebDriver server
+     * @return $this
      */
-    public function setWebDriver(WebDriver $webDriver)
+    public function setDesiredCapabilities(DesiredCapabilities $desiredCapabilities)
     {
-        $this->webDriver = $webDriver;
+        $this->desiredCapabilities = $desiredCapabilities;
+        return $this;
     }
 
     /**
-     * Gets the WebDriverSession instance
+     * Init firefox specific capabilities
      *
-     * @return \WebDriver\Session
+     * @param DesiredCapabilities $caps
+     * @param array $config Firefox specific config capabilities
      */
-    public function getWebDriverSession()
+    protected function initFirefoxCapabilities(DesiredCapabilities $caps, $config)
     {
-        return $this->wdSession;
+        // @todo - Support FirefoxProfile settings
+    }
+
+    /**
+     * Init chrome specific capabilities
+     *
+     * @link https://sites.google.com/a/chromium.org/chromedriver/capabilities
+     * @param DesiredCapabilities $caps
+     * @param array $config
+     */
+    protected function initChromeCapabilities(DesiredCapabilities $caps, $config)
+    {
+        $chromeOptions = [];
+        foreach ($config as $capability => $value) {
+            if ($capability == 'switches') {
+                $chromeOptions['args'] = $value;
+            } else {
+                $chromeOptions[$capability] = $value;
+            }
+            $caps->setCapability('chrome.'.$capability, $value);
+        }
+
+        $caps->setCapability('chromeOptions', $chromeOptions);
+    }
+
+    /**
+     * @return RemoteWebDriver
+     */
+    public function getWebDriver()
+    {
+        return $this->webDriver;
+    }
+
+    /**
+     * Sets the WebDriver instance
+     *
+     * @param RemoteWebDriver $webDriver An instance of the WebDriver class
+     * @return $this
+     */
+    public function setWebDriver(RemoteWebDriver $webDriver)
+    {
+        $this->webDriver = $webDriver;
+        return $this;
     }
 
     /**
      * Returns the default capabilities
+     *
+     * @link https://github.com/SeleniumHQ/selenium/wiki/DesiredCapabilities
      *
      * @return array
      */
@@ -189,14 +260,12 @@ class Selenium2Driver extends CoreDriver
     {
         return array(
             'browserName'       => 'firefox',
-            'version'           => '9',
             'platform'          => 'ANY',
-            'browserVersion'    => '9',
             'browser'           => 'firefox',
             'name'              => 'Behat Test',
             'deviceOrientation' => 'portrait',
             'deviceType'        => 'tablet',
-            'selenium-version'  => '2.31.0'
+            'selenium-version'  => '3.5.3'
         );
     }
 
@@ -206,21 +275,17 @@ class Selenium2Driver extends CoreDriver
      *
      *     $this->withSyn()->executeJsOnXpath($xpath, $script);
      *
-     * @return Selenium2Driver
+     * @return $this
      */
     protected function withSyn()
     {
-        $hasSyn = $this->wdSession->execute(array(
-            'script' => 'return typeof window["Syn"]!=="undefined" && typeof window["Syn"].trigger!=="undefined"',
-            'args'   => array()
-        ));
+        $hasSyn = $this->webDriver->executeScript(
+            'return typeof window["Syn"]!=="undefined" && typeof window["Syn"].trigger!=="undefined"'
+        );
 
         if (!$hasSyn) {
             $synJs = file_get_contents(__DIR__.'/Resources/syn.js');
-            $this->wdSession->execute(array(
-                'script' => $synJs,
-                'args'   => array()
-            ));
+            $this->webDriver->executeScript($synJs);
         }
 
         return $this;
@@ -276,26 +341,19 @@ class Selenium2Driver extends CoreDriver
      *
      * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
      *
-     * @param Element $element the webdriver element
+     * @param RemoteWebElement $element the webdriver element
      * @param string  $script  the script to execute
      * @param Boolean $sync    whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
-    private function executeJsOnElement(Element $element, $script, $sync = true)
+    private function executeJsOnElement(RemoteWebElement $element, $script, $sync = true)
     {
         $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
-
-        $options = array(
-            'script' => $script,
-            'args'   => array(array('ELEMENT' => $element->getID())),
-        );
-
         if ($sync) {
-            return $this->wdSession->execute($options);
+            return $this->webDriver->executeScript($script, [$element]);
         }
-
-        return $this->wdSession->execute_async($options);
+        return $this->webDriver->executeAsyncScript($script, [$element]);
     }
 
     /**
@@ -304,14 +362,11 @@ class Selenium2Driver extends CoreDriver
     public function start()
     {
         try {
-            $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
+            $driver = RemoteWebDriver::create($this->getWebDriverHost(), $this->getDesiredCapabilities());
+            $this->setWebDriver($driver);
             $this->applyTimeouts();
-        } catch (\Exception $e) {
-            throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
-        }
-
-        if (!$this->wdSession) {
-            throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
+        } catch (Exception $e) {
+            throw new DriverException('Could not open connection: ' . $e->getMessage(), 0, $e);
         }
         $this->started = true;
     }
@@ -334,14 +389,29 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * Applies timeouts to the current session
+     *
+     * @throws DriverException
      */
     private function applyTimeouts()
     {
         try {
+            $timeouts = $this->webDriver->manage()->timeouts();
             foreach ($this->timeouts as $type => $param) {
-                $this->wdSession->timeouts($type, $param);
+                switch ($type) {
+                    case 'script':
+                        $timeouts->setScriptTimeout($param / 1000);
+                        break;
+                    case 'implicit':
+                        $timeouts->implicitlyWait($param / 1000);
+                        break;
+                    case 'page':
+                        $timeouts->pageLoadTimeout($param / 1000);
+                        break;
+                    default:
+                        throw new DriverException('Invalid timeout ' . $type);
+                }
             }
-        } catch (UnknownError $e) {
+        } catch (WebDriverException $e) {
             throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -359,14 +429,14 @@ class Selenium2Driver extends CoreDriver
      */
     public function stop()
     {
-        if (!$this->wdSession) {
+        if (!$this->webDriver) {
             throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
 
         $this->started = false;
         try {
-            $this->wdSession->close();
-        } catch (\Exception $e) {
+            $this->webDriver->close();
+        } catch (Exception $e) {
             throw new DriverException('Could not close connection', 0, $e);
         }
     }
@@ -376,7 +446,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reset()
     {
-        $this->wdSession->deleteAllCookies();
+        $this->webDriver->manage()->deleteAllCookies();
     }
 
     /**
@@ -384,7 +454,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function visit($url)
     {
-        $this->wdSession->open($url);
+        $this->webDriver->navigate()->to($url);
     }
 
     /**
@@ -392,7 +462,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCurrentUrl()
     {
-        return $this->wdSession->url();
+        return $this->webDriver->getCurrentURL();
     }
 
     /**
@@ -400,7 +470,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reload()
     {
-        $this->wdSession->refresh();
+        $this->webDriver->navigate()->refresh();
     }
 
     /**
@@ -408,7 +478,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function forward()
     {
-        $this->wdSession->forward();
+        $this->webDriver->navigate()->forward();
     }
 
     /**
@@ -416,7 +486,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function back()
     {
-        $this->wdSession->back();
+        $this->webDriver->navigate()->back();
     }
 
     /**
@@ -424,7 +494,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToWindow($name = null)
     {
-        $this->wdSession->focusWindow($name ? $name : '');
+        $this->webDriver->switchTo()->window($name);
     }
 
     /**
@@ -432,7 +502,11 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToIFrame($name = null)
     {
-        $this->wdSession->frame(array('id' => $name));
+        if ($name) {
+            $this->webDriver->switchTo()->frame($name);
+        } else {
+            $this->switchToWindow();
+        }
     }
 
     /**
@@ -441,7 +515,7 @@ class Selenium2Driver extends CoreDriver
     public function setCookie($name, $value = null)
     {
         if (null === $value) {
-            $this->wdSession->deleteCookie($name);
+            $this->webDriver->manage()->deleteCookieNamed($name);
 
             return;
         }
@@ -452,7 +526,7 @@ class Selenium2Driver extends CoreDriver
             'secure' => false, // thanks, chibimagic!
         );
 
-        $this->wdSession->setCookie($cookieArray);
+        $this->webDriver->manage()->addCookie($cookieArray);
     }
 
     /**
@@ -460,12 +534,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCookie($name)
     {
-        $cookies = $this->wdSession->getAllCookies();
-        foreach ($cookies as $cookie) {
-            if ($cookie['name'] === $name) {
-                return urldecode($cookie['value']);
-            }
-        }
+        return $this->webDriver->manage()->getCookieNamed($name);
     }
 
     /**
@@ -473,7 +542,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getContent()
     {
-        return $this->wdSession->source();
+        return $this->webDriver->getPageSource();
     }
 
     /**
@@ -481,7 +550,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getScreenshot()
     {
-        return base64_decode($this->wdSession->screenshot());
+        return $this->webDriver->takeScreenshot();
     }
 
     /**
@@ -489,7 +558,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWindowNames()
     {
-        return $this->wdSession->window_handles();
+        return $this->webDriver->getWindowHandles();
     }
 
     /**
@@ -497,7 +566,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWindowName()
     {
-        return $this->wdSession->window_handle();
+        return $this->webDriver->getWindowHandle();
     }
 
     /**
@@ -505,7 +574,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function findElementXpaths($xpath)
     {
-        $nodes = $this->wdSession->elements('xpath', $xpath);
+        $nodes = $this->webDriver->findElements(WebDriverBy::xpath($xpath));
 
         $elements = array();
         foreach ($nodes as $i => $node) {
@@ -520,7 +589,8 @@ class Selenium2Driver extends CoreDriver
      */
     public function getTagName($xpath)
     {
-        return $this->findElement($xpath)->name();
+        $element = $this->findElement($xpath);
+        return $element->getTagName();
     }
 
     /**
@@ -529,7 +599,7 @@ class Selenium2Driver extends CoreDriver
     public function getText($xpath)
     {
         $node = $this->findElement($xpath);
-        $text = $node->text();
+        $text = $node->getText();
         $text = (string) str_replace(array("\r", "\r\n", "\n"), ' ', $text);
 
         return $text;
@@ -567,12 +637,12 @@ class Selenium2Driver extends CoreDriver
     public function getValue($xpath)
     {
         $element = $this->findElement($xpath);
-        $elementName = strtolower($element->name());
-        $elementType = strtolower($element->attribute('type'));
+        $elementName = strtolower($element->getTagName());
+        $elementType = strtolower($element->getAttribute('type'));
 
         // Getting the value of a checkbox returns its value if selected.
         if ('input' === $elementName && 'checkbox' === $elementType) {
-            return $element->selected() ? $element->attribute('value') : null;
+            return $element->isSelected() ? $element->getAttribute('value') : null;
         }
 
         if ('input' === $elementName && 'radio' === $elementType) {
@@ -601,7 +671,7 @@ JS;
 
         // Using $element->attribute('value') on a select only returns the first selected option
         // even when it is a multiple select, so a custom retrieval is needed.
-        if ('select' === $elementName && $element->attribute('multiple')) {
+        if ('select' === $elementName && $element->getAttribute('multiple')) {
             $script = <<<JS
 var node = {{ELEMENT}},
     value = [];
@@ -618,7 +688,7 @@ JS;
             return $this->executeJsOnElement($element, $script);
         }
 
-        return $element->attribute('value');
+        return $element->getAttribute('value');
     }
 
     /**
@@ -627,7 +697,7 @@ JS;
     public function setValue($xpath, $value)
     {
         $element = $this->findElement($xpath);
-        $elementName = strtolower($element->name());
+        $elementName = strtolower($element->getTagName());
 
         if ('select' === $elementName) {
             if (is_array($value)) {
@@ -646,14 +716,14 @@ JS;
         }
 
         if ('input' === $elementName) {
-            $elementType = strtolower($element->attribute('type'));
+            $elementType = strtolower($element->getAttribute('type'));
 
             if (in_array($elementType, array('submit', 'image', 'button', 'reset'))) {
                 throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
             }
 
             if ('checkbox' === $elementType) {
-                if ($element->selected() xor (bool) $value) {
+                if ($element->isSelected() xor (bool) $value) {
                     $this->clickOnElement($element);
                 }
 
@@ -667,7 +737,9 @@ JS;
             }
 
             if ('file' === $elementType) {
-                $element->postValue(array('value' => array(strval($value))));
+                // @todo - Check if this is correct way to upload files
+                $element->sendKeys($value);
+                // $element->postValue(array('value' => array(strval($value))));
 
                 return;
             }
@@ -676,13 +748,10 @@ JS;
         $value = strval($value);
 
         if (in_array($elementName, array('input', 'textarea'))) {
-            $existingValueLength = strlen($element->attribute('value'));
-            // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
-            // after leaving the field.
-            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
+            $element->clear();
         }
 
-        $element->postValue(array('value' => array($value)));
+        $element->sendKeys($value);
         $this->trigger($xpath, 'change');
     }
 
@@ -694,7 +763,7 @@ JS;
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'checkbox', 'check');
 
-        if ($element->selected()) {
+        if ($element->isSelected()) {
             return;
         }
 
@@ -709,7 +778,7 @@ JS;
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'checkbox', 'uncheck');
 
-        if (!$element->selected()) {
+        if (!$element->isSelected()) {
             return;
         }
 
@@ -721,7 +790,7 @@ JS;
      */
     public function isChecked($xpath)
     {
-        return $this->findElement($xpath)->selected();
+        return $this->findElement($xpath)->isSelected();
     }
 
     /**
@@ -730,9 +799,9 @@ JS;
     public function selectOption($xpath, $value, $multiple = false)
     {
         $element = $this->findElement($xpath);
-        $tagName = strtolower($element->name());
+        $tagName = strtolower($element->getTagName());
 
-        if ('input' === $tagName && 'radio' === strtolower($element->attribute('type'))) {
+        if ('input' === $tagName && 'radio' === strtolower($element->getAttribute('type'))) {
             $this->selectRadioValue($element, $value);
 
             return;
@@ -752,7 +821,7 @@ JS;
      */
     public function isSelected($xpath)
     {
-        return $this->findElement($xpath)->selected();
+        return $this->findElement($xpath)->isSelected();
     }
 
     /**
@@ -763,15 +832,14 @@ JS;
         $this->clickOnElement($this->findElement($xpath));
     }
 
-    private function clickOnElement(Element $element)
+    /**
+     * Perform click on a specified element
+     *
+     * @param RemoteWebElement $element
+     */
+    private function clickOnElement(RemoteWebElement $element)
     {
-        try {
-            // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
-            $this->wdSession->moveto(array('element' => $element->getID()));
-        } catch (UnknownCommand $e) {
-            // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
-        }
-
+        $element->getLocationOnScreenOnceScrolledIntoView();
         $element->click();
     }
 
@@ -780,8 +848,18 @@ JS;
      */
     public function doubleClick($xpath)
     {
-        $this->mouseOver($xpath);
-        $this->wdSession->doubleclick();
+        $this->doubleClickOnElement($this->findElement($xpath));
+    }
+
+    /**
+     * Move the mouse to the specified location, and double click on it
+     *
+     * @param RemoteWebElement $element
+     */
+    private function doubleClickOnElement(RemoteWebElement $element)
+    {
+        $coordinates = $element->getLocationOnScreenOnceScrolledIntoView();
+        $this->webDriver->getMouse()->doubleClick($coordinates);
     }
 
     /**
@@ -789,8 +867,13 @@ JS;
      */
     public function rightClick($xpath)
     {
-        $this->mouseOver($xpath);
-        $this->wdSession->click(array('button' => 2));
+        $this->rightClickOnElement($this->findElement($xpath));
+    }
+
+    private function rightClickOnElement(RemoteWebElement $element)
+    {
+        $coordinates = $element->getLocationOnScreenOnceScrolledIntoView();
+        $this->webDriver->getMouse()->contextClick($coordinates);
     }
 
     /**
@@ -801,17 +884,8 @@ JS;
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
-        // Upload the file to Selenium and use the remote path. This will
-        // ensure that Selenium always has access to the file, even if it runs
-        // as a remote instance.
-        try {
-          $remotePath = $this->uploadFile($path);
-        } catch (\Exception $e) {
-          // File could not be uploaded to remote instance. Use the local path.
-          $remotePath = $path;
-        }
-
-        $element->postValue(array('value' => array($remotePath)));
+        // @todo - Check this is the correct way to upload files
+        $element->sendKeys($path);
     }
 
     /**
@@ -819,7 +893,7 @@ JS;
      */
     public function isVisible($xpath)
     {
-        return $this->findElement($xpath)->displayed();
+        return $this->findElement($xpath)->isDisplayed();
     }
 
     /**
@@ -827,9 +901,18 @@ JS;
      */
     public function mouseOver($xpath)
     {
-        $this->wdSession->moveto(array(
-            'element' => $this->findElement($xpath)->getID()
-        ));
+        $this->mouseOverElement($this->findElement($xpath));
+    }
+
+    /**
+     * Scroll to the given element and move the mouse over it
+     *
+     * @param RemoteWebElement $element
+     */
+    private function mouseOverElement(RemoteWebElement $element)
+    {
+        $coordinates = $element->getLocationOnScreenOnceScrolledIntoView();
+        $this->webDriver->getMouse()->mouseMove($coordinates);
     }
 
     /**
@@ -880,42 +963,9 @@ JS;
      */
     public function dragTo($sourceXpath, $destinationXpath)
     {
-        $source      = $this->findElement($sourceXpath);
+        $source = $this->findElement($sourceXpath);
         $destination = $this->findElement($destinationXpath);
-
-        $this->wdSession->moveto(array(
-            'element' => $source->getID()
-        ));
-
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
-
-    event.initEvent("dragstart", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
-        $this->withSyn()->executeJsOnElement($source, $script);
-
-        $this->wdSession->buttondown();
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID()
-        ));
-        $this->wdSession->buttonup();
-
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
-
-    event.initEvent("drop", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
-        $this->withSyn()->executeJsOnElement($destination, $script);
+        $this->webDriver->action()->dragAndDrop($source, $destination);
     }
 
     /**
@@ -928,7 +978,7 @@ JS;
             $script = '(' . $script . ')';
         }
 
-        $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        $this->webDriver->executeScript($script);
     }
 
     /**
@@ -937,10 +987,10 @@ JS;
     public function evaluateScript($script)
     {
         if (0 !== strpos(trim($script), 'return ')) {
-            $script = 'return ' . $script;
+            $script = "return {$script};";
         }
 
-        return $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        return $this->webDriver->executeScript($script);
     }
 
     /**
@@ -948,12 +998,11 @@ JS;
      */
     public function wait($timeout, $condition)
     {
-        $script = "return $condition;";
         $start = microtime(true);
         $end = $start + $timeout / 1000.0;
 
         do {
-            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
+            $result = $this->evaluateScript($condition);
             usleep(100000);
         } while (microtime(true) < $end && !$result);
 
@@ -965,9 +1014,15 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        $this->wdSession->window($name ? $name : 'current')->postSize(
-            array('width' => $width, 'height' => $height)
-        );
+        // Note: Only 'current' window can be resized, so other names ignored
+        if ($name && $name !== 'current') {
+            throw new DriverException("Can not resize non-current window: {$name}");
+        }
+        $this
+            ->webDriver
+            ->manage()
+            ->window()
+            ->setSize(new WebDriverDimension($width, $height));
     }
 
     /**
@@ -983,7 +1038,11 @@ JS;
      */
     public function maximizeWindow($name = null)
     {
-        $this->wdSession->window($name ? $name : 'current')->maximize();
+        // Note: Only 'current' window can be resized, so other names ignored
+        if ($name && $name !== 'current') {
+            throw new DriverException("Can not resize non-current window: {$name}");
+        }
+        $this->webDriver->manage()->window()->maximize();
     }
 
     /**
@@ -993,43 +1052,48 @@ JS;
      */
     public function getWebDriverSessionId()
     {
-        return $this->isStarted() ? basename($this->wdSession->getUrl()) : null;
+        return $this->isStarted()
+            ? $this->webDriver->getSessionID()
+            : null;
     }
 
     /**
-     * @param string $xpath
-     *
-     * @return Element
+     * @param string $xpath XPath expression
+     * @param RemoteWebElement|null $parent Optional parent element
+     * @return RemoteWebElement
      */
-    private function findElement($xpath)
+    private function findElement($xpath, RemoteWebElement $parent = null)
     {
-        return $this->wdSession->element('xpath', $xpath);
+        $finder = WebDriverBy::xpath($xpath);
+        return $parent
+            ? $parent->findElement($finder)
+            : $this->webDriver->findElement($finder);
     }
 
     /**
      * Selects a value in a radio button group
      *
-     * @param Element $element An element referencing one of the radio buttons of the group
+     * @param RemoteWebElement $element An element referencing one of the radio buttons of the group
      * @param string  $value   The value to select
      *
      * @throws DriverException when the value cannot be found
      */
-    private function selectRadioValue(Element $element, $value)
+    private function selectRadioValue(RemoteWebElement $element, $value)
     {
         // short-circuit when we already have the right button of the group to avoid XPath queries
-        if ($element->attribute('value') === $value) {
+        if ($element->getAttribute('value') === $value) {
             $element->click();
 
             return;
         }
 
-        $name = $element->attribute('name');
+        $name = $element->getAttribute('name');
 
         if (!$name) {
             throw new DriverException(sprintf('The radio button does not have the value "%s"', $value));
         }
 
-        $formId = $element->attribute('form');
+        $formId = $element->getAttribute('form');
 
         try {
             if (null !== $formId) {
@@ -1045,16 +1109,16 @@ XPATH;
                     $this->xpathEscaper->escapeLiteral($name),
                     $this->xpathEscaper->escapeLiteral($value)
                 );
-                $input = $this->wdSession->element('xpath', $xpath);
+                $input = $this->findElement($xpath);
             } else {
                 $xpath = sprintf(
                     './ancestor::form//input[@type="radio" and not(@form) and @name=%s and @value = %s]',
                     $this->xpathEscaper->escapeLiteral($name),
                     $this->xpathEscaper->escapeLiteral($value)
                 );
-                $input = $element->element('xpath', $xpath);
+                $input = $this->findElement($xpath, $element);
             }
-        } catch (NoSuchElement $e) {
+        } catch (NoSuchElementException $e) {
             $message = sprintf('The radio group "%s" does not have an option "%s"', $name, $value);
 
             throw new DriverException($message, 0, $e);
@@ -1064,19 +1128,19 @@ XPATH;
     }
 
     /**
-     * @param Element $element
+     * @param RemoteWebElement $element
      * @param string  $value
      * @param bool    $multiple
      */
-    private function selectOptionOnElement(Element $element, $value, $multiple = false)
+    private function selectOptionOnElement(RemoteWebElement $element, $value, $multiple = false)
     {
         $escapedValue = $this->xpathEscaper->escapeLiteral($value);
         // The value of an option is the normalized version of its text when it has no value attribute
         $optionQuery = sprintf('.//option[@value = %s or (not(@value) and normalize-space(.) = %s)]', $escapedValue, $escapedValue);
-        $option = $element->element('xpath', $optionQuery);
+        $option = $this->findElement($optionQuery);
 
-        if ($multiple || !$element->attribute('multiple')) {
-            if (!$option->selected()) {
+        if ($multiple || !$element->getAttribute('multiple')) {
+            if (!$option->isSelected()) {
                 $option->click();
             }
 
@@ -1093,9 +1157,9 @@ XPATH;
      *
      * Note: this implementation does not trigger a change event after deselecting the elements.
      *
-     * @param Element $element
+     * @param RemoteWebElement $element
      */
-    private function deselectAllOptions(Element $element)
+    private function deselectAllOptions(RemoteWebElement $element)
     {
         $script = <<<JS
 var node = {{ELEMENT}};
@@ -1111,98 +1175,32 @@ JS;
     /**
      * Ensures the element is a checkbox
      *
-     * @param Element $element
-     * @param string  $xpath
-     * @param string  $type
-     * @param string  $action
+     * @param RemoteWebElement $element
+     * @param string $xpath XPath to the element
+     * @param string $type Required value of 'type' property on this input
+     * @param string $action Descriptive action being performed on this element
      *
      * @throws DriverException
      */
-    private function ensureInputType(Element $element, $xpath, $type, $action)
+    private function ensureInputType(RemoteWebElement $element, $xpath, $type, $action)
     {
-        if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type'))) {
-            $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
-
-            throw new DriverException(sprintf($message, $action, $xpath, $type));
+        if ('input' !== $element->getTagName()
+            || $type !== $element->getAttribute('type')
+        ) {
+            throw new DriverException(
+                "Impossible to {$action} the element with XPath \"{$xpath}\" as it is not a {$type} input"
+            );
         }
     }
 
     /**
-     * @param $xpath
-     * @param $event
-     * @param string $options
+     * @param string $xpath XPath to element to trigger event on
+     * @param string $event Event name
+     * @param string $options Options to pass to window.syn.trigger
      */
     private function trigger($xpath, $event, $options = '{}')
     {
-        $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
+        $script = 'window.Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
-
-    /**
-     * Uploads a file to the Selenium instance.
-     *
-     * Note that uploading files is not part of the official WebDriver
-     * specification, but it is supported by Selenium.
-     *
-     * @param string $path     The path to the file to upload.
-     *
-     * @return string          The remote path.
-     *
-     * @throws DriverException When PHP is compiled without zip support, or the file doesn't exist.
-     * @throws UnknownError    When an unknown error occurred during file upload.
-     * @throws \Exception      When a known error occurred during file upload.
-     *
-     * @see https://github.com/SeleniumHQ/selenium/blob/master/py/selenium/webdriver/remote/webelement.py#L533
-     */
-    private function uploadFile($path)
-    {
-        if (!is_file($path)) {
-          throw new DriverException('File does not exist locally and cannot be uploaded to the remote instance.');
-        }
-
-        if (!class_exists('ZipArchive')) {
-          throw new DriverException('Could not compress file, PHP is compiled without zip support.');
-        }
-
-        // Selenium only accepts uploads that are compressed as a Zip archive.
-        $tempFilename = tempnam('', 'WebDriverZip');
-
-        $archive = new \ZipArchive();
-        $result = $archive->open($tempFilename, \ZipArchive::CREATE);
-        if (!$result) {
-          throw new DriverException('Zip archive could not be created. Error ' . $result);
-        }
-        $result = $archive->addFile($path, basename($path));
-        if (!$result) {
-          throw new DriverException('File could not be added to zip archive.');
-        }
-        $result = $archive->close();
-        if (!$result) {
-          throw new DriverException('Zip archive could not be closed.');
-        }
-
-        try {
-          $remotePath = $this->wdSession->file(array('file' => base64_encode(file_get_contents($tempFilename))));
-
-          // If no path is returned the file upload failed silently. In this
-          // case it is possible Selenium was not used but another web driver
-          // such as PhantomJS.
-          // @todo Support other drivers when (if) they get remote file transfer
-          // capability.
-          if (empty($remotePath)) {
-            throw new UnknownError();
-          }
-        } catch (\Exception $e) {
-          // Catch any error so we can still clean up the temporary archive.
-        }
-
-        unlink($tempFilename);
-
-        if (isset($e)) {
-          throw $e;
-        }
-
-        return $remotePath;
-    }
-
 }

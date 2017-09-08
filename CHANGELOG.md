@@ -1,3 +1,11 @@
+2.0.0 / 2017-x-x
+==================
+
+New major changes:
+
+* Update to support selenium 3
+* Migrate to facebook/webdriver
+
 1.3.1 / 2016-03-05
 ==================
 
