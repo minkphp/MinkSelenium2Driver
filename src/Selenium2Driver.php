@@ -858,8 +858,8 @@ JS;
      */
     private function doubleClickOnElement(RemoteWebElement $element)
     {
-        $coordinates = $element->getLocationOnScreenOnceScrolledIntoView();
-        $this->webDriver->getMouse()->doubleClick($coordinates);
+        $element->getLocationOnScreenOnceScrolledIntoView();
+        $this->webDriver->getMouse()->doubleClick($element->getCoordinates());
     }
 
     /**
@@ -872,8 +872,8 @@ JS;
 
     private function rightClickOnElement(RemoteWebElement $element)
     {
-        $coordinates = $element->getLocationOnScreenOnceScrolledIntoView();
-        $this->webDriver->getMouse()->contextClick($coordinates);
+        $element->getLocationOnScreenOnceScrolledIntoView();
+        $this->webDriver->getMouse()->contextClick($element->getCoordinates());
     }
 
     /**
@@ -911,8 +911,8 @@ JS;
      */
     private function mouseOverElement(RemoteWebElement $element)
     {
-        $coordinates = $element->getLocationOnScreenOnceScrolledIntoView();
-        $this->webDriver->getMouse()->mouseMove($coordinates);
+        $element->getLocationOnScreenOnceScrolledIntoView();
+        $this->webDriver->getMouse()->mouseMove($element->getCoordinates());
     }
 
     /**
