@@ -40,6 +40,8 @@ before_script:
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.5" ]]; then MINK_PHP_BIN=~/.phpenv/versions/5.5/bin/php vendor/bin/mink-test-server > /dev/null 2>&1 & fi
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.6" ]]; then MINK_PHP_BIN=~/.phpenv/versions/5.6/bin/php vendor/bin/mink-test-server > /dev/null 2>&1 & fi
   - if [[ ${TRAVIS_PHP_VERSION:0:1} == "7" ]]; then vendor/bin/mink-test-server > /dev/null 2>&1 & fi
+  - ps aux | grep mink
+  - ps aux | grep selenium
 
 script: phpunit -v --coverage-clover=coverage.clover
 
