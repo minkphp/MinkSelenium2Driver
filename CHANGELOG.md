@@ -1,3 +1,10 @@
+1.3.2 / 2017-10-09
+==================
+
+Bug fixes:
+
+* See what goes wrong in Travis then fix it
+
 1.3.1 / 2016-03-05
 ==================
 
