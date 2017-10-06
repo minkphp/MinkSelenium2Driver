@@ -6,7 +6,7 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
-php: [5.3, 5.4, 5.5, 5.6, 7.0, 7.1, hhvm]
+php: [5.4, 5.5, 5.6, 7.0, 7.1, hhvm]
 
 env:
   - WEBDRIVER=selenium
@@ -17,6 +17,8 @@ matrix:
     - env: WEBDRIVER=phantomjs PHANTOM_VERSION=2
   fast_finish: true
   include:
+    - php: 5.3
+      dist: precise
     - php: 5.5
       env: WEBDRIVER=phantomjs
     - php: 5.5
