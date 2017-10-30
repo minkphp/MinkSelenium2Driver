@@ -189,14 +189,9 @@ class Selenium2Driver extends CoreDriver
     {
         return array(
             'browserName'       => 'firefox',
-            'version'           => '9',
+            'version'           => '',
             'platform'          => 'ANY',
-            'browserVersion'    => '9',
-            'browser'           => 'firefox',
-            'name'              => 'Behat Test',
-            'deviceOrientation' => 'portrait',
-            'deviceType'        => 'tablet',
-            'selenium-version'  => '2.31.0'
+            'name'              => 'Behat Test'
         );
     }
 
