@@ -44,7 +44,9 @@ class DesiredCapabilitiesTest extends TestCase
             'deviceType'        => 'tablet',
             'selenium-version'  => '2.45.0'
         );
-        $driver = $this->getSession()->getDriver();
+        $session = $this->getSession();
+        $session->start();
+        $driver = $session->getDriver();
         $driver->setDesiredCapabilities($caps);
     }
 }
