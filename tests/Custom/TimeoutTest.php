@@ -1,16 +1,15 @@
 <?php
 
-namespace Behat\Mink\Tests\Driver\Custom;
+namespace SilverStripe\MinkSelenium3Driver\Tests\Custom;
 
+use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Tests\Driver\TestCase;
 
 class TimeoutTest extends TestCase
 {
-    /**
-     * @expectedException \Behat\Mink\Exception\DriverException
-     */
     public function testInvalidTimeoutSettingThrowsException()
     {
+        $this->expectException(DriverException::class);
         $this->getSession()->getDriver()->setTimeouts(array('invalid' => 0));
     }
 

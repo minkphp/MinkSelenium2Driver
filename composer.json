@@ -1,49 +1,54 @@
 {
-    "name":         "silverstripe/mink-selenium3-driver",
-    "description":  "Selenium3 (WebDriver) driver for Mink framework",
-    "keywords":     ["selenium", "webdriver", "javascript", "ajax", "testing", "browser"],
-    "homepage":     "http://mink.behat.org/",
-    "type":         "mink-driver",
-    "license":      "MIT",
-
+    "name": "silverstripe/mink-selenium3-driver",
+    "description": "Selenium3 (WebDriver) driver for Mink framework",
+    "keywords": [
+        "selenium",
+        "webdriver",
+        "javascript",
+        "ajax",
+        "testing",
+        "browser"
+    ],
+    "homepage": "http://mink.behat.org/",
+    "type": "mink-driver",
+    "license": "MIT",
     "authors": [
         {
-            "name":      "Pete Otaqui",
-            "email":     "pete@otaqui.com",
-            "homepage":  "https://github.com/pete-otaqui"
+            "name": "Pete Otaqui",
+            "email": "pete@otaqui.com",
+            "homepage": "https://github.com/pete-otaqui"
         },
         {
-            "name":      "Konstantin Kudryashov",
-            "email":     "ever.zet@gmail.com",
-            "homepage":  "http://everzet.com"
+            "name": "Konstantin Kudryashov",
+            "email": "ever.zet@gmail.com",
+            "homepage": "http://everzet.com"
+        },
+        {
+            "name": "Damian Mooyman",
+            "email": "damian@silverstripe.com"
         }
     ],
-
     "require": {
-        "php":                       ">=5.3.1",
-        "behat/mink":                "~1.7@dev",
-        "facebook/webdriver":    "^1.4"
+        "php": "^5.6 | ^7",
+        "behat/mink": "~1.7@dev",
+        "facebook/webdriver": "^1.4"
     },
-
     "require-dev": {
         "mink/driver-testsuite": "dev-master"
     },
-
     "autoload": {
         "psr-4": {
-            "Behat\\Mink\\Driver\\": "src/"
+            "SilverStripe\\MinkSelenium3Driver\\": "src/"
         }
     },
-
     "autoload-dev": {
         "psr-4": {
-            "Behat\\Mink\\Tests\\Driver\\": "tests"
+            "SilverStripe\\MinkSelenium3Driver\\Tests\\": "tests/"
         }
     },
-
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "1.0.x-dev"
         }
     }
 }

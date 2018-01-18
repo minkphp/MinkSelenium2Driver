@@ -8,8 +8,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Behat\Mink\Driver;
+namespace SilverStripe\MinkSelenium3Driver;
 
+use Behat\Mink\Driver\CoreDriver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use Exception;
@@ -22,12 +23,17 @@ use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 
 /**
- * Selenium2 driver.
+ * Selenium3 driver.
  *
  * @author Pete Otaqui <pete@otaqui.com>
  */
-class Selenium2Driver extends CoreDriver
+class Selenium3Driver extends CoreDriver
 {
+    /**
+     * Default browser
+     */
+    const DEFAULT_BROWSER = 'chrome';
+
     /**
      * Hostname of driver
      *
@@ -62,7 +68,7 @@ class Selenium2Driver extends CoreDriver
      * The timeout configuration
      * @var array
      */
-    private $timeouts = array();
+    private $timeouts = [];
 
     /**
      * @var Escaper
@@ -77,7 +83,7 @@ class Selenium2Driver extends CoreDriver
      * @param string $wdHost The WebDriver host
      */
     public function __construct(
-        $browserName = 'firefox',
+        $browserName = self::DEFAULT_BROWSER,
         $desiredCapabilities = [],
         $wdHost = 'http://localhost:4444/wd/hub'
     ) {
@@ -163,10 +169,10 @@ class Selenium2Driver extends CoreDriver
     /**
      * Sets the browser name
      *
-     * @param string $browserName the name of the browser to start, default is 'firefox'
+     * @param string $browserName the name of the browser to start, default is 'chrome'
      * @return $this
      */
-    protected function setBrowserName($browserName = 'firefox')
+    protected function setBrowserName($browserName = self::DEFAULT_BROWSER)
     {
         $this->browserName = $browserName;
         return $this;
@@ -223,7 +229,7 @@ class Selenium2Driver extends CoreDriver
             } else {
                 $chromeOptions[$capability] = $value;
             }
-            $caps->setCapability('chrome.'.$capability, $value);
+            $caps->setCapability('chrome.' . $capability, $value);
         }
 
         $caps->setCapability('chromeOptions', $chromeOptions);
@@ -258,15 +264,15 @@ class Selenium2Driver extends CoreDriver
      */
     public static function getDefaultCapabilities()
     {
-        return array(
-            'browserName'       => 'firefox',
-            'platform'          => 'ANY',
-            'browser'           => 'firefox',
-            'name'              => 'Behat Test',
+        return [
+            'browserName' => self::DEFAULT_BROWSER,
+            'platform' => 'ANY',
+            'browser' => self::DEFAULT_BROWSER,
+            'name' => 'Behat Test',
             'deviceOrientation' => 'portrait',
-            'deviceType'        => 'tablet',
-            'selenium-version'  => '3.5.3'
-        );
+            'deviceType' => 'tablet',
+            'selenium-version' => '3.5.3',
+        ];
     }
 
     /**
@@ -284,7 +290,7 @@ class Selenium2Driver extends CoreDriver
         );
 
         if (!$hasSyn) {
-            $synJs = file_get_contents(__DIR__.'/Resources/syn.js');
+            $synJs = file_get_contents(__DIR__ . '/Resources/syn.js');
             $this->webDriver->executeScript($synJs);
         }
 
@@ -294,7 +300,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Creates some options for key events
      *
-     * @param string $char     the character or code
+     * @param string $char the character or code
      * @param string $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
      *
      * @return string a json encoded options array for Syn
@@ -307,12 +313,12 @@ class Selenium2Driver extends CoreDriver
         }
 
         $options = array(
-            'keyCode'  => $ord,
+            'keyCode' => $ord,
             'charCode' => $ord
         );
 
         if ($modifier) {
-            $options[$modifier.'Key'] = 1;
+            $options[$modifier . 'Key'] = 1;
         }
 
         return json_encode($options);
@@ -324,9 +330,9 @@ class Selenium2Driver extends CoreDriver
      *
      * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
      *
-     * @param string  $xpath  the xpath to search with
-     * @param string  $script the script to execute
-     * @param Boolean $sync   whether to run the script synchronously (default is TRUE)
+     * @param string $xpath the xpath to search with
+     * @param string $script the script to execute
+     * @param Boolean $sync whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -342,14 +348,14 @@ class Selenium2Driver extends CoreDriver
      * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
      *
      * @param RemoteWebElement $element the webdriver element
-     * @param string  $script  the script to execute
-     * @param Boolean $sync    whether to run the script synchronously (default is TRUE)
+     * @param string $script the script to execute
+     * @param Boolean $sync whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
     private function executeJsOnElement(RemoteWebElement $element, $script, $sync = true)
     {
-        $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
+        $script = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
         if ($sync) {
             return $this->webDriver->executeScript($script, [$element]);
         }
@@ -521,8 +527,8 @@ class Selenium2Driver extends CoreDriver
         }
 
         $cookieArray = array(
-            'name'   => $name,
-            'value'  => urlencode($value),
+            'name' => $name,
+            'value' => urlencode($value),
             'secure' => false, // thanks, chibimagic!
         );
 
@@ -578,7 +584,7 @@ class Selenium2Driver extends CoreDriver
 
         $elements = array();
         foreach ($nodes as $i => $node) {
-            $elements[] = sprintf('(%s)[%d]', $xpath, $i+1);
+            $elements[] = sprintf('(%s)[%d]', $xpath, $i + 1);
         }
 
         return $elements;
@@ -600,7 +606,7 @@ class Selenium2Driver extends CoreDriver
     {
         $node = $this->findElement($xpath);
         $text = $node->getText();
-        $text = (string) str_replace(array("\r", "\r\n", "\n"), ' ', $text);
+        $text = (string)str_replace(array("\r", "\r\n", "\n"), ' ', $text);
 
         return $text;
     }
@@ -626,7 +632,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getAttribute($xpath, $name)
     {
-        $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string) $name) . ')';
+        $script = 'return {{ELEMENT}}.getAttribute(' . json_encode((string)$name) . ')';
 
         return $this->executeJsOnXpath($xpath, $script);
     }
@@ -719,11 +725,12 @@ JS;
             $elementType = strtolower($element->getAttribute('type'));
 
             if (in_array($elementType, array('submit', 'image', 'button', 'reset'))) {
-                throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
+                throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox',
+                    $xpath));
             }
 
             if ('checkbox' === $elementType) {
-                if ($element->isSelected() xor (bool) $value) {
+                if ($element->isSelected() xor (bool)$value) {
                     $this->clickOnElement($element);
                 }
 
@@ -813,7 +820,8 @@ JS;
             return;
         }
 
-        throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input', $xpath));
+        throw new DriverException(sprintf('Impossible to select an option on the element with XPath "%s" as it is not a select or radio input',
+            $xpath));
     }
 
     /**
@@ -1006,7 +1014,7 @@ JS;
             usleep(100000);
         } while (microtime(true) < $end && !$result);
 
-        return (bool) $result;
+        return (bool)$result;
     }
 
     /**
@@ -1074,7 +1082,7 @@ JS;
      * Selects a value in a radio button group
      *
      * @param RemoteWebElement $element An element referencing one of the radio buttons of the group
-     * @param string  $value   The value to select
+     * @param string $value The value to select
      *
      * @throws DriverException when the value cannot be found
      */
@@ -1129,14 +1137,15 @@ XPATH;
 
     /**
      * @param RemoteWebElement $element
-     * @param string  $value
-     * @param bool    $multiple
+     * @param string $value
+     * @param bool $multiple
      */
     private function selectOptionOnElement(RemoteWebElement $element, $value, $multiple = false)
     {
         $escapedValue = $this->xpathEscaper->escapeLiteral($value);
         // The value of an option is the normalized version of its text when it has no value attribute
-        $optionQuery = sprintf('.//option[@value = %s or (not(@value) and normalize-space(.) = %s)]', $escapedValue, $escapedValue);
+        $optionQuery = sprintf('.//option[@value = %s or (not(@value) and normalize-space(.) = %s)]', $escapedValue,
+            $escapedValue);
         $option = $this->findElement($optionQuery);
 
         if ($multiple || !$element->getAttribute('multiple')) {

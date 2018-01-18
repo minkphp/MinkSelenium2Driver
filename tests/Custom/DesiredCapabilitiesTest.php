@@ -1,27 +1,27 @@
 <?php
 
-namespace Behat\Mink\Tests\Driver\Custom;
+namespace SilverStripe\MinkSelenium3Driver\Tests\Custom;
 
-use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\TestCase;
+use SilverStripe\MinkSelenium3Driver\Selenium3Driver;
 
 class DesiredCapabilitiesTest extends TestCase
 {
     public function testGetDesiredCapabilities()
     {
         $caps = array(
-            'browserName'       => 'firefox',
-            'version'           => '30',
-            'platform'          => 'ANY',
-            'browserVersion'    => '30',
-            'browser'           => 'firefox',
-            'name'              => 'Selenium2 Mink Driver Test',
+            'browserName' => 'chrome',
+            'version' => '30',
+            'platform' => 'ANY',
+            'browserVersion' => '30',
+            'browser' => 'chrome',
+            'name' => 'Selenium3 Mink Driver Test',
             'deviceOrientation' => 'portrait',
-            'deviceType'        => 'tablet',
-            'selenium-version'  => '2.45.0'
+            'deviceType' => 'tablet',
+            'selenium-version' => '2.45.0'
         );
 
-        $driver = new Selenium2Driver('firefox', $caps);
+        $driver = new Selenium3Driver('chrome', $caps);
         $this->assertNotEmpty($driver->getDesiredCapabilities(), 'desiredCapabilities empty');
         $this->assertInternalType('array', $driver->getDesiredCapabilities());
         $this->assertEquals($caps, $driver->getDesiredCapabilities());
@@ -33,17 +33,17 @@ class DesiredCapabilitiesTest extends TestCase
      */
     public function testSetDesiredCapabilities()
     {
-        $caps = array(
-            'browserName'       => 'firefox',
-            'version'           => '30',
-            'platform'          => 'ANY',
-            'browserVersion'    => '30',
-            'browser'           => 'firefox',
-            'name'              => 'Selenium2 Mink Driver Test',
+        $caps = [
+            'browserName' => 'chrome',
+            'version' => '30',
+            'platform' => 'ANY',
+            'browserVersion' => '30',
+            'browser' => 'chrome',
+            'name' => 'Selenium3 Mink Driver Test',
             'deviceOrientation' => 'portrait',
-            'deviceType'        => 'tablet',
-            'selenium-version'  => '2.45.0'
-        );
+            'deviceType' => 'tablet',
+            'selenium-version' => '3.5.3',
+        ];
         $driver = $this->getSession()->getDriver();
         $driver->setDesiredCapabilities($caps);
     }

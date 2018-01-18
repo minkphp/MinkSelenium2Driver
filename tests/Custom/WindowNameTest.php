@@ -1,6 +1,6 @@
 <?php
 
-namespace Behat\Mink\Tests\Driver\Custom;
+namespace SilverStripe\MinkSelenium3Driver\Tests\Custom;
 
 use Behat\Mink\Tests\Driver\TestCase;
 

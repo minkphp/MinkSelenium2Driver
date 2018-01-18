@@ -1,52 +1,16 @@
-Mink Selenium2 (webdriver) Driver
+Mink Selenium3 (webdriver) Driver
 =================================
-[![Latest Stable Version](https://poser.pugx.org/behat/mink-selenium2-driver/v/stable.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
-[![Latest Unstable Version](https://poser.pugx.org/behat/mink-selenium2-driver/v/unstable.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
-[![Total Downloads](https://poser.pugx.org/behat/mink-selenium2-driver/downloads.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
-[![Build Status](https://travis-ci.org/minkphp/MinkSelenium2Driver.svg?branch=master)](https://travis-ci.org/minkphp/MinkSelenium2Driver)
-[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/)
-[![Code Coverage](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/minkphp/MinkSelenium2Driver/)
-[![License](https://poser.pugx.org/behat/mink-selenium2-driver/license.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
 
-Usage Example
--------------
+Currently forked from https://github.com/minkphp/MinkSelenium2Driver/, docs forthcoming.
 
-``` php
-<?php
+See [https://github.com/minkphp/MinkSelenium2Driver/issues/254] for the status of selenium 3 support.
 
-use Behat\Mink\Mink,
-    Behat\Mink\Session,
-    Behat\Mink\Driver\Selenium2Driver;
+Major updates include:
 
-use Selenium\Client as SeleniumClient;
-
-$url = 'http://example.com';
-
-$mink = new Mink(array(
-    'selenium2' => new Session(new Selenium2Driver($browser, null, $url)),
-));
-
-$mink->getSession('selenium2')->getPage()->findLink('Chat')->click();
-```
-
-Please refer to [MinkExtension-example](https://github.com/Behat/MinkExtension-example) for an executable example.
-
-Installation
-------------
-
-``` json
-{
-    "require": {
-        "behat/mink":                   "^1.6",
-        "behat/mink-selenium2-driver":  "^2.0"
-    }
-}
-```
-
-``` bash
-$> curl -sS http://getcomposer.org/installer | php
-$> php composer.phar install
-```
+ - Switch to using facebook/webdriver
+ - Support selenium 3 (only)
+ - Default to `chrome` instead of `firefox`
+ - Update minimum php version to 5.6
 
 Copyright
 ---------
