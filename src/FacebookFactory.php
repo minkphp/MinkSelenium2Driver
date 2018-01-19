@@ -8,25 +8,25 @@
  * file that was distributed with this source code.
  */
 
-namespace SilverStripe\MinkSelenium3Driver;
+namespace SilverStripe\MinkFacebookWebDriver;
 
 use Behat\MinkExtension\ServiceContainer\Driver\Selenium2Factory;
 use Symfony\Component\DependencyInjection\Definition;
 
 /**
- * Factory required to provide selenium 3 support. This must be added to
+ * Factory required to provide facebook webriver support. This must be added to
  * {@see Behat\MinkExtension\ServiceContainer\MinkExtension} via registerDriverFactory().
  *
  * Base factory on older (but compatible config area) selenium 2 factory
  */
-class Selenium3Factory extends Selenium2Factory
+class FacebookFactory extends Selenium2Factory
 {
     /**
      * {@inheritdoc}
      */
     public function getDriverName()
     {
-        return 'selenium3';
+        return 'facebook-web-driver';
     }
 
     /**
@@ -40,7 +40,7 @@ class Selenium3Factory extends Selenium2Factory
         $capabilities = array_replace($this->guessCapabilities(), $extraCapabilities, $config['capabilities']);
 
         // Build driver definition
-        return new Definition(Selenium3Driver::class, [
+        return new Definition(FacebookWebDriver::class, [
             $config['browser'],
             $capabilities,
             $config['wd_host'],
@@ -73,5 +73,16 @@ class Selenium3Factory extends Selenium2Factory
         return [
             'tags' => [php_uname('n'), 'PHP ' . phpversion()],
         ];
+    }
+
+    protected function getCapabilitiesNode()
+    {
+        $node = parent::getCapabilitiesNode();
+        // Override default browser to chrome
+        $node
+            ->children()
+                ->scalarNode('browser')->defaultValue(FacebookWebDriver::DEFAULT_BROWSER)->end()
+            ->end();
+        return $node;
     }
 }

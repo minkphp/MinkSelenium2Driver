@@ -1,8 +1,7 @@
 {
-    "name": "silverstripe/mink-selenium3-driver",
-    "description": "Selenium3 (WebDriver) driver for Mink framework",
+    "name": "silverstripe/mink-framework-web-driver",
+    "description": "Mink driver for facebook's webdriver",
     "keywords": [
-        "selenium",
         "webdriver",
         "javascript",
         "ajax",
@@ -38,12 +37,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SilverStripe\\MinkSelenium3Driver\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "SilverStripe\\MinkSelenium3Driver\\Tests\\": "tests/"
+            "SilverStripe\\MinkFacebookWebDriver\\": "src/"
         }
     },
     "extra": {
