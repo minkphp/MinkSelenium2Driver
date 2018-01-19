@@ -26,7 +26,7 @@ class FacebookFactory extends Selenium2Factory
      */
     public function getDriverName()
     {
-        return 'facebook-web-driver';
+        return 'facebook_web_driver';
     }
 
     /**
