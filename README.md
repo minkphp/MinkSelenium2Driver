@@ -62,6 +62,11 @@ default:
         wd_host: "http://127.0.0.1:9515" #chromedriver port
 ```
 
+## Common problems
+
+* `System.InvalidOperationException : unknown error: call function result missing 'value'`:
+ Update chromedriver to latest version
+
 ## Maintainers
 
 * Damian Mooyman [tractorcow](https://github.com/tractorcow)

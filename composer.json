@@ -1,5 +1,5 @@
 {
-    "name": "silverstripe/mink-framework-web-driver",
+    "name": "silverstripe/mink-facebook-web-driver",
     "description": "Mink driver for facebook's webdriver",
     "keywords": [
         "webdriver",
