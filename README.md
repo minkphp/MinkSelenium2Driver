@@ -41,7 +41,8 @@ Add this extension to your `behat.yml` (see below)
 Make sure you install chromedriver and have the service running
 
 ```
-$ brew install chromedriver
+$ brew tap caskroom/cask
+$ brew cask install chromedriver
 $ chromedriver
 Starting ChromeDriver 2.34.522932 (4140ab217e1ca1bec0c4b4d1b148f3361eb3a03e) on port 9515
 Only local connections are allowed.
