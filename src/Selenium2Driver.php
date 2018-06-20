@@ -683,10 +683,20 @@ JS;
         }
 
         $element->postValue(array('value' => array($value)));
-        // Trigger the change event only if the field still has focus.
-        // @todo we still have to ensure that the focus is still on the element
-        // we've set the value to.
-        $this->executeScript("document.activeElement && document.activeElement.blur()");
+        // Remove the focus from the element if the field still has focus in
+        // order to trigger the change event. By doing this instead of simply
+        // triggering the change event for the given xpath we ensure that the
+        // change event will not be triggered twice for the same element if it
+        // has lost focus in the meanwhile. If the element has lost focus
+        // already then there is nothing to do as this will already have caused
+        // the triggering of the change event for that element.
+        $script = <<<JS
+var node = {{ELEMENT}};
+if (document.activeElement === node) {
+  document.activeElement.blur();
+}
+JS;
+        $this->executeJsOnElement($element, $script);
     }
 
     /**
