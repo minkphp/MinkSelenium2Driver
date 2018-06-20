@@ -683,7 +683,10 @@ JS;
         }
 
         $element->postValue(array('value' => array($value)));
-        $this->trigger($xpath, 'change');
+        // Trigger the change event only if the field still has focus.
+        // @todo we still have to ensure that the focus is still on the element
+        // we've set the value to.
+        $this->executeScript("document.activeElement && document.activeElement.blur()");
     }
 
     /**
