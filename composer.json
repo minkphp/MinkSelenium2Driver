@@ -22,7 +22,7 @@
     "require": {
         "php":                       ">=5.3.1",
         "behat/mink":                "~1.7@dev",
-        "instaclick/php-webdriver":  "~1.1"
+        "instaclick/php-webdriver":  "~1.1|~2.0@RC"
     },
 
     "require-dev": {
