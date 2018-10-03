@@ -299,15 +299,13 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
-            $this->applyTimeouts();
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
         }
 
-        if (!$this->wdSession) {
-            throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
-        }
         $this->started = true;
+
+        $this->applyTimeouts();
     }
 
     /**
