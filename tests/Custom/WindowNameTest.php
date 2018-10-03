@@ -11,6 +11,7 @@ class WindowNameTest extends TestCase
     public function testPatternGetWindowNames()
     {
         $session = $this->getSession();
+        $session->start();
 
         $windowNames = $session->getWindowNames();
         $this->assertArrayHasKey(0, $windowNames);
@@ -23,6 +24,7 @@ class WindowNameTest extends TestCase
     public function testGetWindowName()
     {
         $session = $this->getSession();
+        $session->start();
 
         $this->assertRegExp(self::WINDOW_NAME_REGEXP, $session->getWindowName());
     }
