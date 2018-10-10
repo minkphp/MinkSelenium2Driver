@@ -19,7 +19,14 @@ class Selenium2Config extends AbstractConfig
         $browser = getenv('WEB_FIXTURES_BROWSER') ?: 'firefox';
         $seleniumHost = $_SERVER['DRIVER_URL'];
 
-        return new Selenium2Driver($browser, null, $seleniumHost);
+        $capabilities = array();
+
+        // disable the Chrome sandbox when running on Travis as it is incompatible with their container environment
+        if ($browser === 'chrome' && 'true' === getenv('TRAVIS')) {
+            $capabilities['chrome']['args'] = array('--no-sandbox');
+        }
+
+        return new Selenium2Driver($browser, $capabilities, $seleniumHost);
     }
 
     /**

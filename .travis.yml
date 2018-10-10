@@ -11,22 +11,24 @@ php: [5.4, 5.5, 5.6, 7.0, 7.1, 7.2]
 env:
   global:
     - WEBDRIVER=selenium
+    - WEB_FIXTURES_BROWSER=chrome
 
 matrix:
   fast_finish: true
   include:
     - php: 7.0
-      env: WEBDRIVER=selenium-remote
+      env: WEBDRIVER=selenium-remote WEB_FIXTURES_BROWSER=firefox
       sudo: required
       services:
         - docker
     - php: 5.3
       dist: precise
       # Force using PHP 5.6 for the test server as PHP 5.3 does not have the builtin webserver
-      env: MINK_PHP_BIN=~/.phpenv/versions/5.6/bin/php
+      # Use Selenium 2 and Firefox when running on the precise infra, as it has a version of Firefox old enough.
+      env: MINK_PHP_BIN=~/.phpenv/versions/5.6/bin/php SELENIUM_VERSION=2 WEB_FIXTURES_BROWSER=firefox
 
 before_script:
-  - sh bin/run-"$WEBDRIVER".sh
+  - bash bin/run-"$WEBDRIVER".sh
 
   - composer install
 
