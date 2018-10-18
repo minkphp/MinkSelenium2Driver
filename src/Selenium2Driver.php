@@ -670,8 +670,6 @@ JS;
 
         if (in_array($elementName, array('input', 'textarea'))) {
             $existingValueLength = strlen($element->attribute('value'));
-            // Add the TAB key to ensure we unfocus the field as browsers are triggering the change event only
-            // after leaving the field.
             $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
         }
 
@@ -690,6 +688,37 @@ if (document.activeElement === node) {
 }
 JS;
         $this->executeJsOnElement($element, $script);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setAutocompleteValue($xpath, $value)
+    {
+        $element = $this->findElement($xpath);
+        $elementName = strtolower($element->name());
+
+        if ('select' === $elementName) {
+            // There is no sense on trying to autocomplete a select element.
+            throw new DriverException(sprintf('Impossible to set an auto-complete value on select element with XPath "%s"', $xpath));
+        }
+
+        if ('input' === $elementName) {
+            $elementType = strtolower($element->attribute('type'));
+
+            if (in_array($elementType, array('submit', 'image', 'button', 'reset', 'checkbox', 'radio', 'file'))) {
+                throw new DriverException(sprintf('Impossible to set an auto-complete value on element with XPath "%s" as it is not a textarea or textbox', $xpath));
+            }
+        }
+
+        $value = strval($value);
+
+        if (in_array($elementName, array('input', 'textarea'))) {
+            $existingValueLength = strlen($element->attribute('value'));
+            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
+        }
+
+        $element->postValue(array('value' => array($value)));
     }
 
     /**
