@@ -693,7 +693,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function setAutocompleteValue($xpath, $value)
+    public function sendKeys($xpath, $value)
     {
         $element = $this->findElement($xpath);
         $elementName = strtolower($element->name());
