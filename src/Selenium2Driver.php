@@ -692,15 +692,14 @@ JS;
         $elementName = strtolower($element->name());
 
         if ('select' === $elementName) {
-            // There is no sense on trying to autocomplete a select element.
-            throw new DriverException(sprintf('Impossible to set an auto-complete value on select element with XPath "%s"', $xpath));
+            throw new DriverException(sprintf('Impossible to set an send Keys on select element with XPath "%s"', $xpath));
         }
 
         if ('input' === $elementName) {
             $elementType = strtolower($element->attribute('type'));
 
             if (in_array($elementType, array('submit', 'image', 'button', 'reset', 'checkbox', 'radio', 'file'))) {
-                throw new DriverException(sprintf('Impossible to set an auto-complete value on element with XPath "%s" as it is not a textarea or textbox', $xpath));
+                throw new DriverException(sprintf('Impossible to send keys on element with XPath "%s" as it is not a textarea or textbox', $xpath));
             }
         }
 
