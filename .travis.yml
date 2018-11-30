@@ -16,7 +16,12 @@ matrix:
     fast_finish: true
     include:
         -   php: 7.0
-            env: WEBDRIVER=selenium-remote
+            env: WEBDRIVER=selenium-remote-firefox
+            sudo: required
+            services:
+                - docker
+        -   php: 7.0
+            env: WEBDRIVER=selenium-remote-chrome
             sudo: required
             services:
                 - docker
