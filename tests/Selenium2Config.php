@@ -19,7 +19,28 @@ class Selenium2Config extends AbstractConfig
         $browser = getenv('WEB_FIXTURES_BROWSER') ?: 'firefox';
         $seleniumHost = $_SERVER['DRIVER_URL'];
 
-        return new Selenium2Driver($browser, null, $seleniumHost);
+        return new Selenium2Driver($browser, array(
+            'browser' => $browser,
+            'browserName' => $browser,
+            'version' => 'ANY',
+            'chromeOptions' => array(
+                'args' => array(
+                    "no-sandbox",
+                    "dbus-stub",
+                    "disable-dev-shm-usage",
+                    "reduce-security-for-testing",
+                    "allow-insecure-localhost",
+                    "enable-logging",
+                    "disable-setuid-sandbox",
+                    "disable-gpu",
+                    "disable-web-security",
+                    "disk-cache-size=1",
+                    "allow-running-insecure-content",
+                    "ignore-certificate-errors",
+                    "ignore-urlfetcher-cert-requests",
+                )
+            )
+        ), $seleniumHost);
     }
 
     /**
