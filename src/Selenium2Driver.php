@@ -15,6 +15,7 @@ use Behat\Mink\Selector\Xpath\Escaper;
 use Facebook\WebDriver\Cookie;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\RemoteTargetLocator;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
@@ -22,6 +23,7 @@ use Facebook\WebDriver\WebDriverElement;
 use Facebook\WebDriver\WebDriverKeys;
 use Facebook\WebDriver\WebDriverNavigation;
 use Facebook\WebDriver\WebDriverOptions;
+use Facebook\WebDriver\WebDriverRadios;
 use Facebook\WebDriver\WebDriverSelect;
 
 /**
@@ -73,6 +75,10 @@ class Selenium2Driver extends CoreDriver
      * @var string
      */
     private $wdHost;
+    private $navigation;
+    private $action;
+    private $switchTo;
+    private $manage;
 
     /**
      * Instantiates the driver.
@@ -264,6 +270,12 @@ class Selenium2Driver extends CoreDriver
         $this->started = false;
         try {
             $this->webDriver->quit();
+
+            $this->webDriver = null;
+            $this->navigation = null;
+            $this->action = null;
+            $this->switchTo = null;
+            $this->manage = null;
         } catch (\Exception $e) {
             throw new DriverException('Could not close connection', 0, $e);
         }
@@ -322,7 +334,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToWindow($name = null)
     {
-        $this->webDriver->switchTo()->window($name);
+        $this->switchTo()->window($name);
     }
 
     /**
@@ -330,7 +342,12 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToIFrame($name = null)
     {
-        $this->webDriver->switchTo()->frame($name);
+        if ($name) {
+            $element = $this->webDriver->findElement(WebDriverBy::name($name));
+            $this->switchTo()->frame($element);
+        } else {
+            $this->switchTo()->defaultContent();
+        }
     }
 
     /**
@@ -452,7 +469,10 @@ class Selenium2Driver extends CoreDriver
     public function getAttribute($xpath, $name)
     {
         $element = $this->findElement($xpath);
-        return $element->getAttribute($name);
+        // https://w3c.github.io/webdriver/#get-element-attribute
+        $attribute = $element->getAttribute($name);
+
+        return $attribute ?: null;
     }
 
     /**
@@ -470,8 +490,12 @@ class Selenium2Driver extends CoreDriver
         }
 
         if ('input' === $elementName && 'radio' === $elementType) {
-            // TODO: WebDriverRadios
-            return false;
+            $element = new WebDriverRadios($element);
+            if ($element->isMultiple()) {
+                return $element->getAllSelectedOptions();
+            }
+
+            return $element->getFirstSelectedOption()->getAttribute('value');
         }
 
         // Using $element->attribute('value') on a select only returns the first selected option
@@ -482,7 +506,7 @@ class Selenium2Driver extends CoreDriver
                 return $element->getAllSelectedOptions();
             }
 
-            return $element->getFirstSelectedOption();
+            return $element->getFirstSelectedOption()->getAttribute('value');
         }
 
         return $element->getAttribute('value');
@@ -598,8 +622,8 @@ class Selenium2Driver extends CoreDriver
         $tagName = strtolower($element->getTagName());
 
         if ('input' === $tagName && 'radio' === strtolower($element->getAttribute('type'))) {
-            $this->selectRadioValue($element, $value);
-
+            $element = new WebDriverRadios($element);
+            $element->selectByValue($value);
             return;
         }
 
@@ -662,7 +686,11 @@ class Selenium2Driver extends CoreDriver
      */
     public function attachFile($xpath, $path)
     {
-        throw new \RuntimeException('Not yet');
+        $element = $this->findElement($xpath);
+        $ref = new \ReflectionMethod($element, 'upload');
+        $ref->setAccessible(true);
+        $remotePath = $ref->invoke($element, $path);
+        return $remotePath;
     }
 
     /**
@@ -680,7 +708,7 @@ class Selenium2Driver extends CoreDriver
     public function mouseOver($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->action()->moveToElement($element);
+        $this->action()->moveToElement($element)->perform();
     }
 
     /**
@@ -689,8 +717,7 @@ class Selenium2Driver extends CoreDriver
     public function focus($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->action()->moveToElement($element);
-        $element->click();
+        $this->action()->moveToElement($element)->click($element)->perform();
     }
 
     /**
@@ -875,13 +902,11 @@ class Selenium2Driver extends CoreDriver
      */
     private function navigate()
     {
-        static $navigation;
-
-        if (!$navigation) {
-            $navigation = $this->webDriver->navigate();
+        if (!$this->navigation) {
+            $this->navigation = $this->webDriver->navigate();
         }
 
-        return $navigation;
+        return $this->navigation;
     }
 
     /**
@@ -891,13 +916,11 @@ class Selenium2Driver extends CoreDriver
      */
     private function manage()
     {
-        static $manage;
-
-        if (!$manage) {
-            $manage = $this->webDriver->manage();
+        if (!$this->manage) {
+            $this->manage = $this->webDriver->manage();
         }
 
-        return $manage;
+        return $this->manage;
     }
 
     /**
@@ -907,12 +930,24 @@ class Selenium2Driver extends CoreDriver
      */
     private function action()
     {
-        static $action;
-
-        if (!$action) {
-            $action = $this->webDriver->action();
+        if (!$this->action) {
+            $this->action = $this->webDriver->action();
         }
 
-        return $action;
+        return $this->action;
+    }
+
+    /**
+     * Switch to
+     *
+     * @return RemoteTargetLocator
+     */
+    private function switchTo()
+    {
+        if (!$this->switchTo) {
+            $this->switchTo = $this->webDriver->switchTo();
+        }
+
+        return $this->switchTo;
     }
 }
