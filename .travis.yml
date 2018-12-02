@@ -16,12 +16,18 @@ matrix:
     fast_finish: true
     include:
         -   php: 7.0
-            env: WEBDRIVER=selenium-remote-firefox
+            env:
+                - WEBDRIVER=selenium-remote-firefox
+                - WEB_FIXTURES_BROWSER=firefox
+                - DRIVER_OPTIONS={}
             sudo: required
             services:
                 - docker
         -   php: 7.0
-            env: WEBDRIVER=selenium-remote-chrome
+            env:
+                - WEBDRIVER=selenium-remote-chrome
+                - WEB_FIXTURES_BROWSER=chrome
+                - DRIVER_OPTIONS={"chromeOptions":{"args":["no-sandbox","dbus-stub","disable-dev-shm-usage","reduce-security-for-testing","allow-insecure-localhost","enable-logging","disable-setuid-sandbox","disable-gpu","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}}
             sudo: required
             services:
                 - docker
