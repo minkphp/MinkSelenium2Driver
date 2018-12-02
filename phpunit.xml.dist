@@ -14,8 +14,8 @@
     <php>
         <var name="driver_config_factory" value="Behat\Mink\Tests\Driver\Selenium2Config::getInstance" />
 
-        <server name="WEB_FIXTURES_HOST" value="http://mink.olega.d2.intexsys.lv"/>
-        <env name="WEB_FIXTURES_BROWSER" value="chrome"/>
+        <!--<server name="WEB_FIXTURES_HOST" value="http://test.mink.dev"/>-->
+        <!--<env name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
 
         <!-- where driver will connect to -->
         <server name="DRIVER_URL" value="http://localhost:4444/wd/hub" />

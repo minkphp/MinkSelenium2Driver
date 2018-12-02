@@ -13,6 +13,7 @@ namespace Behat\Mink\Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use Facebook\WebDriver\Cookie;
+use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteTargetLocator;
@@ -286,7 +287,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reset()
     {
-        $this->manage()->deleteAllCookies();
+        $this->webDriver->manage()->deleteAllCookies();
     }
 
     /**
@@ -294,7 +295,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function visit($url)
     {
-        $this->navigate()->to($url);
+        $this->webDriver->navigate()->to($url);
     }
 
     /**
@@ -310,7 +311,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reload()
     {
-        $this->navigate()->refresh();
+        $this->webDriver->navigate()->refresh();
     }
 
     /**
@@ -318,7 +319,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function forward()
     {
-        $this->navigate()->forward();
+        $this->webDriver->navigate()->forward();
     }
 
     /**
@@ -326,7 +327,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function back()
     {
-        $this->navigate()->back();
+        $this->webDriver->navigate()->back();
     }
 
     /**
@@ -334,7 +335,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToWindow($name = null)
     {
-        $this->switchTo()->window($name);
+        $this->webDriver->switchTo()->window($name);
     }
 
     /**
@@ -344,9 +345,9 @@ class Selenium2Driver extends CoreDriver
     {
         if ($name) {
             $element = $this->webDriver->findElement(WebDriverBy::name($name));
-            $this->switchTo()->frame($element);
+            $this->webDriver->switchTo()->frame($element);
         } else {
-            $this->switchTo()->defaultContent();
+            $this->webDriver->switchTo()->defaultContent();
         }
     }
 
@@ -356,13 +357,13 @@ class Selenium2Driver extends CoreDriver
     public function setCookie($name, $value = null)
     {
         if (null === $value) {
-            $this->manage()->deleteCookieNamed($name);
+            $this->webDriver->manage()->deleteCookieNamed($name);
 
             return;
         }
 
         $cookie = new Cookie($name, \urlencode($value));
-        $this->manage()->addCookie($cookie);
+        $this->webDriver->manage()->addCookie($cookie);
     }
 
     /**
@@ -370,7 +371,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCookie($name)
     {
-        $cookie = $this->manage()->getCookieNamed($name);
+        $cookie = $this->webDriver->manage()->getCookieNamed($name);
         if (!$cookie) {
             return null;
         }
@@ -383,7 +384,8 @@ class Selenium2Driver extends CoreDriver
      */
     public function getContent()
     {
-        return $this->webDriver->getPageSource();
+        $source = $this->webDriver->getPageSource();
+        return str_replace(array("\r", "\r\n", "\n"), \PHP_EOL, $source);
     }
 
     /**
@@ -491,10 +493,6 @@ class Selenium2Driver extends CoreDriver
 
         if ('input' === $elementName && 'radio' === $elementType) {
             $element = new WebDriverRadios($element);
-            if ($element->isMultiple()) {
-                return $element->getAllSelectedOptions();
-            }
-
             return $element->getFirstSelectedOption()->getAttribute('value');
         }
 
@@ -503,7 +501,9 @@ class Selenium2Driver extends CoreDriver
         if ('select' === $elementName) {
             $element = new WebDriverSelect($element);
             if ($element->isMultiple()) {
-                return $element->getAllSelectedOptions();
+                return \array_map(function (WebDriverElement $element) {
+                    return $element->getAttribute('value');
+                }, $element->getAllSelectedOptions());
             }
 
             return $element->getFirstSelectedOption()->getAttribute('value');
@@ -522,9 +522,9 @@ class Selenium2Driver extends CoreDriver
 
         if ('select' === $elementName) {
             $element = new WebDriverSelect($element);
-            $element->deselectAll();
 
             if (is_array($value)) {
+                $element->deselectAll();
                 foreach ($value as $option) {
                     $element->selectByValue($option);
                 }
@@ -553,12 +553,13 @@ class Selenium2Driver extends CoreDriver
             }
 
             if ('radio' === $elementType) {
-                throw new \Exception('Not yet');
+                $element = new WebDriverRadios($element);
+                $element->selectByValue($value);
                 return;
             }
 
             if ('file' === $elementType) {
-                throw new \Exception('Not yet');
+                $element->sendKeys($value);
                 return;
             }
         }
@@ -573,6 +574,14 @@ class Selenium2Driver extends CoreDriver
         }
 
         $element->sendKeys($value);
+        // Remove the focus from the element if the field still has focus in
+        // order to trigger the change event. By doing this instead of simply
+        // triggering the change event for the given xpath we ensure that the
+        // change event will not be triggered twice for the same element if it
+        // has lost focus in the meanwhile. If the element has lost focus
+        // already then there is nothing to do as this will already have caused
+        // the triggering of the change event for that element.
+        $element->sendKeys(WebDriverKeys::TAB);
     }
 
     /**
@@ -629,7 +638,17 @@ class Selenium2Driver extends CoreDriver
 
         if ('select' === $tagName) {
             $element = new WebDriverSelect($element);
-            $element->selectByValue($value);
+            if (!$multiple && $element->isMultiple()) {
+                $element->deselectAll();
+            }
+
+            try {
+                $element->selectByValue($value);
+            } catch (NoSuchElementException $e) {
+                // option may not have value attribute, so try to select by visible text
+                $element->selectByVisibleText($value);
+            }
+
             return;
         }
 
@@ -657,8 +676,7 @@ class Selenium2Driver extends CoreDriver
     private function clickOnElement(WebDriverElement $element)
     {
         // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
-        $this->action()->moveToElement($element);
-        $element->click();
+        $this->webDriver->action()->click($element)->perform();
     }
 
     /**
@@ -667,8 +685,7 @@ class Selenium2Driver extends CoreDriver
     public function doubleClick($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->action()->moveToElement($element);
-        $this->action()->doubleClick($element);
+        $this->webDriver->action()->doubleClick($element)->perform();
     }
 
     /**
@@ -677,8 +694,7 @@ class Selenium2Driver extends CoreDriver
     public function rightClick($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->action()->moveToElement($element);
-        $this->action()->contextClick($element);
+        $this->webDriver->action()->contextClick($element)->perform();
     }
 
     /**
@@ -687,9 +703,10 @@ class Selenium2Driver extends CoreDriver
     public function attachFile($xpath, $path)
     {
         $element = $this->findElement($xpath);
-        $ref = new \ReflectionMethod($element, 'upload');
-        $ref->setAccessible(true);
-        $remotePath = $ref->invoke($element, $path);
+        $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
+
+        $remotePath = $element->sendKeys($path);
+
         return $remotePath;
     }
 
@@ -708,7 +725,7 @@ class Selenium2Driver extends CoreDriver
     public function mouseOver($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->action()->moveToElement($element)->perform();
+        $this->webDriver->action()->moveToElement($element)->perform();
     }
 
     /**
@@ -717,7 +734,7 @@ class Selenium2Driver extends CoreDriver
     public function focus($xpath)
     {
         $element = $this->findElement($xpath);
-        $this->action()->moveToElement($element)->click($element)->perform();
+        $this->webDriver->action()->moveToElement($element)->click($element)->perform();
     }
 
     /**
@@ -725,7 +742,8 @@ class Selenium2Driver extends CoreDriver
      */
     public function blur($xpath)
     {
-        throw new \Exception('Not yet');
+        $element = $this->findElement($xpath);
+        $this->webDriver->action()->moveToElement($element)->sendKeys($element, WebDriverKeys::TAB)->perform();
     }
 
     /**
@@ -733,9 +751,22 @@ class Selenium2Driver extends CoreDriver
      */
     public function keyPress($xpath, $char, $modifier = null)
     {
-        // TODO $modifier
+        // @see https://w3c.github.io/uievents/#event-type-keypress
         $element = $this->findElement($xpath);
-        $this->action()->sendKeys($element, $char);
+        $char = $this->decodeChar($char);
+        $action = $this->webDriver->action();
+
+        $keyboard = $this->webDriver->getKeyboard();
+        $this->clickOnElement($element);
+        if ($modifier) {
+            $keyboard->pressKey($this->keyModifier($modifier));
+        }
+        $keyboard->sendKeys($char);
+        if ($modifier) {
+            $keyboard->releaseKey($this->keyModifier($modifier));
+        }
+
+        $action->perform();
     }
 
     /**
@@ -743,9 +774,22 @@ class Selenium2Driver extends CoreDriver
      */
     public function keyDown($xpath, $char, $modifier = null)
     {
-        // TODO $modifier
+        // @see https://w3c.github.io/uievents/#event-type-keydown
         $element = $this->findElement($xpath);
-        $this->action()->keyDown($element, $char);
+        $char = $this->decodeChar($char);
+        $action = $this->webDriver->action();
+
+        $keyboard = $this->webDriver->getKeyboard();
+        $this->clickOnElement($element);
+        if ($modifier) {
+            $keyboard->pressKey($this->keyModifier($modifier));
+        }
+        $keyboard->sendKeys($char);
+        if ($modifier) {
+            $keyboard->releaseKey($this->keyModifier($modifier));
+        }
+
+        $action->perform();
     }
 
     /**
@@ -753,9 +797,21 @@ class Selenium2Driver extends CoreDriver
      */
     public function keyUp($xpath, $char, $modifier = null)
     {
-        // TODO $modifier
         $element = $this->findElement($xpath);
-        $this->action()->keyUp($element, $char);
+        $char = $this->decodeChar($char);
+        $action = $this->webDriver->action();
+
+        $keyboard = $this->webDriver->getKeyboard();
+        $this->clickOnElement($element);
+        if ($modifier) {
+            $keyboard->pressKey($this->keyModifier($modifier));
+        }
+        $keyboard->sendKeys($char);
+        if ($modifier) {
+            $keyboard->releaseKey($this->keyModifier($modifier));
+        }
+
+        $action->perform();
     }
 
     /**
@@ -765,7 +821,7 @@ class Selenium2Driver extends CoreDriver
     {
         $source = $this->findElement($sourceXpath);
         $destination = $this->findElement($destinationXpath);
-        $this->action()->dragAndDrop($source, $destination);
+        $this->webDriver->action()->dragAndDrop($source, $destination)->perform();
     }
 
     /**
@@ -799,9 +855,11 @@ class Selenium2Driver extends CoreDriver
     public function wait($timeout, $condition)
     {
         $script = "return $condition;";
-        $wait = $this->webDriver->wait($timeout, 100);
+        $seconds = $timeout / 1000.0;
 
-        return $wait->until(function (RemoteWebDriver $driver) use ($script) {
+        $wait = $this->webDriver->wait($seconds, 100);
+
+        return (bool) $wait->until(function (RemoteWebDriver $driver) use ($script) {
             return $driver->executeScript($script);
         });
     }
@@ -816,7 +874,7 @@ class Selenium2Driver extends CoreDriver
             throw new \Exception('Named windows are not supported yet');
         }
 
-        $this->manage()->window()->setSize($dimension);
+        $this->webDriver->manage()->window()->setSize($dimension);
     }
 
     /**
@@ -837,7 +895,7 @@ class Selenium2Driver extends CoreDriver
             throw new \Exception('Named window is not supported');
         }
 
-        $this->manage()->window()->maximize();
+        $this->webDriver->manage()->window()->maximize();
     }
 
     /**
@@ -896,58 +954,40 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Navigate
+     * Prepend modifier
      *
-     * @return WebDriverNavigation
+     * @param string $modifier
+     *
+     * @return string
      */
-    private function navigate()
+    private function keyModifier($modifier)
     {
-        if (!$this->navigation) {
-            $this->navigation = $this->webDriver->navigate();
+        if ($modifier === 'alt') {
+            $modifier = WebDriverKeys::ALT;
+        } else if ($modifier === 'ctrl') {
+            $modifier = WebDriverKeys::CONTROL;
+        } else if ($modifier === 'shift') {
+            $modifier = WebDriverKeys::SHIFT;
+        } else if ($modifier === 'meta') {
+            $modifier = WebDriverKeys::META;
         }
 
-        return $this->navigation;
-    }
+        return $modifier;
+}
 
     /**
-     * Manage
+     * Decode char
      *
-     * @return WebDriverOptions
+     * @param $char
+     *
+     * @return string
      */
-    private function manage()
+    private function decodeChar($char)
     {
-        if (!$this->manage) {
-            $this->manage = $this->webDriver->manage();
+        if (\is_numeric($char)) {
+            return \chr($char);
         }
 
-        return $this->manage;
-    }
-
-    /**
-     * Action
-     *
-     * @return WebDriverActions
-     */
-    private function action()
-    {
-        if (!$this->action) {
-            $this->action = $this->webDriver->action();
-        }
-
-        return $this->action;
-    }
-
-    /**
-     * Switch to
-     *
-     * @return RemoteTargetLocator
-     */
-    private function switchTo()
-    {
-        if (!$this->switchTo) {
-            $this->switchTo = $this->webDriver->switchTo();
-        }
-
-        return $this->switchTo;
+        return $char;
     }
 }
