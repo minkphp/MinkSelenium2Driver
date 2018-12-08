@@ -16,6 +16,7 @@ use Facebook\WebDriver\Cookie;
 use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\Interactions\WebDriverActions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Facebook\WebDriver\Remote\LocalFileDetector;
 use Facebook\WebDriver\Remote\RemoteTargetLocator;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
@@ -562,6 +563,11 @@ class Selenium2Driver extends CoreDriver
                 $element->sendKeys($value);
                 return;
             }
+
+//            if ('color' === $elementType) {
+//                $this->executeJsOnElement($element, sprintf('{{ELEMENT}}.value = "%s";', $value));
+//                return;
+//            }
         }
 
         $value = strval($value);
@@ -705,6 +711,7 @@ class Selenium2Driver extends CoreDriver
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
+        $element->setFileDetector(new LocalFileDetector());
         $remotePath = $element->sendKeys($path);
 
         return $remotePath;
@@ -860,7 +867,17 @@ class Selenium2Driver extends CoreDriver
         $wait = $this->webDriver->wait($seconds, 100);
 
         return (bool) $wait->until(function (RemoteWebDriver $driver) use ($script) {
-            return $driver->executeScript($script);
+            $result = $driver->executeScript($script);
+            // stringify result
+            if ($result === true) {
+                $result = 'true';
+            } else if ($result === false) {
+                $result = 'false';
+            } else if ($result === null) {
+                $result = 'null';
+            }
+
+            return (string) $result;
         });
     }
 
