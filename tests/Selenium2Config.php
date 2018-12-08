@@ -42,14 +42,6 @@ class Selenium2Config extends AbstractConfig
             return 'WebDriver does not support setting value in color inputs. See https://code.google.com/p/selenium/issues/detail?id=7650';
         }
 
-        if (
-            'Behat\Mink\Tests\Driver\Js\WindowTest' === $testCase
-            && (0 === strpos($test, 'testWindowMaximize'))
-            && 'true' === getenv('TRAVIS')
-        ) {
-            return 'Maximizing the window does not work when running the browser in Xvfb.';
-        }
-
         return parent::skipMessage($testCase, $test);
     }
 
