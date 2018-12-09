@@ -14,8 +14,13 @@
     <php>
         <var name="driver_config_factory" value="Behat\Mink\Tests\Driver\Selenium2Config::getInstance" />
 
-        <!--<server name="WEB_FIXTURES_HOST" value="http://test.mink.dev"/>-->
-        <!--<env name="WEB_FIXTURES_BROWSER" value=""/>-->
+        <!--<server name="WEB_FIXTURES_HOST" value="http://host.docker.internal:8002"/>-->
+
+        <!--<env name="WEB_FIXTURES_BROWSER" value="chrome"/>-->
+        <!--<env name="DRIVER_OPTIONS" value='{"args":["no-sandbox","dbus-stub","disable-dev-shm-usage","reduce-security-for-testing","allow-insecure-localhost","enable-logging","disable-setuid-sandbox","disable-gpu","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}'/>-->
+
+        <!--<env name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
+        <!--<env name="DRIVER_OPTIONS" value='{"preference": {"general.useragent.override": "x"}}'/>-->
 
         <!-- where driver will connect to -->
         <server name="DRIVER_URL" value="http://localhost:4444/wd/hub" />
