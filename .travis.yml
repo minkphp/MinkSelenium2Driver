@@ -1,43 +1,62 @@
 language: php
-
 sudo: false
+dist: trusty
+
+services:
+  - docker
+
+php:
+  - 5.4
+  - 5.5
+  - 5.6
+  - 7.0
+  - 7.1
+  - 7.2
+  - 7.3
+
+env:
+  global:
+    - DISPLAY=:99.0
 
 cache:
   directories:
     - $HOME/.composer/cache/files
 
-php: [5.4, 5.5, 5.6, 7.0, 7.1, 7.2]
-
-env:
-  global:
-    - WEBDRIVER=selenium
-
 matrix:
   fast_finish: true
   include:
-    - php: 7.0
-      env: WEBDRIVER=selenium-remote
-      sudo: required
-      services:
-        - docker
     - php: 5.3
       dist: precise
-      # Force using PHP 5.6 for the test server as PHP 5.3 does not have the builtin webserver
-      env: MINK_PHP_BIN=~/.phpenv/versions/5.6/bin/php
+
+install:
+  - travis_retry composer install --no-interaction
 
 before_script:
-  - sh bin/run-"$WEBDRIVER".sh
+  - mkdir ./logs
+  - |
+    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
+      wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
+      sh -e /etc/init.d/xvfb start
+      java -jar selenium-server-standalone-2.53.1.jar &> ./logs/selenium.log &
+    else
+      docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+    fi;
+  - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
+  # https://bugs.php.net/bug.php?id=71443
+  - |
+    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
+      export MINK_PHP_BIN=~/.phpenv/versions/5.4/bin/php
+    fi;
+    USE_ZEND_ALLOC=0 travis_retry ${MINK_PHP_BIN-php} -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &
+  - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
-  - composer install
-
-  # Start a webserver for web fixtures.
-  - vendor/bin/mink-test-server > /dev/null 2>&1 &
-
-script: phpunit -v --coverage-clover=coverage.clover
+script:
+  - phpunit -v --coverage-clover=coverage.clover
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar
   - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 
 after_failure:
-  - cat /tmp/webdriver_output.txt
+  - cat ./logs/selenium.log
+  - cat ./logs/mink-test-server.log
