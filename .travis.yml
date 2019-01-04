@@ -69,7 +69,7 @@ matrix:
 
 install:
   - travis_retry composer self-update
-  - travis_retry composer update --no-interaction $DEPENDENCIES
+  - travis_retry composer update --prefer-dist --no-interaction $DEPENDENCIES
 
 before_script:
   - if [[ "$BROWSER_NAME" = "chrome" && "$CHROMEDRIVER_VERSION" = "latest" ]]; then CHROMEDRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE); fi
