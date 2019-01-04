@@ -164,33 +164,6 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Creates some options for key events
-     *
-     * @param string $char     the character or code
-     * @param string $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
-     *
-     * @return string a json encoded options array for Syn
-     */
-    protected static function charToOptions($char, $modifier = null)
-    {
-        $ord = ord($char);
-        if (is_numeric($char)) {
-            $ord = $char;
-        }
-
-        $options = array(
-            'keyCode'  => $ord,
-            'charCode' => $ord
-        );
-
-        if ($modifier) {
-            $options[$modifier . 'Key'] = 1;
-        }
-
-        return json_encode($options);
-    }
-
-    /**
      * Executes JS on a given element - pass in a js script string and {{ELEMENT}} will
      * be replaced with a reference to the result of the $xpath query
      *
