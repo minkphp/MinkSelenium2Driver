@@ -21,11 +21,13 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:oleg-andreyev/driver-testsuite.git"
+            "url": "git@github.com:oleg-andreyev/driver-testsuite.git",
+            "no-api": true
         },
         {
             "type": "vcs",
-            "url": "git@github.com:oleg-andreyev/php-webdriver.git"
+            "url": "git@github.com:oleg-andreyev/php-webdriver.git",
+            "no-api": true
         }
     ],
     "require": {
