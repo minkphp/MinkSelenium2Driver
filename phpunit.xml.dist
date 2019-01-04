@@ -16,10 +16,10 @@
 
         <!-- Docker for Mac, see https://docs.docker.com/docker-for-mac/networking/#there-is-no-docker0-bridge-on-macos#i-want-to-connect-from-a-container-to-a-service-on-the-host -->
         <!--<server name="WEB_FIXTURES_HOST" value="http://host.docker.internal:8002"/>-->
-        <!--<server name="WEB_FIXTURES_HOST" value="http://localhost:8002"/>-->
+        <server name="WEB_FIXTURES_HOST" value="http://localhost:8002"/>
 
-        <!--<env name="WEB_FIXTURES_BROWSER" value="chrome"/>-->
-        <!--<env name="DRIVER_OPTIONS" value='{"args":["no-sandbox","dbus-stub","disable-dev-shm-usage","reduce-security-for-testing","allow-insecure-localhost","enable-logging","disable-setuid-sandbox","disable-gpu","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}'/>-->
+        <env name="WEB_FIXTURES_BROWSER" value="chrome"/>
+        <env name="DRIVER_OPTIONS" value='{"args":["headless", "no-sandbox","reduce-security-for-testing","allow-insecure-localhost","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}'/>
 
         <!--<env name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
         <!--<env name="DRIVER_OPTIONS" value='{"preference": {"general.useragent.override": "x"}}'/>-->

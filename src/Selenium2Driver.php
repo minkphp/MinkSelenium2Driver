@@ -464,10 +464,32 @@ class Selenium2Driver extends CoreDriver
     public function getAttribute($xpath, $name)
     {
         $element = $this->findElement($xpath);
-        // https://w3c.github.io/webdriver/#get-element-attribute
-        $attribute = $element->getAttribute($name);
 
-        return $attribute ?: null;
+        /**
+         * If attribute is present but does not have value, it's considered as Boolean Attributes https://html.spec.whatwg.org/#boolean-attributes
+         * but here result may be unexpected in case of <element my-attr/>, my-attr should return TRUE, but it will return "empty string"
+         *
+         * @see https://w3c.github.io/webdriver/#get-element-attribute
+         */
+        $hasAttribute = $this->hasAttribute($element, $name);
+        if ($hasAttribute) {
+            $value = $element->getAttribute($name);
+        } else {
+            $value = null;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param WebDriverElement $element
+     * @param string           $name
+     *
+     * @return bool
+     */
+    private function hasAttribute(WebDriverElement $element, $name)
+    {
+        return $this->executeJsOnElement($element, "return {{ELEMENT}}.hasAttribute('$name')");
     }
 
     /**
@@ -552,17 +574,12 @@ class Selenium2Driver extends CoreDriver
             }
 
             if ('file' === $elementType) {
-                $element->sendKeys($value);
+                $this->attachFile($xpath, $value);
                 return;
             }
-
-//            if ('color' === $elementType) {
-//                $this->executeJsOnElement($element, sprintf('{{ELEMENT}}.value = "%s";', $value));
-//                return;
-//            }
         }
 
-        $value = strval($value);
+        $value = (string) $value;
 
         if (in_array($elementName, array('input', 'textarea'))) {
             $existingValueLength = strlen($element->getAttribute('value'));
@@ -911,17 +928,6 @@ class Selenium2Driver extends CoreDriver
 
             throw new DriverException(sprintf($message, $action, $xpath, $type));
         }
-    }
-
-    /**
-     * @param        $xpath
-     * @param        $event
-     * @param string $options
-     */
-    private function trigger($xpath, $event, $options = '{}')
-    {
-        $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
-        $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
     private function uploadFile($path)

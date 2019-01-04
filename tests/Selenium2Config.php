@@ -39,14 +39,20 @@ class Selenium2Config extends AbstractConfig
 
         if (isset($capabilityMap[$browser])) {
             $capability = $desiredCapabilities->getCapability($capabilityMap[$browser]);
-            if ($capability instanceof ChromeOptions) {
+            if ($browser === 'chrome') {
+                if (!$capability) {
+                    $capability = new ChromeOptions();
+                }
                 $args = isset($driverOptions['args']) ? $driverOptions['args'] : array();
                 $capability->addArguments($args);
                 //$capability->addEncodedExtension();
                 //$capability->addExtension();
                 //$capability->addEncodedExtensions();
                 //$capability->addExtensions();
-            } else if ($capability instanceof FirefoxProfile) {
+            } else if ($browser === 'firefox') {
+                if (!$capability) {
+                    $capability = new FirefoxProfile();
+                }
                 $preferences = isset($driverOptions['preference']) ? $driverOptions['preference'] : array();
                 foreach ($preferences as $key => $preference) {
                     $capability->setPreference($key, $preference);
@@ -55,6 +61,8 @@ class Selenium2Config extends AbstractConfig
                    // $capability->addExtension($key, $preference);
                 }
             }
+
+            $desiredCapabilities->setCapability($capabilityMap[$browser], $capability);
         }
 
         $driver =  new Selenium2Driver($browser, array(), $seleniumHost);
