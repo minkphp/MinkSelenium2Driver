@@ -11,22 +11,17 @@
 namespace Behat\Mink\Driver;
 
 use Behat\Mink\Exception\DriverException;
-use Behat\Mink\Selector\Xpath\Escaper;
-use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Cookie;
 use Facebook\WebDriver\Exception\NoSuchElementException;
-use Facebook\WebDriver\Firefox\FirefoxDriver;
-use Facebook\WebDriver\Interactions\WebDriverActions;
+use Facebook\WebDriver\Exception\ScriptTimeoutException;
+use Facebook\WebDriver\Exception\TimeOutException;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\LocalFileDetector;
-use Facebook\WebDriver\Remote\RemoteTargetLocator;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverElement;
 use Facebook\WebDriver\WebDriverKeys;
-use Facebook\WebDriver\WebDriverNavigation;
-use Facebook\WebDriver\WebDriverOptions;
 use Facebook\WebDriver\WebDriverRadios;
 use Facebook\WebDriver\WebDriverSelect;
 
@@ -69,11 +64,6 @@ class Selenium2Driver extends CoreDriver
     private $timeouts = array();
 
     /**
-     * @var Escaper
-     */
-    private $xpathEscaper;
-
-    /**
      * Wd host
      *
      * @var string
@@ -98,6 +88,38 @@ class Selenium2Driver extends CoreDriver
             $this->desiredCapabilities = DesiredCapabilities::chrome();
         } else {
             $this->desiredCapabilities = new DesiredCapabilities();
+        }
+    }
+
+    /**
+     * Sets the timeouts to apply to the webdriver session
+     *
+     * @param array $timeouts The session timeout settings: Array of {script, implicit, page} => time in milliseconds
+     */
+    public function setTimeouts($timeouts)
+    {
+        $this->timeouts = $timeouts;
+
+        if ($this->isStarted()) {
+            $this->applyTimeouts();
+        }
+    }
+
+    /**
+     * Applies timeouts to the current session
+     */
+    private function applyTimeouts()
+    {
+        // @see https://w3c.github.io/webdriver/#set-timeouts
+        $timeouts = $this->webDriver->manage()->timeouts();
+        if (isset($this->timeouts['implicit'])) {
+            $timeouts->implicitlyWait($this->timeouts['implicit']);
+        } else if (isset($this->timeouts['pageLoad'])) {
+            $timeouts->pageLoadTimeout($this->timeouts['pageLoad']);
+        } else if (isset($this->timeouts['script'])) {
+            $timeouts->setScriptTimeout($this->timeouts['script']);
+        } else {
+            throw new DriverException('Invalid timeout option');
         }
     }
 
@@ -211,6 +233,9 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->webDriver = RemoteWebDriver::create($this->wdHost, $this->desiredCapabilities);
+            if (\count($this->timeouts)) {
+                $this->applyTimeouts();
+            }
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection: ' . $e->getMessage(), 0, $e);
         }
@@ -261,7 +286,11 @@ class Selenium2Driver extends CoreDriver
      */
     public function visit($url)
     {
-        $this->webDriver->navigate()->to($url);
+        try {
+            $this->webDriver->navigate()->to($url);
+        } catch (TimeOutException $e) {
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -277,7 +306,11 @@ class Selenium2Driver extends CoreDriver
      */
     public function reload()
     {
-        $this->webDriver->navigate()->refresh();
+        try {
+            $this->webDriver->navigate()->refresh();
+        } catch (TimeOutException $e) {
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -791,6 +824,20 @@ class Selenium2Driver extends CoreDriver
         }
 
         $this->webDriver->executeScript($script);
+    }
+
+    public function executeAsyncScript($script)
+    {
+        if (preg_match('/^function[\s\(]/', $script)) {
+            $script = preg_replace('/;$/', '', $script);
+            $script = '(' . $script . ')';
+        }
+
+        try {
+            $this->webDriver->executeAsyncScript($script);
+        } catch (ScriptTimeoutException $e) {
+            throw new DriverException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
