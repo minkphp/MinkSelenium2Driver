@@ -48,7 +48,7 @@ before_script:
   - if [ "$BROWSER_NAME" = "chrome" ]; then export CHROMEDRIVER_PATH=$PWD/chromedriver/chromedriver; fi
   - if [ "$START_XVFB" = "1" ]; then sh -e /etc/init.d/xvfb start; fi;
   - if [ ! -f jar/selenium-server-standalone-3.8.1.jar ]; then wget -q -t 3 -P jar https://selenium-release.storage.googleapis.com/3.8/selenium-server-standalone-3.8.1.jar; fi
-  - java -Dwebdriver.firefox.marionette=false -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -jar jar/selenium-server-standalone-3.8.1.jar -enablePassThrough false -log ./logs/selenium.log &
+  - java -Dwebdriver.firefox.marionette=false -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -jar jar/selenium-server-standalone-3.8.1.jar -enablePassThrough false &> ./logs/selenium.log &
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
   # https://bugs.php.net/bug.php?id=71443
   - USE_ZEND_ALLOC=0 travis_retry php -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &

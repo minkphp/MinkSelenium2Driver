@@ -36,7 +36,7 @@
         "facebook/webdriver": "dev-adjust-getRelatedElements"
     },
     "require-dev": {
-        "mink/driver-testsuite": "dev-w3c-testKeyboardEvents"
+        "mink/driver-testsuite": "dev-integration-branch"
     },
     "autoload": {
         "psr-4": {
