@@ -35,21 +35,25 @@ matrix:
       env:
         - DRIVER_OPTIONS='{"args":["no-sandbox","window-size=1024,768"]}'
         - START_XVFB=1
+    # build with lowest deps
     - php: 7.2
       env:
         - DEPENDENCIES="--prefer-lowest"
+    # build with latest chromedriver
+    - php: 7.2
+      env:
+        - CHROMEDRIVER_VERSION="latest"
 
 install:
   - travis_retry composer update --no-interaction $DEPENDENCIES
 
 before_script:
   - mkdir ./logs
+  - if [[ "$BROWSER_NAME" = "chrome" && "$CHROMEDRIVER_VERSION" = "latest" ]]; then CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`; fi
   - if [ "$BROWSER_NAME" = "chrome" ]; then mkdir chromedriver; wget -q -t 3 https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip; unzip chromedriver_linux64 -d chromedriver; fi
-  - if [ "$BROWSER_NAME" = "chrome" ]; then export CHROMEDRIVER_PATH=$PWD/chromedriver/chromedriver; fi
   - if [ "$START_XVFB" = "1" ]; then sh -e /etc/init.d/xvfb start; fi;
-  - if [ ! -f jar/selenium-server-standalone-3.8.1.jar ]; then wget -q -t 3 -P jar https://selenium-release.storage.googleapis.com/3.8/selenium-server-standalone-3.8.1.jar; fi
-  - java -Dwebdriver.firefox.marionette=false -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -jar jar/selenium-server-standalone-3.8.1.jar -enablePassThrough false &> ./logs/selenium.log &
-  - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
+  - ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &
+  - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for ChromeDriver on port 4444...; done; echo "ChromeDriver started"
   # https://bugs.php.net/bug.php?id=71443
   - USE_ZEND_ALLOC=0 travis_retry php -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
@@ -62,5 +66,5 @@ after_script:
   - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 
 after_failure:
-  - cat ./logs/selenium.log
+  - cat ./logs/chromedriver.log
   - cat ./logs/mink-test-server.log
