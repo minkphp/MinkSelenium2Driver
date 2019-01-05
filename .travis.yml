@@ -2,12 +2,12 @@ language: php
 sudo: false
 dist: trusty
 
-cache:
-  directories:
-    - $HOME/.composer/cache
-    - jar
+services:
+  - docker
 
 php:
+  - 5.4
+  - 5.5
   - 5.6
   - 7.0
   - 7.1
@@ -17,77 +17,38 @@ php:
 env:
   global:
     - DISPLAY=:99.0
-    - CHROMEDRIVER_VERSION="2.38"
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files
 
 matrix:
+  fast_finish: true
   include:
-    # Add build to run tests against Firefox inside Travis environment
-    - php: 7.2
-      env: BROWSER_NAME="firefox"
-      addons:
-        firefox: "45.8.0esr"
-
-    # Add build to run tests against Chrome inside Travis environment
-    - php: 7.2
-      env:
-        - BROWSER_NAME="chrome"
-        - CHROME_HEADLESS="1"
-      addons:
-        chrome: stable
-
-    # Add build to run tests against Chrome with Chromedriver inside Travis environment
-    - php: 7.2
-      env:
-        - BROWSER_NAME="chrome"
-        - CHROME_HEADLESS="1"
-        - CHROMEDRIVER="1"
-      addons:
-        chrome: stable
-
-    # Add build to run tests against Chrome with Chromedriver inside Travis environment
-    - php: 7.2
-      env:
-        - BROWSER_NAME="chrome"
-        - CHROME_HEADLESS="1"
-        - CHROMEDRIVER="1"
-        - CHROMEDRIVER_VERSION="latest"
-      addons:
-        chrome: stable
-
-    # Build with lowest possible dependencies
-    - php: 7.2
-      env: DEPENDENCIES="--prefer-lowest"
-
-    # Chrome on Travis build with lowest possible dependencies
-    - php: 7.2
-      env:
-        - BROWSER_NAME="chrome"
-        - CHROME_HEADLESS="1"
-        - DEPENDENCIES="--prefer-lowest"
-      addons:
-        chrome: stable
+    - php: 5.3
+      dist: precise
 
 install:
-  - travis_retry composer self-update
-  - travis_retry composer update --prefer-dist --no-interaction $DEPENDENCIES
+  - travis_retry composer install --no-interaction
 
 before_script:
   - mkdir ./logs
-  - if [[ "$BROWSER_NAME" = "chrome" && "$CHROMEDRIVER_VERSION" = "latest" ]]; then CHROMEDRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE); fi
-  - if [ "$BROWSER_NAME" = "chrome" ]; then mkdir chromedriver; wget -q -t 3 "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"; unzip chromedriver_linux64 -d chromedriver; fi
-  - if [ "$BROWSER_NAME" = "chrome" ]; then export CHROMEDRIVER_PATH=$PWD/chromedriver/chromedriver; fi
-  - sh -e /etc/init.d/xvfb start
-  - if [ ! -f jar/selenium-server-standalone-3.8.1.jar ]; then wget -q -t 3 -P jar https://selenium-release.storage.googleapis.com/3.8/selenium-server-standalone-3.8.1.jar; fi
   - |
-    if [ "$CHROMEDRIVER" = "1" ]
-    then
-      chromedriver/chromedriver --port=4444 --url-base=wd/hub &> ./logs/chromedriver.log &
+    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
+      wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
+      sh -e /etc/init.d/xvfb start
+      java -jar selenium-server-standalone-2.53.1.jar &> ./logs/selenium.log &
     else
-      java -Dwebdriver.firefox.marionette=false -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -jar jar/selenium-server-standalone-3.8.1.jar -enablePassThrough false -log ./logs/selenium.log &
-    fi
+      docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+    fi;
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
-  - php -S 127.0.0.1:8000 -t tests/functional/web/ &>>./logs/php-server.log &
-  - until $(echo | nc localhost 8000); do sleep 1; echo waiting for PHP server on port 8000...; done; echo "PHP server started"
+  # https://bugs.php.net/bug.php?id=71443
+  - |
+    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
+      export MINK_PHP_BIN=~/.phpenv/versions/5.4/bin/php
+    fi;
+    USE_ZEND_ALLOC=0 travis_retry ${MINK_PHP_BIN-php} -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &
+  - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
 script:
   - phpunit -v --coverage-clover=coverage.clover
@@ -97,6 +58,5 @@ after_script:
   - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 
 after_failure:
-  - if [ -f ./logs/selenium.log ]; then cat ./logs/selenium.log; fi
-  - if [ -f ./logs/chromedriver.log ]; then cat ./logs/chromedriver.log; fi
-  - if [ -f ./logs/php-server.log ]; then cat ./logs/php-server.log; fi
+  - cat ./logs/selenium.log
+  - cat ./logs/mink-test-server.log
