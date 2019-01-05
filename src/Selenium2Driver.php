@@ -18,9 +18,11 @@ use Facebook\WebDriver\Exception\TimeOutException;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\LocalFileDetector;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
+use Facebook\WebDriver\Remote\RemoteWebElement;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverElement;
+use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverKeys;
 use Facebook\WebDriver\WebDriverRadios;
 use Facebook\WebDriver\WebDriverSelect;
@@ -735,13 +737,12 @@ class Selenium2Driver extends CoreDriver
      */
     public function attachFile($xpath, $path)
     {
+        /** @var RemoteWebElement $element */
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
         $element->setFileDetector(new LocalFileDetector());
-        $remotePath = $element->sendKeys($path);
-
-        return $remotePath;
+        return $element->sendKeys($path);
     }
 
     /**
@@ -865,28 +866,30 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * {@inheritdoc}
+     * Waits some time or until JS condition turns true.
+     *
+     * @param int                                        $timeout   timeout in milliseconds
+     * @param WebDriverExpectedCondition|\Closure|string $condition JS condition / Closure
+     *
+     * @return bool
      */
     public function wait($timeout, $condition)
     {
-        $script = "return $condition;";
         $seconds = $timeout / 1000.0;
+        $wait = $this->webDriver->wait($seconds);
 
-        $wait = $this->webDriver->wait($seconds, 100);
+        if (is_string($condition)) {
+            $script = "return $condition;";
+            $condition = function (RemoteWebDriver $driver) use ($script) {
+                return $driver->executeScript($script);
+            };
+        }
 
-        return (bool) $wait->until(function (RemoteWebDriver $driver) use ($script) {
-            $result = $driver->executeScript($script);
-            // stringify result
-            if ($result === true) {
-                $result = 'true';
-            } else if ($result === false) {
-                $result = 'false';
-            } else if ($result === null) {
-                $result = 'null';
-            }
-
-            return (string) $result;
-        });
+        try {
+            return (bool) $wait->until($condition);
+        } catch (TimeOutException $e) {
+            return false;
+        }
     }
 
     /**
