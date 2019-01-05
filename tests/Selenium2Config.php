@@ -10,6 +10,11 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 class Selenium2Config extends AbstractConfig
 {
+    /**
+     * @var Selenium2Driver
+     */
+    private $driver;
+
     public static function getInstance()
     {
         return new self();
@@ -68,7 +73,7 @@ class Selenium2Config extends AbstractConfig
         $driver =  new Selenium2Driver($browser, array(), $seleniumHost);
         $driver->setDesiredCapabilities($desiredCapabilities);
 
-        return $driver;
+        return $this->driver = $driver;
     }
 
     /**
@@ -81,6 +86,33 @@ class Selenium2Config extends AbstractConfig
             && 'testHtml5Types' === $test
         ) {
             return 'WebDriver does not support setting value in color inputs. See https://code.google.com/p/selenium/issues/detail?id=7650';
+        }
+
+        $desiredCapabilities = $this->driver->getDesiredCapabilities();
+        $chromeOptions = $desiredCapabilities->getCapability(ChromeOptions::CAPABILITY);
+
+        /** @var ChromeOptions $capability */
+        $headless = $desiredCapabilities->getBrowserName() === 'chrome'
+            && $chromeOptions instanceof ChromeOptions
+            && in_array('headless', $chromeOptions->toArray()['args'], true);
+
+        if (
+            'Behat\Mink\Tests\Driver\Js\WindowTest' === $testCase
+            && (0 === strpos($test, 'testWindowMaximize'))
+            && ('true' === getenv('TRAVIS') || $headless)
+        ) {
+            return 'Maximizing the window does not work when running the browser in Xvfb/Headless.';
+        }
+
+        if (
+            PHP_OS === 'Darwin'
+            && 'Behat\Mink\Tests\Driver\Js\EventsTest' === $testCase
+            && 0 === strpos($test, 'testKeyboardEvents')
+        ) {
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=13891#c16
+            // Control + <char> will not trigger keypress
+            // Option + <char> will output different results "special char" ©
+            return 'MacOS does not behave same as Windows or Linux';
         }
 
         return parent::skipMessage($testCase, $test);
