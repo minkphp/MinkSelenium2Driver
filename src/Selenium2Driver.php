@@ -89,6 +89,12 @@ class Selenium2Driver extends CoreDriver
         } else {
             $this->desiredCapabilities = new DesiredCapabilities();
         }
+
+        if ($desiredCapabilities) {
+            foreach ($desiredCapabilities as $key => $val) {
+                $this->desiredCapabilities->setCapability($key, $val);
+            }
+        }
     }
 
     /**
@@ -139,12 +145,18 @@ class Selenium2Driver extends CoreDriver
      *
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
-     * @param DesiredCapabilities $desiredCapabilities
+     * @param DesiredCapabilities|array|null $desiredCapabilities
      *
      * @throws DriverException
      */
-    public function setDesiredCapabilities(DesiredCapabilities $desiredCapabilities = null)
+    public function setDesiredCapabilities($desiredCapabilities = null)
     {
+        if (is_array($desiredCapabilities)) {
+            $desiredCapabilities = new DesiredCapabilities($desiredCapabilities);
+        } else if ($desiredCapabilities === null) {
+            $desiredCapabilities = new DesiredCapabilities();
+        }
+
         if ($this->started) {
             throw new DriverException('Unable to set desiredCapabilities, the session has already started');
         }
@@ -918,6 +930,10 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWebDriverSessionId()
     {
+        if (!$this->started) {
+            return null;
+        }
+
         return $this->webDriver->getSessionID();
     }
 

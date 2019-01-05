@@ -4,6 +4,7 @@ namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\TestCase;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
 
 class DesiredCapabilitiesTest extends TestCase
 {
@@ -23,8 +24,8 @@ class DesiredCapabilitiesTest extends TestCase
 
         $driver = new Selenium2Driver('firefox', $caps);
         $this->assertNotEmpty($driver->getDesiredCapabilities(), 'desiredCapabilities empty');
-        $this->assertInternalType('array', $driver->getDesiredCapabilities());
-        $this->assertEquals($caps, $driver->getDesiredCapabilities());
+        $this->assertInstanceOf(DesiredCapabilities::class, $driver->getDesiredCapabilities());
+        $this->assertArraySubset($caps, $driver->getDesiredCapabilities()->toArray());
     }
 
     /**
@@ -46,6 +47,8 @@ class DesiredCapabilitiesTest extends TestCase
         );
         $session = $this->getSession();
         $session->start();
+
+        /** @var Selenium2Driver $driver */
         $driver = $session->getDriver();
         $driver->setDesiredCapabilities($caps);
     }
