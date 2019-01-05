@@ -21,7 +21,7 @@
         <!--<env name="BROWSER_NAME" value="htmlunit"/>-->
 
         <!--<env name="BROWSER_NAME" value="chrome"/>-->
-        <!--<env name="DRIVER_OPTIONS" value='{"args":["headless", "no-sandbox","reduce-security-for-testing","allow-insecure-localhost","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}'/>-->
+        <!--<env name="DRIVER_OPTIONS" value='{"args":["headless", "no-sandbox","window-size=1024,768"]}'/>-->
 
         <!--<env name="BROWSER_NAME" value="firefox"/>-->
         <!--<env name="DRIVER_OPTIONS" value='{"preference": {"general.useragent.override": "x"}}'/>-->

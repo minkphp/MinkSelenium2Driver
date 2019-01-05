@@ -19,7 +19,7 @@ env:
   global:
     - DISPLAY=:99.0
     - BROWSER_NAME="chrome"
-    - DRIVER_OPTIONS="{'args':["headless", "no-sandbox","window-size=1024,768"]}"
+    - DRIVER_OPTIONS="{'args':['headless', 'no-sandbox','window-size=1024,768']}"
     - CHROMEDRIVER_VERSION="2.38"
     - START_XVFB=0
 
@@ -33,7 +33,7 @@ matrix:
     # XVFB with regular Chrome (not headless)
     - php: 7.2
       env:
-        - DRIVER_OPTIONS="{'args':["no-sandbox","window-size=1024,768"]}"
+        - DRIVER_OPTIONS="{'args':['no-sandbox','window-size=1024,768']}"
         - START_XVFB=1
     - php: 7.2
       env:
