@@ -18,10 +18,12 @@
         <!--<server name="WEB_FIXTURES_HOST" value="http://host.docker.internal:8002"/>-->
         <server name="WEB_FIXTURES_HOST" value="http://localhost:8002"/>
 
-        <env name="WEB_FIXTURES_BROWSER" value="chrome"/>
-        <env name="DRIVER_OPTIONS" value='{"args":["headless", "no-sandbox","reduce-security-for-testing","allow-insecure-localhost","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}'/>
+        <!--<env name="BROWSER_NAME" value="htmlunit"/>-->
 
-        <!--<env name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
+        <!--<env name="BROWSER_NAME" value="chrome"/>-->
+        <!--<env name="DRIVER_OPTIONS" value='{"args":["headless", "no-sandbox","reduce-security-for-testing","allow-insecure-localhost","disable-web-security","disk-cache-size=1","allow-running-insecure-content","ignore-certificate-errors","ignore-urlfetcher-cert-requests"]}'/>-->
+
+        <!--<env name="BROWSER_NAME" value="firefox"/>-->
         <!--<env name="DRIVER_OPTIONS" value='{"preference": {"general.useragent.override": "x"}}'/>-->
 
         <!-- where driver will connect to -->

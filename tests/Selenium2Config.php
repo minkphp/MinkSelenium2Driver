@@ -25,7 +25,7 @@ class Selenium2Config extends AbstractConfig
      */
     public function createDriver()
     {
-        $browser = getenv('WEB_FIXTURES_BROWSER') ?: 'firefox';
+        $browser = getenv('BROWSER_NAME') ?: 'firefox';
         $driverOptions = getenv('DRIVER_OPTIONS') ? \json_decode(getenv('DRIVER_OPTIONS'), true) : array();
         $seleniumHost = $_SERVER['DRIVER_URL'];
 
@@ -45,26 +45,9 @@ class Selenium2Config extends AbstractConfig
         if (isset($capabilityMap[$browser])) {
             $capability = $desiredCapabilities->getCapability($capabilityMap[$browser]);
             if ($browser === 'chrome') {
-                if (!$capability) {
-                    $capability = new ChromeOptions();
-                }
-                $args = isset($driverOptions['args']) ? $driverOptions['args'] : array();
-                $capability->addArguments($args);
-                //$capability->addEncodedExtension();
-                //$capability->addExtension();
-                //$capability->addEncodedExtensions();
-                //$capability->addExtensions();
+                $capability = $this->buildChromeOptions($capability, $driverOptions);
             } else if ($browser === 'firefox') {
-                if (!$capability) {
-                    $capability = new FirefoxProfile();
-                }
-                $preferences = isset($driverOptions['preference']) ? $driverOptions['preference'] : array();
-                foreach ($preferences as $key => $preference) {
-                    $capability->setPreference($key, $preference);
-                   // $capability->setRdfFile($key, $preference);
-                   // $capability->addExtensionDatas($key, $preference);
-                   // $capability->addExtension($key, $preference);
-                }
+                $capability = $this->buildFirefoxProfile($capability, $driverOptions);
             }
 
             $desiredCapabilities->setCapability($capabilityMap[$browser], $capability);
@@ -124,5 +107,48 @@ class Selenium2Config extends AbstractConfig
     protected function supportsCss()
     {
         return true;
+    }
+
+    /**
+     * @param ChromeOptions|null $capability
+     * @param array              $driverOptions
+     *
+     * @return ChromeOptions
+     */
+    private function buildChromeOptions($capability, array $driverOptions)
+    {
+        if (!$capability) {
+            $capability = new ChromeOptions();
+        }
+        $args = isset($driverOptions['args']) ? $driverOptions['args'] : [];
+        $capability->addArguments($args);
+        return $capability;
+
+        //$capability->addEncodedExtension();
+        //$capability->addExtension();
+        //$capability->addEncodedExtensions();
+        //$capability->addExtensions();
+    }
+
+    /**
+     * @param FirefoxProfile|null $capability
+     * @param array               $driverOptions
+     *
+     * @return FirefoxProfile
+     */
+    private function buildFirefoxProfile($capability, array $driverOptions)
+    {
+        if (!$capability) {
+            $capability = new FirefoxProfile();
+        }
+
+        $preferences = isset($driverOptions['preference']) ? $driverOptions['preference'] : [];
+        foreach ($preferences as $key => $preference) {
+            $capability->setPreference($key, $preference);
+            // $capability->setRdfFile($key, $preference);
+            // $capability->addExtensionDatas($key, $preference);
+            // $capability->addExtension($key, $preference);
+        }
+        return $capability;
     }
 }
