@@ -6,8 +6,6 @@ services:
   - docker
 
 php:
-  - 5.4
-  - 5.5
   - 5.6
   - 7.0
   - 7.1
@@ -17,37 +15,51 @@ php:
 env:
   global:
     - DISPLAY=:99.0
+    - BROWSER_NAME="htmlunit"
+    - CHROMEDRIVER_VERSION="2.38"
 
 cache:
   directories:
     - $HOME/.composer/cache/files
+    - jar
 
 matrix:
-  fast_finish: true
   include:
-    - php: 5.3
-      dist: precise
+    # Add build to run tests against Firefox inside Travis environment
+    - php: 7.2
+      env: BROWSER_NAME="firefox"
+      addons:
+        firefox: "45.8.0esr"
+
+    # Add build to run tests against Chrome inside Travis environment
+    - php: 7.2
+      env: BROWSER_NAME="chrome" CHROME_HEADLESS="1"
+      addons:
+        chrome: stable
+
+    # Build with lowest possible dependencies
+    - php: 7.2
+      env: DEPENDENCIES="--prefer-lowest"
+
+    # Chrome on Travis build with lowest possible dependencies
+    - php: 7.2
+      env: BROWSER_NAME="chrome" CHROME_HEADLESS="1" DEPENDENCIES="--prefer-lowest"
+      addons:
+        chrome: stable
 
 install:
-  - travis_retry composer install --no-interaction
+  - travis_retry composer update --no-interaction $DEPENDENCIES
 
 before_script:
   - mkdir ./logs
-  - |
-    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
-      wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
-      sh -e /etc/init.d/xvfb start
-      java -jar selenium-server-standalone-2.53.1.jar &> ./logs/selenium.log &
-    else
-      docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
-    fi;
+  - if [ "$BROWSER_NAME" = "chrome" ]; then mkdir chromedriver; wget -q -t 3 https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip; unzip chromedriver_linux64 -d chromedriver; fi
+  - if [ "$BROWSER_NAME" = "chrome" ]; then export CHROMEDRIVER_PATH=$PWD/chromedriver/chromedriver; fi
+  - sh -e /etc/init.d/xvfb start
+  - if [ ! -f jar/selenium-server-standalone-3.8.1.jar ]; then wget -q -t 3 -P jar https://selenium-release.storage.googleapis.com/3.8/selenium-server-standalone-3.8.1.jar; fi
+  - java -Dwebdriver.firefox.marionette=false -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -jar jar/selenium-server-standalone-3.8.1.jar -enablePassThrough false -log ./logs/selenium.log &
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
   # https://bugs.php.net/bug.php?id=71443
-  - |
-    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
-      export MINK_PHP_BIN=~/.phpenv/versions/5.4/bin/php
-    fi;
-    USE_ZEND_ALLOC=0 travis_retry ${MINK_PHP_BIN-php} -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &
+  - USE_ZEND_ALLOC=0 travis_retry php -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
 script:
