@@ -725,7 +725,6 @@ class Selenium2Driver extends CoreDriver
      */
     public function attachFile($xpath, $path)
     {
-        /** @var RemoteWebElement $element */
         $element = $this->findElement($xpath);
         $this->ensureInputType($element, $xpath, 'file', 'attach a file on');
 
@@ -931,7 +930,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * @param string $xpath
      *
-     * @return WebDriverElement
+     * @return RemoteWebElement
      */
     private function findElement($xpath)
     {
