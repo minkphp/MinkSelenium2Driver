@@ -34,6 +34,7 @@ matrix:
     - php: 7.0
       env:
         - SELENIUM_DRIVER="2.53.1"
+        - BROWSER_NAME="firefox"
     # XVFB with regular Chrome (not headless)
     - php: 7.2
       env:
@@ -58,7 +59,7 @@ before_script:
   - if [ "$START_XVFB" = "1" ]; then sh -e /etc/init.d/xvfb start; fi;
   - |
     if [ ! -z "$SELENIUM_DRIVER" ]; then
-      docker run -p 4444:4444 "selenium/standalone-firefox:$SELENIUM_DRIVER" &> ./logs/selenium.log &;
+      docker run -p 4444:4444 --network=host "selenium/standalone-firefox:$SELENIUM_DRIVER" &> ./logs/selenium.log &;
     else
       ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &;
     fi;
