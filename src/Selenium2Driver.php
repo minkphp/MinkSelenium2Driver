@@ -19,6 +19,7 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\LocalFileDetector;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\RemoteWebElement;
+use Facebook\WebDriver\WebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverElement;
@@ -174,6 +175,14 @@ class Selenium2Driver extends CoreDriver
     public function getDesiredCapabilities()
     {
         return $this->desiredCapabilities;
+    }
+
+    /**
+     * @return WebDriver
+     */
+    public function getWebDriver()
+    {
+        return $this->webDriver;
     }
 
     /**
