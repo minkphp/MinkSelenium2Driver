@@ -957,11 +957,6 @@ class Selenium2Driver extends CoreDriver
         }
     }
 
-    private function uploadFile($path)
-    {
-        throw new \RuntimeException('Not yet supported');
-    }
-
     /**
      * Prepend modifier
      *
