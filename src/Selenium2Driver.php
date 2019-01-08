@@ -699,7 +699,6 @@ class Selenium2Driver extends CoreDriver
 
     private function clickOnElement(WebDriverElement $element)
     {
-        // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
         $this->webDriver->action()->click($element)->perform();
     }
 
