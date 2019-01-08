@@ -153,14 +153,14 @@ class Selenium2Driver extends CoreDriver
      */
     public function setDesiredCapabilities($desiredCapabilities = null)
     {
+        if ($this->started) {
+            throw new DriverException('Unable to set desiredCapabilities, the session has already started');
+        }
+
         if (is_array($desiredCapabilities)) {
             $desiredCapabilities = new DesiredCapabilities($desiredCapabilities);
         } else if ($desiredCapabilities === null) {
             $desiredCapabilities = new DesiredCapabilities();
-        }
-
-        if ($this->started) {
-            throw new DriverException('Unable to set desiredCapabilities, the session has already started');
         }
 
         $this->desiredCapabilities = $desiredCapabilities;
