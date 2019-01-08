@@ -16,7 +16,8 @@
 
         <!-- Docker for Mac, see https://docs.docker.com/docker-for-mac/networking/#there-is-no-docker0-bridge-on-macos#i-want-to-connect-from-a-container-to-a-service-on-the-host -->
         <!--<server name="WEB_FIXTURES_HOST" value="http://host.docker.internal:8002"/>-->
-        <server name="WEB_FIXTURES_HOST" value="http://localhost:8002"/>
+        <!-- See default value in \Behat\Mink\Tests\Driver\AbstractConfig::getWebFixturesUrl -->
+        <!--<server name="WEB_FIXTURES_HOST" value="http://localhost:8002"/>-->
 
         <!--<env name="BROWSER_NAME" value="htmlunit"/>-->
 
