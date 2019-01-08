@@ -210,7 +210,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @return mixed
      */
-    protected function executeJsOnXpath($xpath, $script, $sync = true)
+    private function executeJsOnXpath($xpath, $script, $sync = true)
     {
         $element = $this->findElement($xpath);
         return $this->executeJsOnElement($element, $script, $sync);
