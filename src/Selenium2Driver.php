@@ -854,12 +854,7 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Waits some time or until JS condition turns true.
-     *
-     * @param int                                        $timeout   timeout in milliseconds
-     * @param WebDriverExpectedCondition|\Closure|string $condition JS condition / Closure
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function wait($timeout, $condition)
     {
