@@ -948,7 +948,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @throws DriverException
      */
-    private function  ensureInputType(WebDriverElement $element, $xpath, $type, $action)
+    private function ensureInputType(WebDriverElement $element, $xpath, $type, $action)
     {
         if ('input' !== strtolower($element->getTagName()) || $type !== strtolower($element->getAttribute('type'))) {
             $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
