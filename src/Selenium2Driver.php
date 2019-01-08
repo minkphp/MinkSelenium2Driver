@@ -104,7 +104,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @param array $timeouts The session timeout settings: Array of {script, implicit, page} => time in milliseconds
      */
-    public function setTimeouts($timeouts)
+    public function setTimeouts(array $timeouts)
     {
         $this->timeouts = $timeouts;
 
