@@ -82,4 +82,3 @@ Maintainers
 
 * Christophe Coevoet [stof](https://github.com/stof)
 * Pete Otaqui [pete-otaqui](http://github.com/pete-otaqui)
-
