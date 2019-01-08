@@ -55,7 +55,7 @@ before_script:
   - ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for ChromeDriver on port 4444...; done; echo "ChromeDriver started"
   # https://bugs.php.net/bug.php?id=71443
-  - USE_ZEND_ALLOC=0 travis_retry php -d memory_limit=8G -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures &> ./logs/mink-test-server.log &
+  - USE_ZEND_ALLOC=0 ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
 script:

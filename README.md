@@ -64,7 +64,7 @@ Testing
     ```
 2. Start WebServer by running
     ``` bash
-    php -S localhost:8002 -t ./vendor/mink/driver-testsuite/web-fixtures
+    ./vendor/bin/mink-test-server
     ```
 3. Start PhpUnit
     ```bash
