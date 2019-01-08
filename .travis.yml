@@ -38,14 +38,14 @@ matrix:
     # build with lowest deps
     - php: 7.2
       env:
-        - DEPENDENCIES="--prefer-lowest"
+        - COMPOSER_FLAGS="--prefer-lowest"
     # build with latest chromedriver
     - php: 7.2
       env:
         - CHROMEDRIVER_VERSION="latest"
 
 install:
-  - travis_retry composer update --no-interaction $DEPENDENCIES
+  - travis_retry composer update --no-interaction $COMPOSER_FLAGS
 
 before_script:
   - mkdir ./logs
