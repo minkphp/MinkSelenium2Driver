@@ -958,7 +958,7 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Prepend modifier
+     * Converts alt/ctrl/shift/meta to corresponded WebDriverKeys::* constant
      *
      * @param string $modifier
      *
@@ -980,9 +980,9 @@ class Selenium2Driver extends CoreDriver
 }
 
     /**
-     * Decode char
+     * Decodes char
      *
-     * @param $char
+     * @param int|string $char if int is passed it will be converted to char using `chr` function
      *
      * @return string
      */
