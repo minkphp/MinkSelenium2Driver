@@ -58,10 +58,10 @@ before_script:
   - if [ "$BROWSER_NAME" = "chrome" ]; then mkdir chromedriver; wget -q -t 3 https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip; unzip chromedriver_linux64 -d chromedriver; fi
   - if [ "$START_XVFB" = "1" ]; then sh -e /etc/init.d/xvfb start; fi;
   - |
-    if [ ! -z "$SELENIUM_DRIVER" ]; then
-      docker run -p 4444:4444 --network=host "selenium/standalone-firefox:$SELENIUM_DRIVER" &> ./logs/selenium.log &;
+    if [ -z "$SELENIUM_DRIVER" ]; then
+      ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &
     else
-      ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &;
+      docker run --rm -p 4444:4444 "selenium/standalone-firefox:$SELENIUM_DRIVER" &> ./logs/selenium.log &
     fi;
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for ChromeDriver on port 4444...; done; echo "ChromeDriver started"
   - travis_retry ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
