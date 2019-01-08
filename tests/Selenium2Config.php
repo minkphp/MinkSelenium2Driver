@@ -74,7 +74,6 @@ class Selenium2Config extends AbstractConfig
         $desiredCapabilities = $this->driver->getDesiredCapabilities();
         $chromeOptions = $desiredCapabilities->getCapability(ChromeOptions::CAPABILITY);
 
-        /** @var ChromeOptions $capability */
         $headless = $desiredCapabilities->getBrowserName() === 'chrome'
             && $chromeOptions instanceof ChromeOptions
             && in_array('headless', $chromeOptions->toArray()['args'], true);
