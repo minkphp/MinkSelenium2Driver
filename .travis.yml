@@ -22,6 +22,7 @@ env:
     - DRIVER_OPTIONS='{"args":["headless", "no-sandbox","window-size=1024,768"]}'
     - CHROMEDRIVER_VERSION="2.38"
     - START_XVFB="0"
+    - SELENIUM_DRIVER=""
 
 cache:
   directories:
@@ -30,6 +31,9 @@ cache:
 
 matrix:
   include:
+    - php: 7.0
+      env:
+        - SELENIUM_DRIVER="2.53.1"
     # XVFB with regular Chrome (not headless)
     - php: 7.2
       env:
@@ -52,9 +56,13 @@ before_script:
   - if [[ "$BROWSER_NAME" = "chrome" && "$CHROMEDRIVER_VERSION" = "latest" ]]; then CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`; fi
   - if [ "$BROWSER_NAME" = "chrome" ]; then mkdir chromedriver; wget -q -t 3 https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip; unzip chromedriver_linux64 -d chromedriver; fi
   - if [ "$START_XVFB" = "1" ]; then sh -e /etc/init.d/xvfb start; fi;
-  - ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &
+  - |
+    if [ ! -z "$SELENIUM_DRIVER" ]; then
+      docker run -p 4444:4444 "selenium/standalone-firefox:$SELENIUM_DRIVER" &> ./logs/selenium.log &;
+    else
+      ./chromedriver/chromedriver --port=4444 --url-base=wd/hub --verbose &> ./logs/chromedriver.log &;
+    fi;
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for ChromeDriver on port 4444...; done; echo "ChromeDriver started"
-  # https://bugs.php.net/bug.php?id=71443
   - travis_retry ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
@@ -66,5 +74,6 @@ after_script:
   - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
 
 after_failure:
-  - cat ./logs/chromedriver.log
-  - cat ./logs/mink-test-server.log
+  - if [ -f ./logs/chromedriver.log ]; then cat ./logs/chromedriver.log; fi
+  - if [ -f ./logs/selenium.log ]; then cat ./logs/selenium.log; fi
+  - if [ -f ./logs/mink-test-server.log ]; then cat ./logs/mink-test-server.log; fi
