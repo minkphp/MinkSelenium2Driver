@@ -63,7 +63,7 @@ before_script:
     else
       docker run --rm --network=host -p 4444:4444 "selenium/standalone-firefox:$SELENIUM_DRIVER" &> ./logs/selenium.log &
     fi;
-  - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for ChromeDriver on port 4444...; done; echo "ChromeDriver started"
+  - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for WebDriver on port 4444...; done; echo "ChromeDriver started"
   - travis_retry ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
