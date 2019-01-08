@@ -36,13 +36,6 @@ use Facebook\WebDriver\WebDriverSelect;
 class Selenium2Driver extends CoreDriver
 {
     /**
-     * Whether the browser has been started
-     *
-     * @var Boolean
-     */
-    private $started = false;
-
-    /**
      * The WebDriver instance
      *
      * @var RemoteWebDriver
@@ -154,7 +147,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function setDesiredCapabilities($desiredCapabilities = null)
     {
-        if ($this->started) {
+        if ($this->isStarted()) {
             throw new DriverException('Unable to set desiredCapabilities, the session has already started');
         }
 
@@ -256,8 +249,6 @@ class Selenium2Driver extends CoreDriver
         if (!$this->webDriver) {
             throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
-
-        $this->started = true;
     }
 
     /**
@@ -265,7 +256,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function isStarted()
     {
-        return $this->started;
+        return $this->webDriver !== null;
     }
 
     /**
@@ -277,7 +268,6 @@ class Selenium2Driver extends CoreDriver
             throw new DriverException('Could not connect to a Selenium 2 / WebDriver server');
         }
 
-        $this->started = false;
         try {
             $this->webDriver->quit();
             $this->webDriver = null;
@@ -932,7 +922,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWebDriverSessionId()
     {
-        if (!$this->started) {
+        if (!$this->isStarted()) {
             return null;
         }
 
