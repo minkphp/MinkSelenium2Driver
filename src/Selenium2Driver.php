@@ -11,6 +11,7 @@
 namespace Behat\Mink\Driver;
 
 use Behat\Mink\Exception\DriverException;
+use Behat\Mink\Exception\UnsupportedDriverActionException;
 use Facebook\WebDriver\Cookie;
 use Facebook\WebDriver\Exception\NoSuchElementException;
 use Facebook\WebDriver\Exception\ScriptTimeoutException;
@@ -886,7 +887,7 @@ class Selenium2Driver extends CoreDriver
     {
         $dimension = new WebDriverDimension($width, $height);
         if ($name) {
-            throw new \Exception('Named windows are not supported yet');
+            throw new UnsupportedDriverActionException('Named windows are not supported yet');
         }
 
         $this->webDriver->manage()->window()->setSize($dimension);
@@ -907,7 +908,7 @@ class Selenium2Driver extends CoreDriver
     public function maximizeWindow($name = null)
     {
         if ($name) {
-            throw new \Exception('Named window is not supported');
+            throw new UnsupportedDriverActionException('Named window is not supported');
         }
 
         $this->webDriver->manage()->window()->maximize();
