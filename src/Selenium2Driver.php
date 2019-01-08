@@ -177,16 +177,6 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
-     * Sets the WebDriver instance
-     *
-     * @param RemoteWebDriver $webDriver An instance of the WebDriver class
-     */
-    public function setWebDriver(RemoteWebDriver $webDriver)
-    {
-        $this->webDriver = $webDriver;
-    }
-
-    /**
      * Returns the default capabilities
      *
      * @return array
