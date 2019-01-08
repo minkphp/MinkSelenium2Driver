@@ -759,9 +759,10 @@ class Selenium2Driver extends CoreDriver
         $element = $this->findElement($xpath);
         $action = $this->webDriver->action();
 
-        $action->moveToElement($element);
-        $action->click($element);
-        $action->perform();
+        $action->moveToElement($element)->perform();
+
+        // @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus
+        $this->executeJsOnElement($element, 'return {{ELEMENT}}.focus()');
     }
 
     /**
@@ -770,11 +771,9 @@ class Selenium2Driver extends CoreDriver
     public function blur($xpath)
     {
         $element = $this->findElement($xpath);
-        $action = $this->webDriver->action();
 
-        $action->moveToElement($element);
-        $action->sendKeys($element, WebDriverKeys::TAB);
-        $action->perform();
+        // @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/blur
+        $this->executeJsOnElement($element, 'return {{ELEMENT}}.blur()');
     }
 
     /**
