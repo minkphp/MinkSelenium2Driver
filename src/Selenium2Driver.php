@@ -516,21 +516,21 @@ class Selenium2Driver extends CoreDriver
         }
 
         if ('input' === $elementName && 'radio' === $elementType) {
-            $element = new WebDriverRadios($element);
-            return $element->getFirstSelectedOption()->getAttribute('value');
+            $radios = new WebDriverRadios($element);
+            return $radios->getFirstSelectedOption()->getAttribute('value');
         }
 
         // Using $element->attribute('value') on a select only returns the first selected option
         // even when it is a multiple select, so a custom retrieval is needed.
         if ('select' === $elementName) {
-            $element = new WebDriverSelect($element);
-            if ($element->isMultiple()) {
+            $select = new WebDriverSelect($element);
+            if ($select->isMultiple()) {
                 return \array_map(function (WebDriverElement $element) {
                     return $element->getAttribute('value');
-                }, $element->getAllSelectedOptions());
+                }, $select->getAllSelectedOptions());
             }
 
-            return $element->getFirstSelectedOption()->getAttribute('value');
+            return $select->getFirstSelectedOption()->getAttribute('value');
         }
 
         return $element->getAttribute('value');
@@ -545,18 +545,18 @@ class Selenium2Driver extends CoreDriver
         $elementName = strtolower($element->getTagName());
 
         if ('select' === $elementName) {
-            $element = new WebDriverSelect($element);
+            $select = new WebDriverSelect($element);
 
             if (is_array($value)) {
-                $element->deselectAll();
+                $select->deselectAll();
                 foreach ($value as $option) {
-                    $element->selectByValue($option);
+                    $select->selectByValue($option);
                 }
 
                 return;
             }
 
-            $element->selectByValue($value);
+            $select->selectByValue($value);
 
             return;
         }
@@ -577,8 +577,8 @@ class Selenium2Driver extends CoreDriver
             }
 
             if ('radio' === $elementType) {
-                $element = new WebDriverRadios($element);
-                $element->selectByValue($value);
+                $radios = new WebDriverRadios($element);
+                $radios->selectByValue($value);
                 return;
             }
 
