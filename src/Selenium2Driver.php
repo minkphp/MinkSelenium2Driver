@@ -291,7 +291,14 @@ class Selenium2Driver extends CoreDriver
     public function visit($url)
     {
         try {
-            $this->webDriver->navigate()->to($url);
+            try {
+                $this->webDriver->navigate()->to($url);
+            } catch (ScriptTimeoutException $e) {
+                // selenium-firefox:2.53.1 has different exception code 'page load' and ScriptTimeoutException is thrown
+                if (strpos($e->getMessage(), 'Timed out waiting for page load') === 0) {
+                    throw new TimeOutException($e->getMessage(), $e->getResults());
+                }
+            }
         } catch (TimeOutException $e) {
             throw new DriverException($e->getMessage(), $e->getCode(), $e);
         }
@@ -311,7 +318,14 @@ class Selenium2Driver extends CoreDriver
     public function reload()
     {
         try {
-            $this->webDriver->navigate()->refresh();
+            try {
+                $this->webDriver->navigate()->refresh();
+            } catch (ScriptTimeoutException $e) {
+                // selenium-firefox:2.53.1 has different exception code 'page load' and ScriptTimeoutException is thrown
+                if (strpos($e->getMessage(), 'Timed out waiting for page load') === 0) {
+                    throw new TimeOutException($e->getMessage(), $e->getResults());
+                }
+            }
         } catch (TimeOutException $e) {
             throw new DriverException($e->getMessage(), $e->getCode(), $e);
         }
