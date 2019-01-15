@@ -884,6 +884,49 @@ JS;
     /**
      * {@inheritdoc}
      */
+    public function pressKey($xpath, $char, $modifier = null)
+    {
+        $keys = array();
+
+        $modifier = $this->keyModifier($modifier);
+        if ($modifier) {
+            $keys[] = $modifier;
+        }
+
+        $keys[] = $char;
+
+        if ($modifier) {
+            $keys[] = Key::NULL_KEY;
+        }
+
+        $this->findElement($xpath)->postValue(array('value' => array_map('strval', $keys)));
+    }
+
+    /**
+     * Converts alt/ctrl/shift/meta to corresponded Key::* constant
+     *
+     * @param string $modifier
+     *
+     * @return string
+     */
+    private function keyModifier($modifier)
+    {
+        if ($modifier === 'alt') {
+            $modifier = Key::ALT;
+        } else if ($modifier === 'ctrl') {
+            $modifier = Key::CONTROL;
+        } else if ($modifier === 'shift') {
+            $modifier = Key::SHIFT;
+        } else if ($modifier === 'meta') {
+            $modifier = Key::META;
+        }
+
+        return $modifier;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function dragTo($sourceXpath, $destinationXpath)
     {
         $source      = $this->findElement($sourceXpath);
