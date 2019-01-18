@@ -971,7 +971,7 @@ JS;
     {
         $source = $this->findElement($sourceXpath);
         $destination = $this->findElement($destinationXpath);
-        $this->webDriver->action()->dragAndDrop($source, $destination);
+        $this->webDriver->action()->dragAndDrop($source, $destination)->perform();
     }
 
     /**
