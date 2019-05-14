@@ -29,7 +29,7 @@ class Selenium2Driver extends CoreDriver
 {
     /**
      * Whether the browser has been started
-     * @var Boolean
+     * @var boolean
      */
     private $started = false;
 
@@ -254,7 +254,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @param string  $xpath  the xpath to search with
      * @param string  $script the script to execute
-     * @param Boolean $sync   whether to run the script synchronously (default is TRUE)
+     * @param boolean $sync   whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -271,7 +271,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @param Element $element the webdriver element
      * @param string  $script  the script to execute
-     * @param Boolean $sync    whether to run the script synchronously (default is TRUE)
+     * @param boolean $sync    whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
