@@ -12,7 +12,10 @@
         <var name="driver_config_factory" value="Behat\Mink\Tests\Driver\Selenium2Config::getInstance" />
 
         <!--server name="WEB_FIXTURES_HOST" value="http://test.mink.dev" /-->
-        <!--server name="WEB_FIXTURES_BROWSER" value="firefox" /-->
+        <!-- MacOS -->
+        <!--<server name="WEB_FIXTURES_HOST" value="http://docker.for.mac.localhost:8002"/>-->
+
+        <!--<server name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
 
         <!-- where driver will connect to -->
         <server name="DRIVER_URL" value="http://localhost:4444/wd/hub" />

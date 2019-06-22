@@ -22,34 +22,18 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
-matrix:
-  fast_finish: true
-  include:
-    - php: 5.3
-      dist: precise
-      env: MINK_PHP_BIN=~/.phpenv/versions/5.4/bin/php
-
 install:
   - composer install --no-interaction
 
 before_script:
   - mkdir ./logs
-  - |
-    # PHP5.3 is only available on Ubuntu Precise, but docker service is not available, so using
-    if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]]; then
-      wget http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar
-      sh -e /etc/init.d/xvfb start
-      java -jar selenium-server-standalone-2.53.1.jar &> ./logs/selenium.log &
-    else
-      docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
-    fi;
-    # https://bugs.php.net/bug.php?id=71443
-    USE_ZEND_ALLOC=0 ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
+  - docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+  - ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
 script:
-  - phpunit -v --coverage-clover=coverage.clover
+  - ./vendor/bin/simple-phpunit -v --coverage-clover=coverage.clover
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar

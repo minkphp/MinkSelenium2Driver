@@ -18,15 +18,20 @@
             "homepage":  "http://everzet.com"
         }
     ],
-
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/oleg-andreyev/driver-testsuite.git",
+            "no-api": true
+        }
+    ],
     "require": {
-        "php":                       ">=5.3.1",
+        "php":                       ">=5.4",
         "behat/mink":                "~1.7@dev",
         "instaclick/php-webdriver":  "~1.1"
     },
-
     "require-dev": {
-        "mink/driver-testsuite": "dev-master"
+        "mink/driver-testsuite": "dev-drop-php-53-force-phpunit-less-8"
     },
 
     "autoload": {
