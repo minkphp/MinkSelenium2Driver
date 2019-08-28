@@ -1,3 +1,26 @@
+1.4.0 / 2019-08-28
+==================
+
+###### Changes
+* Dropping support for PHP 5.3
+* Updated documentation about testing
+* Syn library is [0.0.2](https://github.com/bitovi/syn/tree/v0.0.2)
+* `setDesiredCapabilities` will throw an exception if you will try to set capabilities on already started session
+* Added `getDesiredCapabilities` to allow fetch capabilities
+* Minors improvements to driver when running against W3C compatible driver
+ 
+###### Testsuite
+* Adding testing on PHP 7.1, 7.2, 7.3 and 7.4beta
+
+###### Why it's a minor version bump
+
+In order to understand why we've bumped minor version of a library please refer to documentation on SemVer
+
+https://semver.org/#what-should-i-do-if-i-update-my-own-dependencies-without-changing-the-public-api
+
+As another example please refer to doctrine-project: https://www.doctrine-project.org/2017/07/25/php-7.1-requirement-and-composer.html
+
+
 1.3.1 / 2016-03-05
 ==================
 
