@@ -18,13 +18,11 @@
             "homepage":  "http://everzet.com"
         }
     ],
-
     "require": {
-        "php":                       ">=5.3.1",
+        "php":                       ">=5.4",
         "behat/mink":                "~1.7@dev",
         "instaclick/php-webdriver":  "~1.1"
     },
-
     "require-dev": {
         "mink/driver-testsuite": "dev-master"
     },
