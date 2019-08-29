@@ -1,6 +1,6 @@
 /**
- * Syn - 0.0.2
- * 
+ * Syn - 0.0.3
+ *
  * @copyright 2014 Bitovi
  * Mon, 30 Jun 2014 22:44:59 GMT
  * @license MIT
