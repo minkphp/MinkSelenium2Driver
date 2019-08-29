@@ -142,7 +142,7 @@ class Selenium2Driver extends CoreDriver
                 $desiredCapabilities['chrome.'.$capability] = $value;
             }
 
-            $desiredCapabilities['chromeOptions'] = $chromeOptions;
+            $desiredCapabilities['goog:chromeOptions'] = $chromeOptions;
 
             unset($desiredCapabilities['chrome']);
         }
