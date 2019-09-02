@@ -18,15 +18,24 @@
             "homepage":  "http://everzet.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "github",
+            "url": "https://github.com/oleg-andreyev/Mink.git"
+        },
+        {
+            "type": "github",
+            "url": "https://github.com/oleg-andreyev/driver-testsuite.git"
+        }
+    ],
     "require": {
         "php":                       ">=5.4",
-        "behat/mink":                "~1.8@dev",
+        "behat/mink":                "dev-deprecate-keyup-keypress-keydown",
         "instaclick/php-webdriver":  "~1.1"
     },
     "require-dev": {
-        "mink/driver-testsuite": "dev-master"
+        "mink/driver-testsuite": "dev-mink-772"
     },
-
     "autoload": {
         "psr-4": {
             "Behat\\Mink\\Driver\\": "src/"
