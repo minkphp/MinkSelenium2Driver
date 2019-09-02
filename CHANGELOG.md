@@ -1,3 +1,29 @@
+1.4.0 / 2019-08-28
+==================
+
+Bug fixes:
+* Don't use TABs, when triggering `change` JS event upon input value is change (fixes auto-complete control testing in Google Chrome)
+* Fixed inability to manipulate windows when Selenium 3 with Firefox GeckoDriver was used
+* The `clickOnElement` method wasn't working when Selenium 3 with Firefox GeckoDriver was used
+
+Changes:
+* Bumped requirement to PHP 5.4
+
+New features:
+* Allow uploading files to remote Selenium instances (e.g. SauceLabs, BrowserStack, etc.)
+* Added `getDesiredCapabilities` method for fetching current desired capabilities
+
+Testsuite:
+* Don't test on PHP 5.3 (driver itself would likely continue to work on PHP 5.3 for some time)
+* Adding testing on PHP 7.1, 7.2, 7.3 and 7.4beta
+* Removed PhantomJS
+
+Misc:
+* Syn library is [0.0.3](https://github.com/bitovi/syn/tree/v0.0.3)
+* The `setDesiredCapabilities` method combines default capabilities with user provided ones
+* Removed outdated default capabilities
+* The `setDesiredCapabilities` method will throw an exception, when used on a started session
+
 1.3.1 / 2016-03-05
 ==================
 
