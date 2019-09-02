@@ -20,11 +20,11 @@
     ],
     "repositories": [
         {
-            "type": "github",
+            "type": "vcs",
             "url": "https://github.com/oleg-andreyev/Mink.git"
         },
         {
-            "type": "github",
+            "type": "vcs",
             "url": "https://github.com/oleg-andreyev/driver-testsuite.git"
         }
     ],
