@@ -40,7 +40,7 @@ class FacebookFactory extends Selenium2Factory
 
         // PATCH: Disable W3C mode in chromedriver until we have capacity to actively adopt it
         $extraCapabilities['chromeOptions'] = array_merge(
-            $extraCapabilities['chromeOptions'] ?? [],
+            isset($extraCapabilities['chromeOptions']) ? $extraCapabilities['chromeOptions'] : [],
             ['w3c' => false]
         );
 
