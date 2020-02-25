@@ -37,6 +37,13 @@ class FacebookFactory extends Selenium2Factory
         // Merge capabilities
         $extraCapabilities = $config['capabilities']['extra_capabilities'];
         unset($config['capabilities']['extra_capabilities']);
+
+        // PATCH: Disable W3C mode in chromedriver until we have capacity to actively adopt it
+        $extraCapabilities['chromeOptions'] = array_merge(
+            $extraCapabilities['chromeOptions'] ?? [],
+            ['w3c' => false]
+        );
+
         $capabilities = array_replace($this->guessCapabilities(), $extraCapabilities, $config['capabilities']);
 
         // Build driver definition
