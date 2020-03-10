@@ -1,5 +1,5 @@
 language: php
-sudo: false
+
 dist: xenial
 
 services:
@@ -9,7 +9,7 @@ php:
   - 7.0
   - 7.1
   - 7.2
-  - 7.3.6
+  - 7.3
   - 7.4
 
 matrix:
@@ -30,8 +30,12 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
+before_install:
+  # Install symfony/error-handler on compatible PHP versions to avoid a deprecation warning of the old DebugClassLoader and ErrorHandler classes
+  - if [[ "$TRAVIS_PHP_VERSION" != 5.* && "$TRAVIS_PHP_VERSION" != 7.0 ]]; then composer require --no-update --dev symfony/error-handler "^4.4 || ^5.0"; fi;
+
 install:
-  - composer install --no-interaction
+  - composer install -n --prefer-dist
 
 before_script:
   - mkdir ./logs
@@ -41,7 +45,7 @@ before_script:
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
 script:
-  - ./vendor/bin/simple-phpunit -v --coverage-clover=coverage.clover
+  - ./vendor/bin/phpunit -v --coverage-clover=coverage.clover
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar
