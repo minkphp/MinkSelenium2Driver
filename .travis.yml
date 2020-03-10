@@ -39,7 +39,7 @@ install:
 
 before_script:
   - mkdir ./logs
-  - docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+  - docker run -p 4444:4444 --network=host -v /dev/shm:/dev/shm --shm-size 2g -e JAVA_OPTS="-Dselenium.LOGGER.level=WARNING" selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
   - ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
   - until $(echo | nc localhost 4444); do sleep 1; echo Waiting for Selenium server on port 4444...; done; echo "Selenium server started"
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
