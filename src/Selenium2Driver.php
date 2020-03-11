@@ -439,9 +439,19 @@ class Selenium2Driver extends CoreDriver
             return;
         }
 
+        // PHP 7.4 changed the way it encodes cookies to better respect the spec.
+        // This assumes that the server and the Mink client run on the same version (or
+        // at least the same side of the behavior change), so that the server and Mink
+        // consider the same value.
+        if (\PHP_VERSION_ID >= 70400) {
+            $encodedValue = rawurlencode($value);
+        } else {
+            $encodedValue = urlencode($value);
+        }
+
         $cookieArray = array(
             'name'   => $name,
-            'value'  => urlencode($value),
+            'value'  => $encodedValue,
             'secure' => false, // thanks, chibimagic!
         );
 
@@ -456,6 +466,14 @@ class Selenium2Driver extends CoreDriver
         $cookies = $this->wdSession->getAllCookies();
         foreach ($cookies as $cookie) {
             if ($cookie['name'] === $name) {
+                // PHP 7.4 changed the way it encodes cookies to better respect the spec.
+                // This assumes that the server and the Mink client run on the same version (or
+                // at least the same side of the behavior change), so that the server and Mink
+                // consider the same value.
+                if (\PHP_VERSION_ID >= 70400) {
+                    return rawurldecode($cookie['value']);
+                }
+
                 return urldecode($cookie['value']);
             }
         }
