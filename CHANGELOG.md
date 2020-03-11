@@ -1,24 +1,32 @@
-1.4.0 / 2019-08-28
+1.4.0 / 2020-03-11
 ==================
 
 Bug fixes:
-* Don't use TABs, when triggering `change` JS event upon input value is change (fixes auto-complete control testing in Google Chrome)
+
+* Changed phpdoc types from `Boolean` to `boolean` to be compatible with psalm type checking
+* Don't use TABs, when triggering `change` JS event upon input value is change (fixes some auto-complete control testing in Google Chrome)
 * Fixed inability to manipulate windows when Selenium 3 with Firefox GeckoDriver was used
 * The `clickOnElement` method wasn't working when Selenium 3 with Firefox GeckoDriver was used
+* Fixed the handling of cookies on PHP 7.4
 
 Changes:
+
 * Bumped requirement to PHP 5.4
 
 New features:
+
 * Allow uploading files to remote Selenium instances (e.g. SauceLabs, BrowserStack, etc.)
 * Added `getDesiredCapabilities` method for fetching current desired capabilities
+* Added support for `goog:chromeOptions` to specify custom Chrome options, which is the name used by newer ChromeDriver releases
 
 Testsuite:
+
 * Don't test on PHP 5.3 (driver itself would likely continue to work on PHP 5.3 for some time)
-* Adding testing on PHP 7.1, 7.2, 7.3 and 7.4beta
+* Adding testing on PHP 7.1, 7.2, 7.3 and 7.4
 * Removed PhantomJS
 
 Misc:
+
 * Syn library is [0.0.3](https://github.com/bitovi/syn/tree/v0.0.3)
 * The `setDesiredCapabilities` method combines default capabilities with user provided ones
 * Removed outdated default capabilities
