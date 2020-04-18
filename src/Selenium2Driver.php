@@ -794,6 +794,8 @@ JS;
             $this->wdSession->moveto(array('element' => $element->getID()));
         } catch (UnknownCommand $e) {
             // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
+        } catch (UnknownError $e) {
+            
         }
 
         $element->click();
