@@ -34,7 +34,7 @@ cache:
 
 before_install:
   # Install symfony/error-handler on compatible PHP versions to avoid a deprecation warning of the old DebugClassLoader and ErrorHandler classes
-  - if [[ "$TRAVIS_PHP_VERSION" != 5.* && "$TRAVIS_PHP_VERSION" != 7.0 ]]; then composer require --no-update --dev symfony/error-handler "^4.4 || ^5.0"; fi;
+  - if [[ "$TRAVIS_PHP_VERSION" != 5.* && "$TRAVIS_PHP_VERSION" != 7.0 ]]; then composer require --no-update --dev symfony/error-handler "^4.4 || ^5.0" phpunit/phpunit "^7.5"; fi;
 
 install:
   - composer install -n --prefer-dist
