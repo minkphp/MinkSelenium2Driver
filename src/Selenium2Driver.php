@@ -1189,7 +1189,10 @@ JS;
         }
 
         // Selenium only accepts uploads that are compressed as a Zip archive.
-        $tempFilename = tempnam('', 'WebDriverZip');
+        // PHP 8 has deprecated using ZipArchive with an empty file. Deleting
+        // the file could lead to problems during concurrent testing so add .zip
+        // so the file does not exist.
+        $tempFilename = tempnam('', 'WebDriverZip') . '.zip';
 
         $archive = new \ZipArchive();
         $result = $archive->open($tempFilename, \ZipArchive::CREATE);
