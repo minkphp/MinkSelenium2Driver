@@ -972,7 +972,7 @@ JS;
      */
     public function wait($timeout, $condition)
     {
-        $script = "return $condition;";
+        $script = 'return (' . $condition . ');';
         $start = microtime(true);
         $end = $start + $timeout / 1000.0;
 
