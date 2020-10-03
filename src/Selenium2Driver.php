@@ -1192,7 +1192,7 @@ JS;
         $tempFilename = tempnam('', 'WebDriverZip');
 
         $archive = new \ZipArchive();
-        $result = $archive->open($tempFilename, \ZipArchive::CREATE);
+        $result = $archive->open($tempFilename, \ZipArchive::OVERWRITE);
         if (!$result) {
           throw new DriverException('Zip archive could not be created. Error ' . $result);
         }
