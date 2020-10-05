@@ -972,7 +972,9 @@ JS;
      */
     public function wait($timeout, $condition)
     {
-        $script = 'return (' . $condition . ');';
+        // Remove trailing semi-colons for maximum compatibility with previous
+        // releases.
+        $script = 'return (' . rtrim($condition, ';') . ');';
         $start = microtime(true);
         $end = $start + $timeout / 1000.0;
 
