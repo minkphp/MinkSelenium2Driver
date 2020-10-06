@@ -978,8 +978,8 @@ JS;
 
         do {
             $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
-            usleep(10000);
-        } while (microtime(true) < $end && !$result);
+            !$result && usleep(10000);
+        } while (!$result && microtime(true) < $end);
 
         return (bool) $result;
     }
