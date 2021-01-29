@@ -49,7 +49,7 @@ before_script:
   - until $(echo | nc localhost 8002); do sleep 1; echo waiting for PHP server on port 8002...; done; echo "PHP server started"
 
 script:
-  - ./vendor/bin/phpunit -v --coverage-clover=coverage.clover
+  - XDEBUG_MODE=coverage ./vendor/bin/phpunit -v --coverage-clover=coverage.clover
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar
