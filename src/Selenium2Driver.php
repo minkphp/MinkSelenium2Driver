@@ -579,7 +579,7 @@ class Selenium2Driver extends CoreDriver
     {
         $element = $this->findElement($xpath);
         $elementName = strtolower($element->name());
-        $elementType = strtolower($element->attribute('type'));
+        $elementType = strtolower($element->attribute('type') ?: '');
 
         // Getting the value of a checkbox returns its value if selected.
         if ('input' === $elementName && 'checkbox' === $elementType) {
