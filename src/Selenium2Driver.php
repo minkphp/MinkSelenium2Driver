@@ -541,7 +541,7 @@ class Selenium2Driver extends CoreDriver
     {
         $node = $this->findElement($xpath);
         $text = $node->text();
-        $text = (string) str_replace(array("\r", "\r\n", "\n"), ' ', $text);
+        $text = trim(preg_replace('~\s+~s', ' ', $text));
 
         return $text;
     }
