@@ -6,6 +6,21 @@ use Behat\Mink\Tests\Driver\TestCase;
 
 class TimeoutTest extends TestCase
 {
+    protected function tearDown()
+    {
+        $session = $this->getSession();
+
+        // Stop the session instead of only resetting it, as timeouts are not reset (they are configuring the session itself)
+        if ($session->isStarted()) {
+            $session->stop();
+        }
+
+        // Reset the array of timeouts to avoid impacting other tests
+        $session->getDriver()->setTimeouts(array());
+
+        parent::tearDown();
+    }
+
     /**
      * @expectedException \Behat\Mink\Exception\DriverException
      */
