@@ -204,7 +204,7 @@ class Selenium2Driver extends CoreDriver
     protected function withSyn()
     {
         $hasSyn = $this->wdSession->execute(array(
-            'script' => 'return typeof window["Syn"]!=="undefined" && typeof window["Syn"].trigger!=="undefined"',
+            'script' => 'return typeof window["syn"]!=="undefined" && typeof window["syn"].trigger!=="undefined"',
             'args'   => array()
         ));
 
@@ -1167,7 +1167,7 @@ JS;
      */
     private function trigger($xpath, $event, $options = '{}')
     {
-        $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
+        $script = 'syn.trigger({{ELEMENT}}, "' . $event . '", ' . $options . ')';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
