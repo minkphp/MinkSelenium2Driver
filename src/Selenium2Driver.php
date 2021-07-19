@@ -579,7 +579,7 @@ class Selenium2Driver extends CoreDriver
     {
         $element = $this->findElement($xpath);
         $elementName = strtolower($element->name());
-        $elementType = strtolower($element->attribute('type'));
+        $elementType = strtolower($element->attribute('type') ?: '');
 
         // Getting the value of a checkbox returns its value if selected.
         if ('input' === $elementName && 'checkbox' === $elementType) {
@@ -657,7 +657,7 @@ JS;
         }
 
         if ('input' === $elementName) {
-            $elementType = strtolower($element->attribute('type'));
+            $elementType = strtolower($element->attribute('type') ?: '');
 
             if (in_array($elementType, array('submit', 'image', 'button', 'reset'))) {
                 throw new DriverException(sprintf('Impossible to set value an element with XPath "%s" as it is not a select, textarea or textbox', $xpath));
@@ -756,7 +756,7 @@ JS;
         $element = $this->findElement($xpath);
         $tagName = strtolower($element->name());
 
-        if ('input' === $tagName && 'radio' === strtolower($element->attribute('type'))) {
+        if ('input' === $tagName && 'radio' === strtolower($element->attribute('type') ?: '')) {
             $this->selectRadioValue($element, $value);
 
             return;
@@ -1147,7 +1147,7 @@ JS;
      */
     private function ensureInputType(Element $element, $xpath, $type, $action)
     {
-        if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type'))) {
+        if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type') ?: '')) {
             $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
 
             throw new DriverException(sprintf($message, $action, $xpath, $type));
