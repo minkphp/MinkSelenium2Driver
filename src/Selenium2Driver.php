@@ -14,6 +14,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
 use WebDriver\Exception\NoSuchElement;
+use WebDriver\Exception\StaleElementReference;
 use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
@@ -707,7 +708,24 @@ if (document.activeElement === node) {
   document.activeElement.blur();
 }
 JS;
-        $this->executeJsOnElement($element, $script);
+
+        // In some very rare edge cases, a developer might have implemented some
+        // functionality whereby entering a specific value could cause the field
+        // to be detached from the DOM.
+        //
+        // e.g. a 2FA input field that immediately recognizes the correct value
+        // as it is typed, and causes the SPA to update the page instantly.
+        //
+        // If that happens, we will get a StaleElementReference exception when
+        // we try to execute JS on it. As such, we catch that condition here and
+        // ignore it since an element is obviously no longer focused if it is
+        // no longer attached to the page document.
+        try {
+            $this->executeJsOnElement($element, $script);
+        } catch (StaleElementReference $e) {
+            // Do nothing. The element is no longer attached to the page document
+            // and therefore is no longer focused (nor can it be blurred).
+        }
     }
 
     /**
