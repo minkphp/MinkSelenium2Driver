@@ -14,6 +14,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
 use WebDriver\Exception\NoSuchElement;
+use WebDriver\Exception\StaleElementReference;
 use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Exception;
@@ -707,7 +708,15 @@ if (document.activeElement === node) {
   document.activeElement.blur();
 }
 JS;
-        $this->executeJsOnElement($element, $script);
+
+        // Cover case, when an element was removed from DOM after its value was
+        // changed (e.g. by a JavaScript of a SPA) and therefore can't be focused.
+        try {
+            $this->executeJsOnElement($element, $script);
+        } catch (StaleElementReference $e) {
+            // Do nothing because an element was already removed and therefore
+            // blurring is not needed.
+        }
     }
 
     /**
