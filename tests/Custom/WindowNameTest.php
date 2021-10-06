@@ -3,9 +3,12 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Tests\Driver\TestCase;
+use Yoast\PHPUnitPolyfills\Polyfills\AssertIsType;
 
 class WindowNameTest extends TestCase
 {
+    use AssertIsType;
+
     public function testWindowNames()
     {
         $session = $this->getSession();
@@ -16,7 +19,7 @@ class WindowNameTest extends TestCase
 
         $windowName = $session->getWindowName();
 
-        $this->assertInternalType('string', $windowName);
+        $this->assertIsString($windowName);
         $this->assertContains($windowName, $windowNames, 'The current window name is one of the available window names.');
     }
 }

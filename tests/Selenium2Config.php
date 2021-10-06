@@ -37,9 +37,18 @@ class Selenium2Config extends AbstractConfig
         if (
             'Behat\Mink\Tests\Driver\Js\WindowTest' === $testCase
             && (0 === strpos($test, 'testWindowMaximize'))
-            && 'true' === getenv('TRAVIS')
+            && 'true' === getenv('GITHUB_ACTIONS')
         ) {
             return 'Maximizing the window does not work when running the browser in Xvfb.';
+        }
+
+        if (
+            'Behat\Mink\Tests\Driver\Basic\NavigationTest' === $testCase
+            && (0 === strpos($test, 'testLinks'))
+            && 'true' === getenv('GITHUB_ACTIONS')
+            && '7.1' === getenv('MATRIX_PHP')
+        ) {
+            return 'Skipping basic NavigationTest::testLinks on PHP 7.1';
         }
 
         return parent::skipMessage($testCase, $test);
