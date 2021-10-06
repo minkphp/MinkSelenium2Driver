@@ -4,9 +4,14 @@ namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\TestCase;
+use Yoast\PHPUnitPolyfills\Polyfills\AssertIsType;
+use Yoast\PHPUnitPolyfills\Polyfills\ExpectException;
 
 class DesiredCapabilitiesTest extends TestCase
 {
+    use AssertIsType;
+    use ExpectException;
+
     public function testGetDesiredCapabilities()
     {
         $caps = array(
@@ -23,16 +28,14 @@ class DesiredCapabilitiesTest extends TestCase
 
         $driver = new Selenium2Driver('firefox', $caps);
         $this->assertNotEmpty($driver->getDesiredCapabilities(), 'desiredCapabilities empty');
-        $this->assertInternalType('array', $driver->getDesiredCapabilities());
+        $this->assertIsArray($driver->getDesiredCapabilities());
         $this->assertEquals($caps, $driver->getDesiredCapabilities());
     }
 
-    /**
-     * @expectedException           \Behat\Mink\Exception\DriverException
-     * @expectedExceptionMessage    Unable to set desiredCapabilities, the session has already started
-     */
     public function testSetDesiredCapabilities()
     {
+        $this->expectException('\Behat\Mink\Exception\DriverException');
+        $this->expectExceptionMessage('Unable to set desiredCapabilities, the session has already started');
         $caps = array(
             'browserName'       => 'firefox',
             'version'           => '30',

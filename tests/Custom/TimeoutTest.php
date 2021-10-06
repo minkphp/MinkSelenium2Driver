@@ -3,14 +3,15 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Tests\Driver\TestCase;
+use Yoast\PHPUnitPolyfills\Polyfills\ExpectException;
 
 class TimeoutTest extends TestCase
 {
-    /**
-     * @expectedException \Behat\Mink\Exception\DriverException
-     */
+    use ExpectException;
+
     public function testInvalidTimeoutSettingThrowsException()
     {
+        $this->expectException('\Behat\Mink\Exception\DriverException');
         $this->getSession()->start();
 
         $this->getSession()->getDriver()->setTimeouts(array('invalid' => 0));

@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  DRIVER_URL: "http://localhost:4444/wd/hub"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        php: [ '5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1' ]
+      fail-fast: false
+    env:
+      MATRIX_PHP: ${{ matrix.php }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php }}"
+          tools: composer
+
+      - name: Configure for PHP >= 7.1
+        if: "${{ matrix.php >= '7.1' }}"
+        run: |
+          composer require --no-update --dev symfony/error-handler "^4.4 || ^5.0"
+
+      - name: Install dependencies
+        run: |
+          composer update --no-interaction --prefer-dist
+
+      - name: Setup Mink test server
+        run: |
+          mkdir ./logs
+          ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
+
+      - name: Start Selenium
+        run: |
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+
+      - name: Wait for browser & PHP to start
+        run: |
+          while ! nc -z localhost 4444 </dev/null; do echo Waiting for remote driver to start...; sleep 1; done
+          while ! nc -z localhost 8002 </dev/null; do echo Waiting for PHP server to start...; sleep 1; done
+
+      - name: Run tests
+        run: |
+          vendor/bin/phpunit -v
+
+      - name: Archive logs artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs_php-${{ matrix.php }}
+          path: |
+            logs
