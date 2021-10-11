@@ -1,0 +1,28 @@
+imports:
+    - php
+
+filter:
+    excluded_paths:
+        - 'vendor/*'
+    paths:
+        - 'src/*'
+        - 'tests/*'
+
+tools:
+    php_cs_fixer: true
+    external_code_coverage:
+        timeout: 600
+        runs: 2
+    php_sim:
+        filter:
+            excluded_paths:
+                - 'vendor/*'
+                - 'tests/*'
+            paths:
+                - 'src/*'
+    php_code_sniffer:
+        enabled: true
+        config:
+            standard: psr2
+            ruleset: ~
+

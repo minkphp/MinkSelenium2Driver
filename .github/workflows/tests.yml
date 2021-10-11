@@ -27,12 +27,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          coverage: "none"
+          coverage: "xdebug"
           php-version: "${{ matrix.php }}"
           tools: composer
 
@@ -61,7 +61,13 @@ jobs:
 
       - name: Run tests
         run: |
-          vendor/bin/phpunit -v
+          vendor/bin/phpunit -v --coverage-clover=coverage.clover
+
+      - name: Upload code coverage
+        if: "${{ matrix.php > '5.4' }}"
+        run: |
+          composer require scrutinizer/ocular
+          vendor/bin/ocular code-coverage:upload --format=php-clover coverage.clover
 
       - name: Archive logs artifacts
         if: ${{ failure() }}
