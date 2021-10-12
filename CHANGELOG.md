@@ -1,3 +1,21 @@
+1.5.0 / 2021-10-12
+==================
+
+New features:
+
+* Improved responsiveness of the `wait` method
+* Fixed deprecation warnings on PHP 7.1
+
+Bug fixes:
+
+* Catched the `StaleElementReference` exception that happens in some cases in `setValue` if the JS code changes the DOM when the value changes
+* Catched the `UnknownError` exception that happens in ChromeDriver when trying to use `moveTo`
+* Fixed the handling of errors reported when applying timeouts, to avoid marking the driver as not started when the session is started
+
+Testsuite:
+
+* Added CI jobs on PHP 8.0 and 8.1
+
 1.4.0 / 2020-03-11
 ==================
 
