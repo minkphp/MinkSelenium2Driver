@@ -35,6 +35,8 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php }}"
           tools: composer
+          # PHP 7.1 development web server segfaults if timezone not set.
+          ini-values: date.timezone=Europe/Paris, error_reporting=-1, display_errors=On
 
       - name: Configure for PHP >= 7.1
         if: "${{ matrix.php >= '7.1' }}"
@@ -46,8 +48,10 @@ jobs:
           composer update --no-interaction --prefer-dist
 
       - name: Setup Mink test server
+        # PHP 7.1 development web server segfaults if USE_ZEND_ALLOC not set to 0.
         run: |
           mkdir ./logs
+          export USE_ZEND_ALLOC=0
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
       - name: Start Selenium
