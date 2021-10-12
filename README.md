@@ -45,7 +45,7 @@ Installation
 ```
 
 ``` bash
-$> curl -sS http://getcomposer.org/installer | php
+$> curl -sS https://getcomposer.org/installer | php
 $> php composer.phar install
 ```
 
@@ -59,7 +59,7 @@ Testing
     ```
     2. If you do not have Docker, but you have Java
     ```bash
-    curl -L http://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar > selenium-server-standalone-2.53.1.jar
+    curl -L https://selenium-release.storage.googleapis.com/2.53/selenium-server-standalone-2.53.1.jar > selenium-server-standalone-2.53.1.jar
     java -jar selenium-server-standalone-2.53.1.jar
     ```
 2. Start WebServer by running
@@ -81,5 +81,5 @@ Maintainers
 -----------
 
 * Christophe Coevoet [stof](https://github.com/stof)
-* Pete Otaqui [pete-otaqui](http://github.com/pete-otaqui)
+* Pete Otaqui [pete-otaqui](https://github.com/pete-otaqui)
 * Alexander Obuhovich [aik099](https://github.com/aik099)

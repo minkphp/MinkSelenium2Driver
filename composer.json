@@ -2,7 +2,7 @@
     "name":         "behat/mink-selenium2-driver",
     "description":  "Selenium2 (WebDriver) driver for Mink framework",
     "keywords":     ["selenium", "webdriver", "javascript", "ajax", "testing", "browser"],
-    "homepage":     "http://mink.behat.org/",
+    "homepage":     "https://mink.behat.org/",
     "type":         "mink-driver",
     "license":      "MIT",
 
