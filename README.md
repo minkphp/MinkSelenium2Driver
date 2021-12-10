@@ -5,6 +5,7 @@ Mink Selenium2 (webdriver) Driver
 [![Total Downloads](https://poser.pugx.org/behat/mink-selenium2-driver/downloads.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
 [![CI](https://github.com/minkphp/MinkSelenium2Driver/actions/workflows/tests.yml/badge.svg)](https://github.com/minkphp/MinkSelenium2Driver/actions/workflows/tests.yml)
 [![License](https://poser.pugx.org/behat/mink-selenium2-driver/license.svg)](https://packagist.org/packages/behat/mink-selenium2-driver)
+[![codecov](https://codecov.io/gh/minkphp/MinkSelenium2Driver/branch/master/graph/badge.svg?token=x2Q2iM3XYz)](https://codecov.io/gh/minkphp/MinkSelenium2Driver)
 
 Usage Example
 -------------

@@ -32,7 +32,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          coverage: "none"
+          coverage: "xdebug"
           php-version: "${{ matrix.php }}"
           tools: composer
           # PHP 7.1 development web server segfaults if timezone not set.
@@ -65,7 +65,12 @@ jobs:
 
       - name: Run tests
         run: |
-          vendor/bin/phpunit -v
+          vendor/bin/phpunit -v --coverage-clover=coverage.xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v2
+        with:
+          files: coverage.xml
 
       - name: Archive logs artifacts
         if: ${{ failure() }}
