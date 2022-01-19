@@ -3,12 +3,9 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Tests\Driver\TestCase;
-use Yoast\PHPUnitPolyfills\Polyfills\ExpectException;
 
 class TimeoutTest extends TestCase
 {
-    use ExpectException;
-
     /**
      * @after
      */

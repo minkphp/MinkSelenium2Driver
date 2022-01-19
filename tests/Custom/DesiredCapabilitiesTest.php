@@ -4,14 +4,9 @@ namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\TestCase;
-use Yoast\PHPUnitPolyfills\Polyfills\AssertIsType;
-use Yoast\PHPUnitPolyfills\Polyfills\ExpectException;
 
 class DesiredCapabilitiesTest extends TestCase
 {
-    use AssertIsType;
-    use ExpectException;
-
     public function testGetDesiredCapabilities()
     {
         $caps = array(
