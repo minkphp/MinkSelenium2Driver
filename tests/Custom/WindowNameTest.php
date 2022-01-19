@@ -3,12 +3,9 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Tests\Driver\TestCase;
-use Yoast\PHPUnitPolyfills\Polyfills\AssertIsType;
 
 class WindowNameTest extends TestCase
 {
-    use AssertIsType;
-
     public function testWindowNames()
     {
         $session = $this->getSession();

@@ -17,7 +17,6 @@ use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\StaleElementReference;
 use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
-use WebDriver\Exception;
 use WebDriver\Key;
 use WebDriver\WebDriver;
 
@@ -416,7 +415,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToWindow($name = null)
     {
-        $this->wdSession->focusWindow($name ? $name : '');
+        $this->wdSession->focusWindow($name ?: '');
     }
 
     /**
@@ -800,7 +799,7 @@ JS;
         } catch (UnknownCommand $e) {
             // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
         } catch (UnknownError $e) {
-            // Chromium driver sends back UnknowError (WebDriver\Exception with code 13)
+            // Chromium driver sends back UnknownError (WebDriver\Exception with code 13)
         }
 
         $element->click();
@@ -1226,17 +1225,10 @@ JS;
           if (empty($remotePath)) {
             throw new UnknownError();
           }
-        } catch (\Exception $e) {
-          // Catch any error so we can still clean up the temporary archive.
-        }
-
-        unlink($tempFilename);
-
-        if (isset($e)) {
-          throw $e;
+        } finally {
+            unlink($tempFilename);
         }
 
         return $remotePath;
     }
-
 }

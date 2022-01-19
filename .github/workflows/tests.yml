@@ -18,10 +18,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        php: [ '5.4', '5.5', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1' ]
+        php: [ '7.2', '7.3', '7.4', '8.0', '8.1' ]
       fail-fast: false
-    env:
-      MATRIX_PHP: ${{ matrix.php }}
 
     steps:
       - name: Checkout
@@ -38,20 +36,13 @@ jobs:
           # PHP 7.1 development web server segfaults if timezone not set.
           ini-values: date.timezone=Europe/Paris, error_reporting=-1, display_errors=On
 
-      - name: Configure for PHP >= 7.1
-        if: "${{ matrix.php >= '7.1' }}"
-        run: |
-          composer require --no-update --dev symfony/error-handler "^4.4 || ^5.0"
-
       - name: Install dependencies
         run: |
           composer update --no-interaction --prefer-dist
 
       - name: Setup Mink test server
-        # PHP 7.1 development web server segfaults if USE_ZEND_ALLOC not set to 0.
         run: |
           mkdir ./logs
-          export USE_ZEND_ALLOC=0
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
       - name: Start Selenium
