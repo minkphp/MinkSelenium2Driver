@@ -3,6 +3,7 @@
 namespace Behat\Mink\Tests\Driver;
 
 use Behat\Mink\Driver\Selenium2Driver;
+use Behat\Mink\Tests\Driver\Basic\BasicAuthTest;
 
 class Selenium2Config extends AbstractConfig
 {
@@ -40,6 +41,10 @@ class Selenium2Config extends AbstractConfig
             && 'true' === getenv('GITHUB_ACTIONS')
         ) {
             return 'Maximizing the window does not work when running the browser in Xvfb.';
+        }
+
+        if (BasicAuthTest::class === $testCase && 'testBasicAuthInUrl' === $test) {
+            return 'Basic auth setup is not supported.';
         }
 
         return parent::skipMessage($testCase, $test);
