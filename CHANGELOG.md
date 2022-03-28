@@ -1,3 +1,14 @@
+1.6.0 / 2022-03-28
+==================
+
+Removed:
+
+* Removed support for PHP <7.2
+
+Testsuite:
+
+* Fixed compatibility with the latest driver testsuite
+
 1.5.0 / 2021-10-12
 ==================
 
