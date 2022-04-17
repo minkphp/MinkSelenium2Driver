@@ -10,6 +10,7 @@
 
 namespace Behat\Mink\Driver;
 
+use Behat\Mink\Element\NodeElement;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
@@ -247,6 +248,111 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Create Mink element from WebDriver element.
+     *
+     * @return NodeElement[]
+     *
+     * @throws DriverException                  When the operation cannot be done
+     */
+    protected function createMinkElementFromWebDriverElement(Element $element)
+    {
+        // WebDriver element contains only a temporary ID assigned by Selenium,
+        // to create a Mink element we must build a xpath for it first
+        $script = <<<'JS'
+var buildXpathFromElement;
+buildXpathFromElement = function (element) {
+    var tagNameLc = element.tagName.toLowerCase();
+    if (element.parentElement === null) {
+        return '/' + tagNameLc;
+    }
+
+    if (element.id && document.querySelectorAll(tagNameLc + '#' + element.id).length === 1) {
+        return '//' + tagNameLc + '[@id=\'' + element.id + '\']';
+    }
+
+    var children = element.parentElement.children;
+    var pos = 0;
+    for (var i = 0; i < children.length; i++) {
+        if (children[i].tagName.toLowerCase() === tagNameLc) {
+            pos++;
+            if (children[i] === element) {
+                break;
+            }
+        }
+    }
+
+    var xpath = buildXpathFromElement(element.parentElement) + '/' + tagNameLc + '[' + pos + ']';
+
+    return xpath;
+};
+
+return buildXpathFromElement(arguments[0]);
+JS;
+        $xpath = $this->wdSession->execute(array(
+            'script' => $script,
+            'args' => array($element),
+        ));
+
+        $minkElements = $this->find($xpath);
+        if (count($minkElements) === 0) {
+            throw new DriverException(sprintf('XPath "%s" built from WebDriver element did not find any element', $xpath));
+        }
+        if (count($minkElements) > 1) {
+            throw new DriverException(sprintf('XPath "%s" built from WebDriver element find more than one element', $xpath));
+        }
+        $minkElement = reset($minkElements);
+
+        // DEBUG only
+        if ($this->findElement($minkElement->getXpath())->getID() !== $element->getId()) {
+            throw new DriverException(sprintf('XPath "%s" built from WebDriver element cannot find the same element', $xpath));
+        }
+
+        return $minkElement;
+    }
+
+    /**
+     * Serialize execute arguments (containing web elements)
+     *
+     * @see https://w3c.github.io/webdriver/#executing-script
+     *
+     * @param array $args
+     *
+     * @return array
+     */
+    private function serializeExecuteArguments(array $args)
+    {
+        foreach ($args as $k => $v) {
+            if ($v instanceof NodeElement) {
+                $args[$k] = $this->findElement($v->getXpath());
+            } elseif (is_array($v)) {
+                $args[$k] = $this->serializeExecuteArguments($v);
+            }
+        }
+
+        return $args;
+    }
+
+    /**
+     * Unserialize execute result (containing web elements)
+     *
+     * @param mixed $data
+     *
+     * @return mixed
+     */
+    private function unserializeExecuteResult($data)
+    {
+        if ($data instanceof Element) {
+            return $this->createMinkElementFromWebDriverElement($data);
+        } elseif (is_array($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k] = $this->unserializeExecuteResult($v);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Executes JS on a given element - pass in a js script string and {{ELEMENT}} will
      * be replaced with a reference to the result of the $xpath query
      *
@@ -284,11 +390,11 @@ class Selenium2Driver extends CoreDriver
             'args'   => array($element),
         );
 
-        if ($sync) {
-            return $this->wdSession->execute($options);
-        }
+        $result = $sync
+            ? $this->wdSession->execute($options)
+            : $this->wdSession->execute_async($options);
 
-        return $this->wdSession->execute_async($options);
+        return $this->unserializeExecuteResult($result);
     }
 
     /**
@@ -585,7 +691,7 @@ class Selenium2Driver extends CoreDriver
         }
 
         if ('input' === $elementName && 'radio' === $elementType) {
-            $script = <<<JS
+            $script = <<<'JS'
 var node = {{ELEMENT}},
     value = null;
 
@@ -611,7 +717,7 @@ JS;
         // Using $element->attribute('value') on a select only returns the first selected option
         // even when it is a multiple select, so a custom retrieval is needed.
         if ('select' === $elementName && $element->attribute('multiple')) {
-            $script = <<<JS
+            $script = <<<'JS'
 var node = {{ELEMENT}},
     value = [];
 
@@ -697,7 +803,7 @@ JS;
         // has lost focus in the meanwhile. If the element has lost focus
         // already then there is nothing to do as this will already have caused
         // the triggering of the change event for that element.
-        $script = <<<JS
+        $script = <<<'JS'
 var node = {{ELEMENT}};
 if (document.activeElement === node) {
   document.activeElement.blur();
@@ -917,7 +1023,7 @@ JS;
             'element' => $source->getID()
         ));
 
-        $script = <<<JS
+        $script = <<<'JS'
 (function (element) {
     var event = document.createEvent("HTMLEvents");
 
@@ -935,7 +1041,7 @@ JS;
         ));
         $this->wdSession->buttonup();
 
-        $script = <<<JS
+        $script = <<<'JS'
 (function (element) {
     var event = document.createEvent("HTMLEvents");
 
@@ -951,39 +1057,50 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function executeScript($script)
+    public function executeScript($script, array $args = [])
     {
         if (preg_match('/^function[\s\(]/', $script)) {
             $script = preg_replace('/;$/', '', $script);
             $script = '(' . $script . ')';
         }
 
-        $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        $this->wdSession->execute(array(
+            'script' => $script,
+            'args' => $this->serializeExecuteArguments($args),
+        ));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function evaluateScript($script)
+    public function evaluateScript($script, array $args = [])
     {
         if (0 !== strpos(trim($script), 'return ')) {
             $script = 'return ' . $script;
         }
 
-        return $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        $result = $this->wdSession->execute(array(
+            'script' => $script,
+            'args' => $this->serializeExecuteArguments($args),
+        ));
+
+        return $this->unserializeExecuteResult($result);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function wait($timeout, $condition)
+    public function wait($timeout, $condition, array $args = [])
     {
         $script = 'return (' . rtrim($condition, " \t\n\r;") . ');';
         $start = microtime(true);
         $end = $start + $timeout / 1000.0;
 
         do {
-            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
+            $result = $this->wdSession->execute(array(
+                'script' => $script,
+                'args' => $this->serializeExecuteArguments($args),
+            ));
             if ($result) {
               break;
             }
@@ -1130,7 +1247,7 @@ XPATH;
      */
     private function deselectAllOptions(Element $element)
     {
-        $script = <<<JS
+        $script = <<<'JS'
 var node = {{ELEMENT}};
 var i, l = node.options.length;
 for (i = 0; i < l; i++) {
