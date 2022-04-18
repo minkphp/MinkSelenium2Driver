@@ -7,18 +7,17 @@ on:
 env:
   DRIVER_URL: "http://localhost:4444/wd/hub"
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
-
   tests:
     name: Tests
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        php: [ '7.2', '7.3', '7.4', '8.0', '8.1' ]
+        selenium: [ '3.141.59' ]
+        php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
+        include:
+          - selenium: '2.53.1'
+            php: 'latest'
       fail-fast: false
 
     steps:
@@ -33,8 +32,7 @@ jobs:
           coverage: "xdebug"
           php-version: "${{ matrix.php }}"
           tools: composer
-          # PHP 7.1 development web server segfaults if timezone not set.
-          ini-values: date.timezone=Europe/Paris, error_reporting=-1, display_errors=On
+          ini-values: error_reporting=-1, display_errors=On
 
       - name: Install dependencies
         run: |
@@ -47,7 +45,7 @@ jobs:
 
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g "selenium/standalone-firefox:${{ matrix.selenium }}" &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |
@@ -68,5 +66,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: logs_php-${{ matrix.php }}
-          path: |
-            logs
+          path: logs
