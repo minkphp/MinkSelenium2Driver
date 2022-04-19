@@ -281,7 +281,7 @@ class Selenium2Driver extends CoreDriver
 
         $options = array(
             'script' => $script,
-            'args'   => array(array('ELEMENT' => $element->getID())),
+            'args'   => array($element),
         );
 
         if ($sync) {
