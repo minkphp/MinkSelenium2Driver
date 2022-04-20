@@ -585,25 +585,25 @@ class Selenium2Driver extends CoreDriver
         }
 
         if ('input' === $elementName && 'radio' === $elementType) {
-            $script = <<<JS
-var node = {{ELEMENT}},
-    value = null;
+            $script = <<<'JS'
+                var node = {{ELEMENT}},
+                    value = null;
 
-var name = node.getAttribute('name');
-if (name) {
-    var fields = window.document.getElementsByName(name),
-        i, l = fields.length;
-    for (i = 0; i < l; i++) {
-        var field = fields.item(i);
-        if (field.form === node.form && field.checked) {
-            value = field.value;
-            break;
-        }
-    }
-}
+                var name = node.getAttribute('name');
+                if (name) {
+                    var fields = window.document.getElementsByName(name),
+                        i, l = fields.length;
+                    for (i = 0; i < l; i++) {
+                        var field = fields.item(i);
+                        if (field.form === node.form && field.checked) {
+                            value = field.value;
+                            break;
+                        }
+                    }
+                }
 
-return value;
-JS;
+                return value;
+                JS;
 
             return $this->executeJsOnElement($element, $script);
         }
@@ -611,18 +611,18 @@ JS;
         // Using $element->attribute('value') on a select only returns the first selected option
         // even when it is a multiple select, so a custom retrieval is needed.
         if ('select' === $elementName && $element->attribute('multiple')) {
-            $script = <<<JS
-var node = {{ELEMENT}},
-    value = [];
+            $script = <<<'JS'
+                var node = {{ELEMENT}},
+                    value = [];
 
-for (var i = 0; i < node.options.length; i++) {
-    if (node.options[i].selected) {
-        value.push(node.options[i].value);
-    }
-}
+                for (var i = 0; i < node.options.length; i++) {
+                    if (node.options[i].selected) {
+                        value.push(node.options[i].value);
+                    }
+                }
 
-return value;
-JS;
+                return value;
+                JS;
 
             return $this->executeJsOnElement($element, $script);
         }
@@ -697,12 +697,12 @@ JS;
         // has lost focus in the meanwhile. If the element has lost focus
         // already then there is nothing to do as this will already have caused
         // the triggering of the change event for that element.
-        $script = <<<JS
-var node = {{ELEMENT}};
-if (document.activeElement === node) {
-  document.activeElement.blur();
-}
-JS;
+        $script = <<<'JS'
+            var node = {{ELEMENT}};
+            if (document.activeElement === node) {
+              document.activeElement.blur();
+            }
+            JS;
 
         // Cover case, when an element was removed from DOM after its value was
         // changed (e.g. by a JavaScript of a SPA) and therefore can't be focused.
@@ -917,16 +917,16 @@ JS;
             'element' => $source->getID()
         ));
 
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
+        $script = <<<'JS'
+            (function (element) {
+                var event = document.createEvent("HTMLEvents");
 
-    event.initEvent("dragstart", true, true);
-    event.dataTransfer = {};
+                event.initEvent("dragstart", true, true);
+                event.dataTransfer = {};
 
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
+                element.dispatchEvent(event);
+            }({{ELEMENT}}));
+            JS;
         $this->withSyn()->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
@@ -935,16 +935,16 @@ JS;
         ));
         $this->wdSession->buttonup();
 
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
+        $script = <<<'JS'
+            (function (element) {
+                var event = document.createEvent("HTMLEvents");
 
-    event.initEvent("drop", true, true);
-    event.dataTransfer = {};
+                event.initEvent("drop", true, true);
+                event.dataTransfer = {};
 
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
+                element.dispatchEvent(event);
+            }({{ELEMENT}}));
+            JS;
         $this->withSyn()->executeJsOnElement($destination, $script);
     }
 
@@ -1067,10 +1067,10 @@ JS;
         try {
             if (null !== $formId) {
                 $xpath = <<<'XPATH'
-//form[@id=%1$s]//input[@type="radio" and not(@form) and @name=%2$s and @value = %3$s]
-|
-//input[@type="radio" and @form=%1$s and @name=%2$s and @value = %3$s]
-XPATH;
+                    //form[@id=%1$s]//input[@type="radio" and not(@form) and @name=%2$s and @value = %3$s]
+                    |
+                    //input[@type="radio" and @form=%1$s and @name=%2$s and @value = %3$s]
+                    XPATH;
 
                 $xpath = sprintf(
                     $xpath,
@@ -1130,13 +1130,13 @@ XPATH;
      */
     private function deselectAllOptions(Element $element)
     {
-        $script = <<<JS
-var node = {{ELEMENT}};
-var i, l = node.options.length;
-for (i = 0; i < l; i++) {
-    node.options[i].selected = false;
-}
-JS;
+        $script = <<<'JS'
+            var node = {{ELEMENT}};
+            var i, l = node.options.length;
+            for (i = 0; i < l; i++) {
+                node.options[i].selected = false;
+            }
+            JS;
 
         $this->executeJsOnElement($element, $script);
     }
