@@ -250,9 +250,9 @@ class Selenium2Driver extends CoreDriver
     /**
      * Create Mink element from WebDriver element.
      *
-     * @return NodeElement[]
+     * @return NodeElement
      *
-     * @throws DriverException                  When the operation cannot be done
+     * @throws DriverException When the operation cannot be done
      */
     protected function createMinkElementFromWebDriverElement(Element $element)
     {
