@@ -304,7 +304,7 @@ JS;
 
         // DEBUG only
         if ($this->findElement($minkElement->getXpath())->getID() !== $element->getId()) {
-            throw new DriverException(sprintf('XPath "%s" built from WebDriver element cannot find the same element', $xpath));
+            throw new \Error(sprintf('XPath "%s" built from WebDriver element cannot find the same element', $xpath));
         }
 
         return $minkElement;
@@ -625,6 +625,22 @@ JS;
         $elements = array();
         foreach ($nodes as $i => $node) {
             $elements[] = sprintf('(%s)[%d]', $xpath, $i+1);
+        }
+
+        // DEBUG only
+        $recursiveCount = 0;
+        foreach (debug_backtrace() as $trace) {
+            if (($trace['function'] ?? null) === __FUNCTION__) {
+                $recursive = $recursiveCount++;
+            }
+        }
+        if ($recursiveCount <= 4) {
+            foreach ($nodes as $element) {
+                $minkElement = $this->createMinkElementFromWebDriverElement($element);
+                if ($this->findElement($minkElement->getXpath())->getID() !== $element->getId()) {
+                    throw new \Error(sprintf('XPath "%s" built from WebDriver element cannot find the same element (in find)', $xpath));
+                }
+            }
         }
 
         return $elements;
