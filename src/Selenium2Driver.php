@@ -462,17 +462,19 @@ class Selenium2Driver extends CoreDriver
     public function getCookie($name)
     {
         $cookies = $this->wdSession->getAllCookies();
-        foreach ($cookies as $cookie) {
-            if ($cookie['name'] === $name) {
-                // PHP 7.4 changed the way it encodes cookies to better respect the spec.
-                // This assumes that the server and the Mink client run on the same version (or
-                // at least the same side of the behavior change), so that the server and Mink
-                // consider the same value.
-                if (\PHP_VERSION_ID >= 70400) {
-                    return rawurldecode($cookie['value']);
-                }
+        if (is_iterable($cookies)) {
+            foreach ($cookies as $cookie) {
+                if ($cookie['name'] === $name) {
+                    // PHP 7.4 changed the way it encodes cookies to better respect the spec.
+                    // This assumes that the server and the Mink client run on the same version (or
+                    // at least the same side of the behavior change), so that the server and Mink
+                    // consider the same value.
+                    if (\PHP_VERSION_ID >= 70400) {
+                        return rawurldecode($cookie['value']);
+                    }
 
-                return urldecode($cookie['value']);
+                    return urldecode($cookie['value']);
+                }
             }
         }
     }
