@@ -204,7 +204,7 @@ class Selenium2Driver extends CoreDriver
     protected function withSyn()
     {
         $hasSyn = $this->wdSession->execute(array(
-            'script' => 'return typeof window["Syn"]!=="undefined" && typeof window["Syn"].trigger!=="undefined"',
+            'script' => 'return window.syn !== undefined && window.syn.trigger !== undefined',
             'args'   => array()
         ));
 
@@ -222,25 +222,29 @@ class Selenium2Driver extends CoreDriver
     /**
      * Creates some options for key events
      *
-     * @param string $char     the character or code
-     * @param string $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
+     * @param string|int  $char     the character or code
+     * @param string|null $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
      *
      * @return string a json encoded options array for Syn
      */
     protected static function charToOptions($char, $modifier = null)
     {
-        $ord = ord($char);
-        if (is_numeric($char)) {
-            $ord = $char;
+        if (is_int($char)) {
+            $charCode = $char;
+            $char = chr($charCode);
+        } else {
+            $charCode = ord($char);
         }
 
         $options = array(
-            'keyCode'  => $ord,
-            'charCode' => $ord
+            'key'  => $char,
+            'which'  => $charCode,
+            'charCode'  => $charCode,
+            'keyCode'  => $charCode,
         );
 
         if ($modifier) {
-            $options[$modifier.'Key'] = 1;
+            $options[$modifier . 'Key'] = true;
         }
 
         return json_encode($options);
@@ -1167,7 +1171,7 @@ JS;
      */
     private function trigger($xpath, $event, $options = '{}')
     {
-        $script = 'Syn.trigger("' . $event . '", ' . $options . ', {{ELEMENT}})';
+        $script = 'syn.trigger({{ELEMENT}}, "' . $event . '", ' . $options . ')';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
     }
 
