@@ -978,7 +978,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($source, $script);
+        $this->executeJsOnElement($source, $script);
 
         $this->getWebDriverSession()->buttondown();
         $this->getWebDriverSession()->moveto(array(
@@ -996,7 +996,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($destination, $script);
+        $this->executeJsOnElement($destination, $script);
     }
 
     public function executeScript(string $script)
