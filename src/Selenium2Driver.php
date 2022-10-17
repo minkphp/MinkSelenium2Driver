@@ -981,9 +981,11 @@ JS;
         $this->executeJsOnElement($source, $script);
 
         $this->getWebDriverSession()->buttondown();
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $destination->getID()
-        ));
+        if ($destination->getID() !== $source->getID()) {
+            $this->getWebDriverSession()->moveto(array(
+                'element' => $destination->getID()
+            ));
+        }
         $this->getWebDriverSession()->buttonup();
 
         $script = <<<JS
