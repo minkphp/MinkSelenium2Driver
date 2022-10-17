@@ -934,9 +934,11 @@ JS;
         $this->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID()
-        ));
+        if ($destination->getID() !== $source->getID()) {
+            $this->wdSession->moveto(array(
+                'element' => $destination->getID()
+            ));
+        }
         $this->wdSession->buttonup();
 
         $script = <<<JS
