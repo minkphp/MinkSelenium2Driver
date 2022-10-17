@@ -931,7 +931,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($source, $script);
+        $this->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
         $this->wdSession->moveto(array(
@@ -949,7 +949,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($destination, $script);
+        $this->executeJsOnElement($destination, $script);
     }
 
     /**
