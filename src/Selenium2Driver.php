@@ -415,7 +415,12 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToWindow($name = null)
     {
-        $this->wdSession->focusWindow($name ?: '');
+        if ($name === null) {
+            $handles = $this->wdSession->window_handles();
+            $name = reset($handles);
+        }
+
+        $this->wdSession->focusWindow($name);
     }
 
     /**
