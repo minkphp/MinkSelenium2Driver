@@ -19,6 +19,7 @@ use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Key;
 use WebDriver\WebDriver;
+use WebDriver\Exception\CurlExec;
 
 /**
  * Selenium2 driver.
@@ -800,7 +801,9 @@ JS;
             // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
         } catch (UnknownError $e) {
             // Chromium driver sends back UnknownError (WebDriver\Exception with code 13)
-        }
+        } catch (CurlExec $e) {
+           // The implementation of moveto in the ChromeDriver is buggy and can throw a CurlExec exception
+        } 
 
         $element->click();
     }
