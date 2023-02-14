@@ -423,7 +423,17 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToIFrame($name = null)
     {
-        $this->wdSession->frame(array('id' => $name));
+        if (!empty($name)) {
+          $element = $this->wdSession->element('id', $name);
+          $element_info = [
+            'ELEMENT' => $element->getID(),
+          ];
+        }
+        else {
+          $element_info = NULL;
+        }
+
+        $this->wdSession->frame(array('id' => $element_info));
     }
 
     /**
