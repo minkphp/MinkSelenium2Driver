@@ -424,7 +424,7 @@ class Selenium2Driver extends CoreDriver
     public function switchToIFrame($name = null)
     {
         if (!empty($name)) {
-          $element = $this->wdSession->element('id', $name);
+          $element = $this->wdSession->element('name', $name);
           $element_info = [
             'ELEMENT' => $element->getID(),
           ];
