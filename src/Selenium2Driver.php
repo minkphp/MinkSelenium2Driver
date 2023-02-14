@@ -430,7 +430,7 @@ class Selenium2Driver extends CoreDriver
           ];
         }
         else {
-          $element_info = NULL;
+          $element_info = null;
         }
 
         $this->wdSession->frame(array('id' => $element_info));
