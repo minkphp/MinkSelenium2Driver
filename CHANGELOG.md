@@ -1,3 +1,14 @@
+1.7.0 / 2023-02-26
+==================
+
+BC break:
+
+* `syn` JS library was upgraded from v0.0.3 to v0.15.0
+
+Bug fixes:
+
+* `Selenium2Driver::{keyPress, keyDown, keyUp}` methods were using numeric string input as char code. Newly an integer type must be passed.
+
 1.6.0 / 2022-03-28
 ==================
 
