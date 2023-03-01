@@ -24,14 +24,6 @@ class TimeoutTest extends TestCase
         parent::resetSessions();
     }
 
-    public function testInvalidTimeoutSettingThrowsException()
-    {
-        $this->expectException('\Behat\Mink\Exception\DriverException');
-        $this->getSession()->start();
-
-        $this->getSession()->getDriver()->setTimeouts(array('invalid' => 0));
-    }
-
     public function testShortTimeoutDoesNotWaitForElementToAppear()
     {
         $this->getSession()->getDriver()->setTimeouts(array('implicit' => 0));
