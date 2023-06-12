@@ -4,6 +4,8 @@ namespace Behat\Mink\Tests\Driver;
 
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\Basic\BasicAuthTest;
+use Behat\Mink\Tests\Driver\Basic\HeaderTest;
+use Behat\Mink\Tests\Driver\Basic\StatusCodeTest;
 
 class Selenium2Config extends AbstractConfig
 {
@@ -43,8 +45,16 @@ class Selenium2Config extends AbstractConfig
             return 'Maximizing the window does not work when running the browser in Xvfb.';
         }
 
-        if (BasicAuthTest::class === $testCase && 'testBasicAuthInUrl' === $test) {
-            return 'Basic auth setup is not supported.';
+        if (BasicAuthTest::class === $testCase) {
+            return 'Basic auth is not supported.';
+        }
+
+        if (HeaderTest::class === $testCase) {
+            return 'Headers are not supported.';
+        }
+
+        if (StatusCodeTest::class === $testCase) {
+            return 'Checking status code is not supported.';
         }
 
         return parent::skipMessage($testCase, $test);
