@@ -3,6 +3,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 env:
   DRIVER_URL: "http://localhost:4444/wd/hub"
