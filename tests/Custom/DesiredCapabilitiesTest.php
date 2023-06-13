@@ -29,8 +29,6 @@ class DesiredCapabilitiesTest extends TestCase
 
     public function testSetDesiredCapabilities()
     {
-        $this->expectException('\Behat\Mink\Exception\DriverException');
-        $this->expectExceptionMessage('Unable to set desiredCapabilities, the session has already started');
         $caps = array(
             'browserName'       => 'firefox',
             'version'           => '30',
@@ -45,6 +43,10 @@ class DesiredCapabilitiesTest extends TestCase
         $session = $this->getSession();
         $session->start();
         $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
+
+        $this->expectException('\Behat\Mink\Exception\DriverException');
+        $this->expectExceptionMessage('Unable to set desiredCapabilities, the session has already started');
         $driver->setDesiredCapabilities($caps);
     }
 }

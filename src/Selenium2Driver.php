@@ -19,6 +19,7 @@ use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Key;
 use WebDriver\WebDriver;
+use WebDriver\Window;
 
 /**
  * Selenium2 driver.
@@ -57,7 +58,7 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * The timeout configuration
-     * @var array
+     * @var array{script?: int, implicit?: int, page?: int}
      */
     private $timeouts = array();
 
@@ -85,6 +86,8 @@ class Selenium2Driver extends CoreDriver
      * Sets the browser name
      *
      * @param string $browserName the name of the browser to start, default is 'firefox'
+     *
+     * @return void
      */
     protected function setBrowserName($browserName = 'firefox')
     {
@@ -97,7 +100,9 @@ class Selenium2Driver extends CoreDriver
      *
      * See http://code.google.com/p/selenium/wiki/DesiredCapabilities
      *
-     * @param array $desiredCapabilities an array of capabilities to pass on to the WebDriver server
+     * @param array|null $desiredCapabilities an array of capabilities to pass on to the WebDriver server
+     *
+     * @return void
      *
      * @throws DriverException
      */
@@ -118,7 +123,13 @@ class Selenium2Driver extends CoreDriver
             foreach ($desiredCapabilities['firefox'] as $capability => $value) {
                 switch ($capability) {
                     case 'profile':
-                        $desiredCapabilities['firefox_'.$capability] = base64_encode(file_get_contents($value));
+                        $fileContents = file_get_contents($value);
+
+                        if ($fileContents === false) {
+                            throw new DriverException(sprintf('Could not read the profile file "%s".', $value));
+                        }
+
+                        $desiredCapabilities['firefox_'.$capability] = base64_encode($fileContents);
                         break;
                     default:
                         $desiredCapabilities['firefox_'.$capability] = $value;
@@ -153,7 +164,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Gets the desiredCapabilities
      *
-     * @return array $desiredCapabilities
+     * @return array
      */
     public function getDesiredCapabilities()
     {
@@ -164,6 +175,8 @@ class Selenium2Driver extends CoreDriver
      * Sets the WebDriver instance
      *
      * @param WebDriver $webDriver An instance of the WebDriver class
+     *
+     * @return void
      */
     public function setWebDriver(WebDriver $webDriver)
     {
@@ -210,6 +223,7 @@ class Selenium2Driver extends CoreDriver
 
         if (!$hasSyn) {
             $synJs = file_get_contents(__DIR__.'/Resources/syn.js');
+            \assert($synJs !== false);
             $this->wdSession->execute(array(
                 'script' => $synJs,
                 'args'   => array()
@@ -226,6 +240,8 @@ class Selenium2Driver extends CoreDriver
      * @param string|null $modifier one of 'shift', 'alt', 'ctrl' or 'meta'
      *
      * @return string a json encoded options array for Syn
+     *
+     * @throws DriverException
      */
     protected static function charToOptions($char, $modifier = null)
     {
@@ -247,7 +263,13 @@ class Selenium2Driver extends CoreDriver
             $options[$modifier . 'Key'] = true;
         }
 
-        return json_encode($options);
+        $json = json_encode($options);
+
+        if ($json === false) {
+            throw new DriverException('Failed to encode options: ' . json_last_error_msg());
+        }
+
+        return $json;
     }
 
     /**
@@ -314,7 +336,9 @@ class Selenium2Driver extends CoreDriver
     /**
      * Sets the timeouts to apply to the webdriver session
      *
-     * @param array $timeouts The session timeout settings: Array of {script, implicit, page} => time in milliseconds
+     * @param array{script?: int, implicit?: int, page?: int} $timeouts times are in milliseconds
+     *
+     * @return void
      *
      * @throws DriverException
      */
@@ -330,7 +354,7 @@ class Selenium2Driver extends CoreDriver
     /**
      * Applies timeouts to the current session
      */
-    private function applyTimeouts()
+    private function applyTimeouts(): void
     {
         try {
             foreach ($this->timeouts as $type => $param) {
@@ -479,6 +503,8 @@ class Selenium2Driver extends CoreDriver
                 return urldecode($cookie['value']);
             }
         }
+
+        return null;
     }
 
     /**
@@ -653,6 +679,10 @@ JS;
                 return;
             }
 
+            if (\is_bool($value)) {
+                throw new DriverException('Boolean values cannot be used for a select element.');
+            }
+
             $this->selectOptionOnElement($element, $value);
 
             return;
@@ -674,16 +704,28 @@ JS;
             }
 
             if ('radio' === $elementType) {
+                if (!\is_string($value)) {
+                    throw new DriverException('Only string values can be used for a radio input.');
+                }
+
                 $this->selectRadioValue($element, $value);
 
                 return;
             }
 
             if ('file' === $elementType) {
+                if (!\is_string($value)) {
+                    throw new DriverException('Only string values can be used for a file input.');
+                }
+
                 $element->postValue(array('value' => array(strval($value))));
 
                 return;
             }
+        }
+
+        if (!\is_string($value)) {
+            throw new DriverException(sprintf('Only string values can be used for a %s element.', $elementName));
         }
 
         $value = strval($value);
@@ -795,7 +837,7 @@ JS;
         $this->clickOnElement($this->findElement($xpath));
     }
 
-    private function clickOnElement(Element $element)
+    private function clickOnElement(Element $element): void
     {
         try {
             // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
@@ -1002,7 +1044,9 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        $this->wdSession->window($name ? $name : 'current')->postSize(
+        $window = $this->wdSession->window($name ?: 'current');
+        \assert($window instanceof Window);
+        $window->postSize(
             array('width' => $width, 'height' => $height)
         );
     }
@@ -1020,7 +1064,9 @@ JS;
      */
     public function maximizeWindow($name = null)
     {
-        $this->wdSession->window($name ? $name : 'current')->maximize();
+        $window = $this->wdSession->window($name ?: 'current');
+        \assert($window instanceof Window);
+        $window->maximize();
     }
 
     /**
@@ -1051,7 +1097,7 @@ JS;
      *
      * @throws DriverException when the value cannot be found
      */
-    private function selectRadioValue(Element $element, $value)
+    private function selectRadioValue(Element $element, string $value): void
     {
         // short-circuit when we already have the right button of the group to avoid XPath queries
         if ($element->attribute('value') === $value) {
@@ -1100,12 +1146,7 @@ XPATH;
         $input->click();
     }
 
-    /**
-     * @param Element $element
-     * @param string  $value
-     * @param bool    $multiple
-     */
-    private function selectOptionOnElement(Element $element, $value, $multiple = false)
+    private function selectOptionOnElement(Element $element, string $value, bool $multiple = false): void
     {
         $escapedValue = $this->xpathEscaper->escapeLiteral($value);
         // The value of an option is the normalized version of its text when it has no value attribute
@@ -1132,7 +1173,7 @@ XPATH;
      *
      * @param Element $element
      */
-    private function deselectAllOptions(Element $element)
+    private function deselectAllOptions(Element $element): void
     {
         $script = <<<JS
 var node = {{ELEMENT}};
@@ -1146,16 +1187,11 @@ JS;
     }
 
     /**
-     * Ensures the element is a checkbox
-     *
-     * @param Element $element
-     * @param string  $xpath
-     * @param string  $type
-     * @param string  $action
+     * Ensures the element is of the specified type
      *
      * @throws DriverException
      */
-    private function ensureInputType(Element $element, $xpath, $type, $action)
+    private function ensureInputType(Element $element, string $xpath, string $type, string $action): void
     {
         if ('input' !== strtolower($element->name()) || $type !== strtolower($element->attribute('type') ?: '')) {
             $message = 'Impossible to %s the element with XPath "%s" as it is not a %s input';
@@ -1164,12 +1200,7 @@ JS;
         }
     }
 
-    /**
-     * @param $xpath
-     * @param $event
-     * @param string $options
-     */
-    private function trigger($xpath, $event, $options = '{}')
+    private function trigger(string $xpath, string $event, string $options = '{}'): void
     {
         $script = 'syn.trigger({{ELEMENT}}, "' . $event . '", ' . $options . ')';
         $this->withSyn()->executeJsOnXpath($xpath, $script);
@@ -1204,9 +1235,13 @@ JS;
         // Selenium only accepts uploads that are compressed as a Zip archive.
         $tempFilename = tempnam('', 'WebDriverZip');
 
+        if ($tempFilename === false) {
+            throw new DriverException('Could not create a temporary file.');
+        }
+
         $archive = new \ZipArchive();
         $result = $archive->open($tempFilename, \ZipArchive::OVERWRITE);
-        if (!$result) {
+        if ($result !== true) {
           throw new DriverException('Zip archive could not be created. Error ' . $result);
         }
         $result = $archive->addFile($path, basename($path));
@@ -1218,8 +1253,11 @@ JS;
           throw new DriverException('Zip archive could not be closed.');
         }
 
+        $fileContents = file_get_contents($tempFilename);
+        \assert($fileContents !== false);
+
         try {
-          $remotePath = $this->wdSession->file(array('file' => base64_encode(file_get_contents($tempFilename))));
+          $remotePath = $this->wdSession->file(array('file' => base64_encode($fileContents)));
 
           // If no path is returned the file upload failed silently. In this
           // case it is possible Selenium was not used but another web driver

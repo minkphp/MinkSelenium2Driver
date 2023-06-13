@@ -2,6 +2,7 @@
 
 namespace Behat\Mink\Tests\Driver\Custom;
 
+use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\TestCase;
 
 class TimeoutTest extends TestCase
@@ -18,39 +19,54 @@ class TimeoutTest extends TestCase
             $session->stop();
         }
 
+        $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
+
         // Reset the array of timeouts to avoid impacting other tests
-        $session->getDriver()->setTimeouts(array());
+        $driver->setTimeouts(array());
 
         parent::resetSessions();
     }
 
     public function testInvalidTimeoutSettingThrowsException()
     {
-        $this->expectException('\Behat\Mink\Exception\DriverException');
-        $this->getSession()->start();
+        $session = $this->getSession();
+        $session->start();
 
-        $this->getSession()->getDriver()->setTimeouts(array('invalid' => 0));
+        $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
+
+        $this->expectException('\Behat\Mink\Exception\DriverException');
+        $driver->setTimeouts(array('invalid' => 0));
     }
 
     public function testShortTimeoutDoesNotWaitForElementToAppear()
     {
-        $this->getSession()->getDriver()->setTimeouts(array('implicit' => 0));
+        $session = $this->getSession();
+        $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
 
-        $this->getSession()->visit($this->pathTo('/js_test.html'));
+        $driver->setTimeouts(array('implicit' => 0));
+
+        $session->visit($this->pathTo('/js_test.html'));
         $this->findById('waitable')->click();
 
-        $element = $this->getSession()->getPage()->find('css', '#waitable > div');
+        $element = $session->getPage()->find('css', '#waitable > div');
 
         $this->assertNull($element);
     }
 
     public function testLongTimeoutWaitsForElementToAppear()
     {
-        $this->getSession()->getDriver()->setTimeouts(array('implicit' => 5000));
+        $session = $this->getSession();
+        $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
 
-        $this->getSession()->visit($this->pathTo('/js_test.html'));
+        $driver->setTimeouts(array('implicit' => 5000));
+
+        $session->visit($this->pathTo('/js_test.html'));
         $this->findById('waitable')->click();
-        $element = $this->getSession()->getPage()->find('css', '#waitable > div');
+        $element = $session->getPage()->find('css', '#waitable > div');
 
         $this->assertNotNull($element);
     }

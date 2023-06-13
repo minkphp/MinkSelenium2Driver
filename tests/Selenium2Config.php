@@ -2,6 +2,7 @@
 
 namespace Behat\Mink\Tests\Driver;
 
+use Behat\Mink\Driver\DriverInterface;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\Basic\BasicAuthTest;
 use Behat\Mink\Tests\Driver\Basic\HeaderTest;
@@ -9,15 +10,12 @@ use Behat\Mink\Tests\Driver\Basic\StatusCodeTest;
 
 class Selenium2Config extends AbstractConfig
 {
-    public static function getInstance()
+    public static function getInstance(): self
     {
         return new self();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function createDriver()
+    public function createDriver(): DriverInterface
     {
         $browser = getenv('WEB_FIXTURES_BROWSER') ?: 'firefox';
         $seleniumHost = $_SERVER['DRIVER_URL'];
@@ -25,10 +23,7 @@ class Selenium2Config extends AbstractConfig
         return new Selenium2Driver($browser, null, $seleniumHost);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function skipMessage($testCase, $test)
+    public function skipMessage($testCase, $test): ?string
     {
         if (
             'Behat\Mink\Tests\Driver\Form\Html5Test' === $testCase
@@ -60,10 +55,7 @@ class Selenium2Config extends AbstractConfig
         return parent::skipMessage($testCase, $test);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function supportsCss()
+    protected function supportsCss(): bool
     {
         return true;
     }
