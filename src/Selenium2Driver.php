@@ -973,12 +973,14 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($source, $script);
+        $this->executeJsOnElement($source, $script);
 
         $this->wdSession->buttondown();
-        $this->wdSession->moveto(array(
-            'element' => $destination->getID()
-        ));
+        if ($destination->getID() !== $source->getID()) {
+            $this->wdSession->moveto(array(
+                'element' => $destination->getID()
+            ));
+        }
         $this->wdSession->buttonup();
 
         $script = <<<JS
@@ -991,7 +993,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($destination, $script);
+        $this->executeJsOnElement($destination, $script);
     }
 
     /**
