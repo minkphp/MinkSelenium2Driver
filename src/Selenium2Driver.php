@@ -30,7 +30,7 @@ class Selenium2Driver extends CoreDriver
 {
     /**
      * Whether the browser has been started
-     * @var boolean
+     * @var bool
      */
     private $started = false;
 
@@ -52,7 +52,7 @@ class Selenium2Driver extends CoreDriver
 
     /**
      * The WebDriverSession instance
-     * @var \WebDriver\Session
+     * @var \WebDriver\Session|null
      */
     private $wdSession;
 
@@ -190,6 +190,10 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWebDriverSession()
     {
+        if ($this->wdSession === null) {
+            throw new DriverException('The driver is not started.');
+        }
+
         return $this->wdSession;
     }
 
@@ -216,7 +220,7 @@ class Selenium2Driver extends CoreDriver
      */
     protected function withSyn()
     {
-        $hasSyn = $this->wdSession->execute(array(
+        $hasSyn = $this->getWebDriverSession()->execute(array(
             'script' => 'return window.syn !== undefined && window.syn.trigger !== undefined',
             'args'   => array()
         ));
@@ -224,7 +228,7 @@ class Selenium2Driver extends CoreDriver
         if (!$hasSyn) {
             $synJs = file_get_contents(__DIR__.'/Resources/syn.js');
             \assert($synJs !== false);
-            $this->wdSession->execute(array(
+            $this->getWebDriverSession()->execute(array(
                 'script' => $synJs,
                 'args'   => array()
             ));
@@ -278,9 +282,9 @@ class Selenium2Driver extends CoreDriver
      *
      * @example $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.childNodes.length');
      *
-     * @param string  $xpath  the xpath to search with
-     * @param string  $script the script to execute
-     * @param boolean $sync   whether to run the script synchronously (default is TRUE)
+     * @param string $xpath  the xpath to search with
+     * @param string $script the script to execute
+     * @param bool   $sync   whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -297,7 +301,7 @@ class Selenium2Driver extends CoreDriver
      *
      * @param Element $element the webdriver element
      * @param string  $script  the script to execute
-     * @param boolean $sync    whether to run the script synchronously (default is TRUE)
+     * @param bool    $sync    whether to run the script synchronously (default is TRUE)
      *
      * @return mixed
      */
@@ -311,10 +315,10 @@ class Selenium2Driver extends CoreDriver
         );
 
         if ($sync) {
-            return $this->wdSession->execute($options);
+            return $this->getWebDriverSession()->execute($options);
         }
 
-        return $this->wdSession->execute_async($options);
+        return $this->getWebDriverSession()->execute_async($options);
     }
 
     /**
@@ -358,7 +362,7 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             foreach ($this->timeouts as $type => $param) {
-                $this->wdSession->timeouts($type, $param);
+                $this->getWebDriverSession()->timeouts($type, $param);
             }
         } catch (UnknownError $e) {
             throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
@@ -395,7 +399,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reset()
     {
-        $this->wdSession->deleteAllCookies();
+        $this->getWebDriverSession()->deleteAllCookies();
     }
 
     /**
@@ -403,7 +407,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function visit($url)
     {
-        $this->wdSession->open($url);
+        $this->getWebDriverSession()->open($url);
     }
 
     /**
@@ -411,7 +415,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCurrentUrl()
     {
-        return $this->wdSession->url();
+        return $this->getWebDriverSession()->url();
     }
 
     /**
@@ -419,7 +423,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function reload()
     {
-        $this->wdSession->refresh();
+        $this->getWebDriverSession()->refresh();
     }
 
     /**
@@ -427,7 +431,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function forward()
     {
-        $this->wdSession->forward();
+        $this->getWebDriverSession()->forward();
     }
 
     /**
@@ -435,7 +439,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function back()
     {
-        $this->wdSession->back();
+        $this->getWebDriverSession()->back();
     }
 
     /**
@@ -443,7 +447,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToWindow($name = null)
     {
-        $this->wdSession->focusWindow($name ?: '');
+        $this->getWebDriverSession()->focusWindow($name ?: '');
     }
 
     /**
@@ -451,7 +455,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function switchToIFrame($name = null)
     {
-        $this->wdSession->frame(array('id' => $name));
+        $this->getWebDriverSession()->frame(array('id' => $name));
     }
 
     /**
@@ -460,7 +464,7 @@ class Selenium2Driver extends CoreDriver
     public function setCookie($name, $value = null)
     {
         if (null === $value) {
-            $this->wdSession->deleteCookie($name);
+            $this->getWebDriverSession()->deleteCookie($name);
 
             return;
         }
@@ -481,7 +485,7 @@ class Selenium2Driver extends CoreDriver
             'secure' => false, // thanks, chibimagic!
         );
 
-        $this->wdSession->setCookie($cookieArray);
+        $this->getWebDriverSession()->setCookie($cookieArray);
     }
 
     /**
@@ -489,7 +493,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getCookie($name)
     {
-        $cookies = $this->wdSession->getAllCookies();
+        $cookies = $this->getWebDriverSession()->getAllCookies();
         foreach ($cookies as $cookie) {
             if ($cookie['name'] === $name) {
                 // PHP 7.4 changed the way it encodes cookies to better respect the spec.
@@ -512,7 +516,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getContent()
     {
-        return $this->wdSession->source();
+        return $this->getWebDriverSession()->source();
     }
 
     /**
@@ -520,7 +524,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getScreenshot()
     {
-        return base64_decode($this->wdSession->screenshot());
+        return base64_decode($this->getWebDriverSession()->screenshot());
     }
 
     /**
@@ -528,7 +532,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWindowNames()
     {
-        return $this->wdSession->window_handles();
+        return $this->getWebDriverSession()->window_handles();
     }
 
     /**
@@ -536,7 +540,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function getWindowName()
     {
-        return $this->wdSession->window_handle();
+        return $this->getWebDriverSession()->window_handle();
     }
 
     /**
@@ -544,7 +548,7 @@ class Selenium2Driver extends CoreDriver
      */
     public function findElementXpaths($xpath)
     {
-        $nodes = $this->wdSession->elements('xpath', $xpath);
+        $nodes = $this->getWebDriverSession()->elements('xpath', $xpath);
 
         $elements = array();
         foreach ($nodes as $i => $node) {
@@ -841,7 +845,7 @@ JS;
     {
         try {
             // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
-            $this->wdSession->moveto(array('element' => $element->getID()));
+            $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
         } catch (UnknownCommand $e) {
             // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
         } catch (UnknownError $e) {
@@ -857,7 +861,7 @@ JS;
     public function doubleClick($xpath)
     {
         $this->mouseOver($xpath);
-        $this->wdSession->doubleclick();
+        $this->getWebDriverSession()->doubleclick();
     }
 
     /**
@@ -866,7 +870,7 @@ JS;
     public function rightClick($xpath)
     {
         $this->mouseOver($xpath);
-        $this->wdSession->click(array('button' => 2));
+        $this->getWebDriverSession()->click(array('button' => 2));
     }
 
     /**
@@ -903,7 +907,7 @@ JS;
      */
     public function mouseOver($xpath)
     {
-        $this->wdSession->moveto(array(
+        $this->getWebDriverSession()->moveto(array(
             'element' => $this->findElement($xpath)->getID()
         ));
     }
@@ -959,7 +963,7 @@ JS;
         $source      = $this->findElement($sourceXpath);
         $destination = $this->findElement($destinationXpath);
 
-        $this->wdSession->moveto(array(
+        $this->getWebDriverSession()->moveto(array(
             'element' => $source->getID()
         ));
 
@@ -975,11 +979,11 @@ JS;
 JS;
         $this->withSyn()->executeJsOnElement($source, $script);
 
-        $this->wdSession->buttondown();
-        $this->wdSession->moveto(array(
+        $this->getWebDriverSession()->buttondown();
+        $this->getWebDriverSession()->moveto(array(
             'element' => $destination->getID()
         ));
-        $this->wdSession->buttonup();
+        $this->getWebDriverSession()->buttonup();
 
         $script = <<<JS
 (function (element) {
@@ -1004,7 +1008,7 @@ JS;
             $script = '(' . $script . ')';
         }
 
-        $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        $this->getWebDriverSession()->execute(array('script' => $script, 'args' => array()));
     }
 
     /**
@@ -1016,7 +1020,7 @@ JS;
             $script = 'return ' . $script;
         }
 
-        return $this->wdSession->execute(array('script' => $script, 'args' => array()));
+        return $this->getWebDriverSession()->execute(array('script' => $script, 'args' => array()));
     }
 
     /**
@@ -1029,7 +1033,7 @@ JS;
         $end = $start + $timeout / 1000.0;
 
         do {
-            $result = $this->wdSession->execute(array('script' => $script, 'args' => array()));
+            $result = $this->getWebDriverSession()->execute(array('script' => $script, 'args' => array()));
             if ($result) {
               break;
             }
@@ -1044,7 +1048,7 @@ JS;
      */
     public function resizeWindow($width, $height, $name = null)
     {
-        $window = $this->wdSession->window($name ?: 'current');
+        $window = $this->getWebDriverSession()->window($name ?: 'current');
         \assert($window instanceof Window);
         $window->postSize(
             array('width' => $width, 'height' => $height)
@@ -1064,7 +1068,7 @@ JS;
      */
     public function maximizeWindow($name = null)
     {
-        $window = $this->wdSession->window($name ?: 'current');
+        $window = $this->getWebDriverSession()->window($name ?: 'current');
         \assert($window instanceof Window);
         $window->maximize();
     }
@@ -1076,7 +1080,7 @@ JS;
      */
     public function getWebDriverSessionId()
     {
-        return $this->isStarted() ? basename($this->wdSession->getUrl()) : null;
+        return $this->wdSession !== null ? basename($this->wdSession->getUrl()) : null;
     }
 
     /**
@@ -1086,7 +1090,7 @@ JS;
      */
     private function findElement($xpath)
     {
-        return $this->wdSession->element('xpath', $xpath);
+        return $this->getWebDriverSession()->element('xpath', $xpath);
     }
 
     /**
@@ -1128,7 +1132,7 @@ XPATH;
                     $this->xpathEscaper->escapeLiteral($name),
                     $this->xpathEscaper->escapeLiteral($value)
                 );
-                $input = $this->wdSession->element('xpath', $xpath);
+                $input = $this->getWebDriverSession()->element('xpath', $xpath);
             } else {
                 $xpath = sprintf(
                     './ancestor::form//input[@type="radio" and not(@form) and @name=%s and @value = %s]',
@@ -1257,7 +1261,7 @@ JS;
         \assert($fileContents !== false);
 
         try {
-          $remotePath = $this->wdSession->file(array('file' => base64_encode($fileContents)));
+          $remotePath = $this->getWebDriverSession()->file(array('file' => base64_encode($fileContents)));
 
           // If no path is returned the file upload failed silently. In this
           // case it is possible Selenium was not used but another web driver
