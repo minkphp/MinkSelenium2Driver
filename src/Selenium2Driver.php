@@ -317,10 +317,23 @@ class Selenium2Driver extends CoreDriver
     {
         $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
 
-        $options = array(
-            'script' => $script,
-            'args'   => array($element),
-        );
+        if ($this->wdSession->isW3C()) {
+            $options = array(
+                'script' => $script,
+                'args'   => [
+                    [
+                        'ELEMENT' => $element->getID(),
+                        'element-6066-11e4-a52e-4f735466cecf' => $element->getID(),
+                    ]
+                ],
+            );
+        }
+        else {
+            $options = [
+                'script' => $script,
+                'args'   => [['ELEMENT' => $element->getID()]],
+            ];
+        }
 
         if ($sync) {
             return $this->getWebDriverSession()->execute($options);
@@ -549,6 +562,9 @@ class Selenium2Driver extends CoreDriver
     public function getValue(string $xpath)
     {
         $element = $this->findElement($xpath);
+        if ($this->wdSession->isW3C()) {
+            return $element->property('value');
+        }
         $elementName = strtolower($element->name());
         $elementType = strtolower($element->attribute('type') ?: '');
 
@@ -658,7 +674,12 @@ JS;
                     throw new DriverException('Only string values can be used for a file input.');
                 }
 
-                $element->postValue(array('value' => array(strval($value))));
+                if ($this->wdSession->isW3C()) {
+                    $element->postValue(array('text' => $value));
+                }
+                else {
+                    $element->postValue(array('value' => array($value)));
+                }
 
                 return;
             }
@@ -675,7 +696,12 @@ JS;
             $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
         }
 
-        $element->postValue(array('value' => array($value)));
+        if ($this->wdSession->isW3C()) {
+            $element->postValue(array('text' => $value));
+        }
+        else {
+            $element->postValue(array('value' => array($value)));
+        }
         // Remove the focus from the element if the field still has focus in
         // order to trigger the change event. By doing this instead of simply
         // triggering the change event for the given xpath we ensure that the
@@ -800,7 +826,12 @@ JS;
           $remotePath = $path;
         }
 
-        $element->postValue(array('value' => array($remotePath)));
+        if ($this->wdSession->isW3C()) {
+            $element->postValue(array('text' => $remotePath));
+        }
+        else {
+            $element->postValue(array('value' => array($remotePath)));
+        }
     }
 
     public function isVisible(string $xpath)
@@ -921,11 +952,16 @@ JS;
 
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
-        $window = $this->getWebDriverSession()->window($name ?: 'current');
-        \assert($window instanceof Window);
-        $window->postSize(
-            array('width' => $width, 'height' => $height)
-        );
+        if ($this->wdSession->isW3C()) {
+            $this->wdSession->window($name ? $name : 'current')->postRect(
+                array('width' => $width, 'height' => $height)
+            );
+        }
+        else {
+            $this->wdSession->window($name ? $name : 'current')->postSize(
+                array('width' => $width, 'height' => $height)
+            );
+        }
     }
 
     public function submitForm(string $xpath)
