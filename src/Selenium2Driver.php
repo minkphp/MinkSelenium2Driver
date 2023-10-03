@@ -979,7 +979,9 @@ JS;
             );
         }
         else {
-            $this->wdSession->window($name ? $name : 'current')->postSize(
+            $window = $this->getWebDriverSession()->window($name ?: 'current');
+            \assert($window instanceof Window);
+            $window->postSize(
                 array('width' => $width, 'height' => $height)
             );
         }
