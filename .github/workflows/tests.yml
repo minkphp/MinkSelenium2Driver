@@ -66,6 +66,13 @@ jobs:
         run: |
           composer update --no-interaction --prefer-dist
 
+      - name: Replace instaclick/php-webdriver with lullabot/php-webdriver for new selenium versions
+        run: |
+          if [ "${{ matrix.selenium }}" == "latest" ]; then
+            # @todo replace this with a release
+            composer require lullabot/php-webdriver:dev-main
+          fi
+
       - name: Setup Mink test server
         run: |
           mkdir ./logs
@@ -80,19 +87,12 @@ jobs:
           while ! nc -z localhost 4444 </dev/null; do echo Waiting for remote driver to start...; sleep 1; done
           while ! nc -z localhost 8002 </dev/null; do echo Waiting for PHP server to start...; sleep 1; done
 
-      - name: Replace instaclick/php-webdriver with lullabot/php-webdriver for new selenium versions
-        run: |
-          if [ "${{ matrix.selenium }}" == "latest" ]; then
-            # @todo replace this with a release
-            composer require lullabot/php-webdriver:dev-main
-          fi
-
       - name: Run tests
         run: |
           if [ "${{ matrix.selenium }}" == "latest" ]; then
             DRIVER_URL="http://localhost:4444" ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
           else
-            DRIVER_URL="http://localhost:4444/wd/hub" ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
+            ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
           fi
 
       - name: Upload coverage
