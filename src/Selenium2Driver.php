@@ -518,13 +518,24 @@ class Selenium2Driver extends CoreDriver
 
     public function getWindowNames()
     {
-        return $this->getWebDriverSession()->getWindowHandles();
+        if ($this->isW3C()) {
+            // This method doesn't exist in older versions of php-webdriver.
+            /** @phpstan-ignore-next-line variable.undefined */
+            return $this->getWebDriverSession()->getWindowHandles();
+        }
+
+        return $this->getWebDriverSession()->window_handles();
     }
 
     public function getWindowName()
     {
-        return $this->getWebDriverSession()->getWindowHandle();
-    }
+        if ($this->isW3C()) {
+            // This method doesn't exist in older versions of php-webdriver.
+            /** @phpstan-ignore-next-line variable.undefined */
+            return $this->getWebDriverSession()->getWindowHandle();
+        }
+
+        return $this->getWebDriverSession()->window_handle();    }
 
     /**
      * @protected
