@@ -218,17 +218,13 @@ class Selenium2Driver extends CoreDriver
      * Checks if the WebDriver session is W3C compatible.
      *
      * @return bool
-     *
-     * @throws UnknownCommand
+     * @throws DriverException
      */
     public function isW3C() {
-        try {
-            // This method doesn't exist in older versions of php-webdriver.
-            /** @phpstan-ignore-next-line variable.undefined */
-            return $this->wdSession->isW3C();
-        } catch (UnknownCommand $e) {
-            return false;
+        if (method_exists($this->getWebDriverSession(), 'isW3C')) {
+           return $this->getWebDriverSession()->isW3C();
         }
+        return false;
     }
 
     /**
@@ -522,12 +518,12 @@ class Selenium2Driver extends CoreDriver
 
     public function getWindowNames()
     {
-        return $this->getWebDriverSession()->window_handles();
+        return $this->getWebDriverSession()->getWindowHandles();
     }
 
     public function getWindowName()
     {
-        return $this->getWebDriverSession()->window_handle();
+        return $this->getWebDriverSession()->getWindowHandle();
     }
 
     /**
@@ -974,7 +970,7 @@ JS;
         if ($this->isW3C()) {
             // This method doesn't exist in older versions of php-webdriver.
             /** @phpstan-ignore-next-line variable.undefined */
-            $this->wdSession->window($name ? $name : 'current')->postRect(
+            $this->getWebDriverSession()->window($name ? $name : 'current')->postRect(
                 array('width' => $width, 'height' => $height)
             );
         }

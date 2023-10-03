@@ -37,7 +37,7 @@ class TimeoutTest extends TestCase
         \assert($driver instanceof Selenium2Driver);
 
         $this->expectException('\Behat\Mink\Exception\DriverException');
-        $driver->setTimeouts(array('invalid' => 0));
+        $driver->setTimeouts(array('invalid' => -1));
     }
 
     public function testShortTimeoutDoesNotWaitForElementToAppear()
