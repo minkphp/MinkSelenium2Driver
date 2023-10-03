@@ -215,6 +215,23 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Checks if the WebDriver session is W3C compatible.
+     *
+     * @return bool
+     *
+     * @throws UnknownCommand
+     */
+    public function isW3C() {
+        try {
+            // This method doesn't exist in older versions of php-webdriver.
+            /** @phpstan-ignore-next-line variable.undefined */
+            return $this->wdSession->isW3C();
+        } catch (UnknownCommand $e) {
+            return false;
+        }
+    }
+
+    /**
      * Makes sure that the Syn event library has been injected into the current page,
      * and return $this for a fluid interface,
      *
@@ -317,7 +334,7 @@ class Selenium2Driver extends CoreDriver
     {
         $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
 
-        if ($this->wdSession->isW3C()) {
+        if ($this->isW3C()) {
             $options = array(
                 'script' => $script,
                 'args'   => [
@@ -562,7 +579,9 @@ class Selenium2Driver extends CoreDriver
     public function getValue(string $xpath)
     {
         $element = $this->findElement($xpath);
-        if ($this->wdSession->isW3C()) {
+        if ($this->isW3C()) {
+            // This method doesn't exist in older versions of php-webdriver.
+            /** @phpstan-ignore-next-line variable.undefined */
             return $element->property('value');
         }
         $elementName = strtolower($element->name());
@@ -674,7 +693,7 @@ JS;
                     throw new DriverException('Only string values can be used for a file input.');
                 }
 
-                if ($this->wdSession->isW3C()) {
+                if ($this->isW3C()) {
                     $element->postValue(array('text' => $value));
                 }
                 else {
@@ -696,7 +715,7 @@ JS;
             $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
         }
 
-        if ($this->wdSession->isW3C()) {
+        if ($this->isW3C()) {
             $element->postValue(array('text' => $value));
         }
         else {
@@ -826,7 +845,7 @@ JS;
           $remotePath = $path;
         }
 
-        if ($this->wdSession->isW3C()) {
+        if ($this->isW3C()) {
             $element->postValue(array('text' => $remotePath));
         }
         else {
@@ -952,7 +971,9 @@ JS;
 
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
-        if ($this->wdSession->isW3C()) {
+        if ($this->isW3C()) {
+            // This method doesn't exist in older versions of php-webdriver.
+            /** @phpstan-ignore-next-line variable.undefined */
             $this->wdSession->window($name ? $name : 'current')->postRect(
                 array('width' => $width, 'height' => $height)
             );
