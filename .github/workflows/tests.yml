@@ -78,6 +78,8 @@ jobs:
           mkdir ./logs
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
+      # To run this locally, additionally mount a volume with the repo to retrieve test files
+      # e.g. -v /home/youruser/MinkSelenium2Driver:/home/youruser/MinkSelenium2Driver
       - name: Start Selenium
         run: |
           docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &

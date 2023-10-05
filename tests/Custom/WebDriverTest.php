@@ -7,6 +7,16 @@ use Behat\Mink\Tests\Driver\TestCase;
 
 class WebDriverTest extends TestCase
 {
+
+    /**
+     * @return void
+     */
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $this->getSession()->stop();
+    }
+
     public function testGetWebDriverSessionId()
     {
         $session = $this->getSession();

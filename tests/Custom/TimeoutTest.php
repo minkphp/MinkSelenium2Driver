@@ -3,48 +3,66 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Driver\Selenium2Driver;
+use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Tests\Driver\TestCase;
 
 class TimeoutTest extends TestCase
 {
+    protected $timeouts;
+
     /**
-     * @after
+     * @throws DriverException
+     *
+     * @return void
      */
-    protected function resetSessions()
+    public function setup(): void
     {
-        $session = $this->getSession();
-
-        // Stop the session instead of only resetting it, as timeouts are not reset (they are configuring the session itself)
-        if ($session->isStarted()) {
-            $session->stop();
-        }
-
-        $driver = $session->getDriver();
+        parent::setup();
+        $this->getSession()->start();
+        $driver = $this->getSession()->getDriver();
         \assert($driver instanceof Selenium2Driver);
 
-        // Reset the array of timeouts to avoid impacting other tests
-        $driver->setTimeouts(array());
-
-        parent::resetSessions();
+        $this->timeouts = $this->getSession()->getDriver()->getWebDriverSession()->getTimeouts();
     }
 
+    /**
+     * @throws DriverException
+     *
+     * @return void
+     */
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        $this->getSession()->getDriver()->setTimeouts($this->timeouts);
+        $this->getSession()->stop();
+    }
+
+    /**
+     * @throws DriverException
+     */
     public function testInvalidTimeoutSettingThrowsException()
     {
-        $session = $this->getSession();
-        $session->start();
+        $driver = $this->getSession()->getDriver();
 
-        $driver = $session->getDriver();
-        \assert($driver instanceof Selenium2Driver);
-
-        $this->expectException('\Behat\Mink\Exception\DriverException');
-        $driver->setTimeouts(array('invalid' => -1));
+        if ($driver->isW3C()) {
+            $this->expectException('\WebDriver\Exception\InvalidArgument');
+            // The browser will return a 200 for an invalid key, but 400 as
+            // expected for an invalid value.
+            $driver->setTimeouts(array('script' => -1));
+        }
+        else {
+            $this->expectException('\Behat\Mink\Exception\DriverException');
+            $driver->setTimeouts(array('invalid' => 0));
+        }
     }
 
+    /**
+     * @throws DriverException
+     */
     public function testShortTimeoutDoesNotWaitForElementToAppear()
     {
         $session = $this->getSession();
-        $driver = $session->getDriver();
-        \assert($driver instanceof Selenium2Driver);
+        $driver = $this->getSession()->getDriver();
 
         $driver->setTimeouts(array('implicit' => 0));
 
@@ -56,11 +74,13 @@ class TimeoutTest extends TestCase
         $this->assertNull($element);
     }
 
+    /**
+     * @throws DriverException
+     */
     public function testLongTimeoutWaitsForElementToAppear()
     {
         $session = $this->getSession();
         $driver = $session->getDriver();
-        \assert($driver instanceof Selenium2Driver);
 
         $driver->setTimeouts(array('implicit' => 5000));
 

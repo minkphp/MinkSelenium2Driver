@@ -3,10 +3,12 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Driver\Selenium2Driver;
+use Behat\Mink\Exception\Exception;
 use Behat\Mink\Tests\Driver\TestCase;
 
 class DesiredCapabilitiesTest extends TestCase
 {
+
     public function testGetDesiredCapabilities()
     {
         $caps = array(
@@ -47,6 +49,12 @@ class DesiredCapabilitiesTest extends TestCase
 
         $this->expectException('\Behat\Mink\Exception\DriverException');
         $this->expectExceptionMessage('Unable to set desiredCapabilities, the session has already started');
-        $driver->setDesiredCapabilities($caps);
+        try {
+            $driver->setDesiredCapabilities($caps);
+        }
+        catch (Exception $e) {
+            $session->stop();
+            throw $e;
+        }
     }
 }
