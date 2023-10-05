@@ -548,8 +548,6 @@ JS;
     public function getWindowNames()
     {
         if ($this->isW3C()) {
-            // This method doesn't exist in older versions of php-webdriver.
-            /** @phpstan-ignore-next-line variable.undefined */
             return $this->getWebDriverSession()->getWindowHandles();
         }
 
@@ -559,8 +557,6 @@ JS;
     public function getWindowName()
     {
         if ($this->isW3C()) {
-            // This method doesn't exist in older versions of php-webdriver.
-            /** @phpstan-ignore-next-line variable.undefined */
             return $this->getWebDriverSession()->getWindowHandle();
         }
 
@@ -667,8 +663,6 @@ JS;
         }
 
         if ($this->isW3C()) {
-            // This method doesn't exist in older versions of php-webdriver.
-            /** @phpstan-ignore-next-line variable.undefined */
             return $element->property('value');
         }
 
@@ -1100,8 +1094,6 @@ JS;
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
         if ($this->isW3C()) {
-            // This method doesn't exist in older versions of php-webdriver.
-            /** @phpstan-ignore-next-line variable.undefined */
             $this->getWebDriverSession()->window($name ? $name : 'current')->postRect(
                 array('width' => $width, 'height' => $height)
             );
