@@ -21,8 +21,9 @@ class TimeoutTest extends TestCase
         $this->getSession()->start();
         $driver = $this->getSession()->getDriver();
         \assert($driver instanceof Selenium2Driver);
-
-        $this->timeouts = $this->getSession()->getDriver()->getWebDriverSession()->getTimeouts();
+        if ($this->getSession()->getDriver()->getWebDriverSession()->isW3C()) {
+            $this->timeouts = $this->getSession()->getDriver()->getWebDriverSession()->getTimeouts();
+        }
     }
 
     /**
@@ -33,7 +34,9 @@ class TimeoutTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        $this->getSession()->getDriver()->setTimeouts($this->timeouts);
+        if ($this->getSession()->getDriver()->getWebDriverSession()->isW3C()) {
+            $this->getSession()->getDriver()->setTimeouts($this->timeouts);
+        }
         $this->getSession()->stop();
     }
 
