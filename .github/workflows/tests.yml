@@ -82,11 +82,7 @@ jobs:
       # e.g. -v /home/youruser/MinkSelenium2Driver:/home/youruser/MinkSelenium2Driver
       - name: Start Selenium
         run: |
-          if [ "${{ matrix.selenium }}" == "latest" ]; then
-            docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ${{ vars.github.action_path }}:${{ vars.github.action_path }} --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
-          else
-            docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
-          fi
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ${{ env.GITHUB_ACTION_PATH }}:${{ env.GITHUB_ACTION_PATH }} --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |

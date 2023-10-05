@@ -21,7 +21,7 @@ class TimeoutTest extends TestCase
         $this->getSession()->start();
         $driver = $this->getSession()->getDriver();
         \assert($driver instanceof Selenium2Driver);
-        if ($this->getSession()->getDriver()->getWebDriverSession()->isW3C()) {
+        if ($this->getSession()->getDriver()->isW3C()) {
             $this->timeouts = $this->getSession()->getDriver()->getWebDriverSession()->getTimeouts();
         }
     }
