@@ -78,11 +78,9 @@ jobs:
           mkdir ./logs
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
-      # To run this locally, additionally mount a volume with the repo to retrieve test files
-      # e.g. -v /home/youruser/MinkSelenium2Driver:/home/youruser/MinkSelenium2Driver
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume $GITHUB_WORKSPACE:$GITHUB_WORKSPACE --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume $GITHUB_WORKSPACE:$GITHUB_WORKSPACE -e SE_NODE_OVERRIDE_MAX_SESSIONS=true -e SE_NODE_MAX_SESSIONS=5 --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |
