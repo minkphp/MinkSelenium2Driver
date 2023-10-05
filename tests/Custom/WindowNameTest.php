@@ -6,15 +6,6 @@ use Behat\Mink\Tests\Driver\TestCase;
 
 class WindowNameTest extends TestCase
 {
-    /**
-     * @return void
-     */
-    public function tearDown(): void
-    {
-        parent::tearDown();
-        $this->getSession()->stop();
-    }
-
     public function testWindowNames()
     {
         $session = $this->getSession();
