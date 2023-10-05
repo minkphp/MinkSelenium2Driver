@@ -10,6 +10,7 @@
 
     <php>
         <var name="driver_config_factory" value="Behat\Mink\Tests\Driver\Selenium2Config::getInstance" />
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
 
         <!--server name="WEB_FIXTURES_HOST" value="http://test.mink.dev" /-->
         <!-- MacOS -->
