@@ -82,7 +82,7 @@ jobs:
       # e.g. -v /home/youruser/MinkSelenium2Driver:/home/youruser/MinkSelenium2Driver
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ${{ github.action_path }}:${{ github.action_path }} --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume $GITHUB_ACTION_PATH:$GITHUB_ACTION_PATH --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |
