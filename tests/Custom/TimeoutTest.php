@@ -21,7 +21,7 @@ class TimeoutTest extends TestCase
         $this->getSession()->start();
         $driver = $this->getSession()->getDriver();
         \assert($driver instanceof Selenium2Driver);
-        if ($this->getSession()->getDriver()->isW3C()) {
+        if (method_exists($this->getSession()->getDriver(), 'isW3C') && $this->getSession()->getDriver()->isW3C()) {
             $this->timeouts = $this->getSession()->getDriver()->getWebDriverSession()->getTimeouts();
         }
     }
@@ -34,7 +34,7 @@ class TimeoutTest extends TestCase
     public function tearDown(): void
     {
         parent::tearDown();
-        if ($this->getSession()->getDriver()->getWebDriverSession()->isW3C()) {
+        if (method_exists($this->getSession()->getDriver(), 'isW3C') && $this->getSession()->getDriver()->isW3C()) {
             $this->getSession()->getDriver()->setTimeouts($this->timeouts);
         }
         $this->getSession()->stop();
@@ -47,7 +47,7 @@ class TimeoutTest extends TestCase
     {
         $driver = $this->getSession()->getDriver();
 
-        if ($driver->isW3C()) {
+        if (method_exists($driver, 'isW3C') && $this->getSession()->getDriver()->isW3C()) {
             $this->expectException('\WebDriver\Exception\InvalidArgument');
             // The browser will return a 200 for an invalid key, but 400 as
             // expected for an invalid value.
