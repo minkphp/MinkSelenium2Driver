@@ -36,8 +36,17 @@ class TimeoutTest extends TestCase
         $driver = $session->getDriver();
         \assert($driver instanceof Selenium2Driver);
 
-        $this->expectException('\Behat\Mink\Exception\DriverException');
-        $driver->setTimeouts(array('invalid' => 0));
+        if (method_exists($driver, 'isW3C') && $driver->isW3C()) {
+            $this->expectException('\WebDriver\Exception\InvalidArgument');
+            // WebDriver happily ignores invalid timeout keys, but will
+            // throw an exception for incorrect values.
+            $driver->setTimeouts(array('script' => -1));
+        }
+        else {
+            $this->expectException('\Behat\Mink\Exception\DriverException');
+            $driver->setTimeouts(array('invalid' => 0));
+
+        }
     }
 
     public function testShortTimeoutDoesNotWaitForElementToAppear()

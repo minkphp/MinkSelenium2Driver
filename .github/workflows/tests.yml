@@ -5,8 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  DRIVER_URL: "http://localhost:4444/wd/hub"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 defaults:
   run:
@@ -43,6 +44,7 @@ jobs:
     strategy:
       matrix:
         php: [ '7.2', '7.3', '7.4', '8.0', '8.1' ]
+        selenium: ['2.53.1', 'latest']
       fail-fast: false
 
     steps:
@@ -64,6 +66,13 @@ jobs:
         run: |
           composer update --no-interaction --prefer-dist
 
+      - name: Replace instaclick/php-webdriver with lullabot/php-webdriver for new selenium versions
+        run: |
+          if [ "${{ matrix.selenium }}" == "latest" ]; then
+            # @todo replace this with a release
+            composer require lullabot/php-webdriver:dev-main
+          fi
+
       - name: Setup Mink test server
         run: |
           mkdir ./logs
@@ -71,7 +80,7 @@ jobs:
 
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume $GITHUB_WORKSPACE:$GITHUB_WORKSPACE -e SE_NODE_OVERRIDE_MAX_SESSIONS=true -e SE_NODE_MAX_SESSIONS=5 --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium }} &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |
@@ -80,7 +89,11 @@ jobs:
 
       - name: Run tests
         run: |
-          vendor/bin/phpunit -v --coverage-clover=coverage.xml
+          if [ "${{ matrix.selenium }}" == "latest" ]; then
+            DRIVER_URL="http://localhost:4444" ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
+          else
+            ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
+          fi
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2
