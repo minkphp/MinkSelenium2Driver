@@ -17,7 +17,7 @@ jobs:
     name: Check composer.json
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
@@ -28,7 +28,7 @@ jobs:
     name: Static analysis
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
@@ -42,12 +42,12 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        php: [ '7.2', '7.3', '7.4', '8.0', '8.1' ]
+        php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3' ]
       fail-fast: false
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
