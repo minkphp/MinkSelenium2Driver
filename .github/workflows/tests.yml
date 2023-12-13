@@ -66,13 +66,6 @@ jobs:
         run: |
           composer update --no-interaction --prefer-dist
 
-      - name: Replace instaclick/php-webdriver with lullabot/php-webdriver for new selenium versions
-        run: |
-          if [ "${{ matrix.selenium }}" == "latest" ]; then
-            # @todo replace this with a release
-            composer require lullabot/php-webdriver:dev-main
-          fi
-
       - name: Setup Mink test server
         run: |
           mkdir ./logs
