@@ -1,13 +1,26 @@
-1.7.0 / 2023-02-26
+1.7.0 / 2023-12-09
 ==================
 
 BC break:
 
 * `syn` JS library was upgraded from v0.0.3 to v0.15.0
 
+New features:
+
+* Added parameter types for all methods
+* Added support for Symfony 7
+
 Bug fixes:
 
-* `Selenium2Driver::{keyPress, keyDown, keyUp}` methods were using numeric string input as char code. Newly an integer type must be passed.
+* Fix compatibility of `execute` with Selenium 4
+* `Selenium2Driver::{keyPress, keyDown, keyUp}` methods were using numeric string input as char code. Newly an integer type must be passed. Strings are not handled as strings properly, as done in other Mink drivers.
+* Add proper error handling for non-started sessions
+
+Testsuite:
+
+* Fixed compatibility with the latest driver testsuite
+* Added CI jobs for PHP 8.2 and 8.3
+* Added static analysis with phpstan
 
 1.6.0 / 2022-03-28
 ==================
