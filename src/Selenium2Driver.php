@@ -19,6 +19,7 @@ use WebDriver\Exception\StaleElementReference;
 use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Key;
+use WebDriver\LegacyWindow;
 use WebDriver\Session;
 use WebDriver\WebDriver;
 use WebDriver\Window;
@@ -1100,7 +1101,7 @@ JS;
         }
         else {
             $window = $this->getWebDriverSession()->window($name ?: 'current');
-            \assert($window instanceof Window);
+            \assert($window instanceof LegacyWindow);
             $window->postSize(
                 array('width' => $width, 'height' => $height)
             );

@@ -19,10 +19,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
           php-version: '8.2'
+
       - run: composer validate --strict --no-check-lock
 
   static_analysis:
@@ -30,12 +32,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
           php-version: '8.2'
+
       - name: Install dependencies
-        run: composer update --ansi --no-progress --prefer-dist --no-interaction
+        run: |
+          composer update --ansi --no-progress --prefer-dist --no-interaction
+          composer require lullabot/php-webdriver:dev-justafish/func-signatures
+
       - run: vendor/bin/phpstan analyze
 
   tests:
@@ -44,7 +51,7 @@ jobs:
     strategy:
       matrix:
         php: [ '8.1', '8.2', '8.3' ]
-        selenium: ['latest']
+        selenium: ['2.53.1', 'latest']
       fail-fast: false
 
     steps:
@@ -65,6 +72,7 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --no-interaction --prefer-dist
+          composer require lullabot/php-webdriver:dev-justafish/func-signatures
 
       - name: Setup Mink test server
         run: |
@@ -81,7 +89,12 @@ jobs:
           while ! nc -z localhost 8002 </dev/null; do echo Waiting for PHP server to start...; sleep 1; done
 
       - name: Run tests
-        run: ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
+        run: |
+          if [ "${{ matrix.selenium }}" != "latest" ]; then
+            DRIVER_URL="http://localhost:4444/wd/hub" ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
+          else
+            ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
+          fi
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2
