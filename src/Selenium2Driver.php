@@ -846,16 +846,14 @@ JS;
 
     private function clickOnElement(Element $element): void
     {
-        try {
+        if ($this->isW3C()) {
+            $element->click();
+        }
+        else {
             // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
             $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
-        } catch (UnknownCommand $e) {
-            // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
-        } catch (UnknownError $e) {
-            // Chromium driver sends back UnknownError (WebDriver\Exception with code 13)
+            $element->click();
         }
-
-        $element->click();
     }
 
     public function doubleClick(string $xpath)
