@@ -43,8 +43,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        php: [ '7.2', '7.3', '7.4', '8.0', '8.1' ]
-        selenium: ['2.53.1', 'latest']
+        php: [ '8.1', '8.2', '8.3' ]
+        selenium: ['latest']
       fail-fast: false
 
     steps:
@@ -81,12 +81,7 @@ jobs:
           while ! nc -z localhost 8002 </dev/null; do echo Waiting for PHP server to start...; sleep 1; done
 
       - name: Run tests
-        run: |
-          if [ "${{ matrix.selenium }}" == "latest" ]; then
-            DRIVER_URL="http://localhost:4444" ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
-          else
-            ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
-          fi
+        run: ./vendor/bin/phpunit -v --coverage-clover=coverage.xml
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2

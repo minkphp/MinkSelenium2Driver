@@ -19,7 +19,7 @@
         <!--<server name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
 
         <!-- where driver will connect to -->
-        <!-- <server name="DRIVER_URL" value="http://localhost:4444/wd/hub" /> -->
+        <!-- <server name="DRIVER_URL" value=""http://localhost:4444" /> -->
 
         <!-- where DocumentRoot of 'Test Machine' is mounted to on 'Driver Machine' (only if these are 2 different machines) -->
         <!--server name="DRIVER_MACHINE_BASE_PATH" value="" /-->
