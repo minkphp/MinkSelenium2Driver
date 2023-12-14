@@ -7,16 +7,6 @@ parameters:
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         - '#^Method Behat\\Mink\\Tests\\Driver\\Custom\\[^:]+Test(Case)?\:\:test\w*\(\) has no return type specified\.$#'
-        # instaclick/php-webdriver misses the @method for this magic method
-        - '#^Call to an undefined method WebDriver\\Session\:\:file\(\)\.$#'
-        # W3C compatability changes
-        - '#^Call to an undefined method WebDriver\\Session\:\:getWindowHandles\(\)\.$#'
-        - '#^Call to an undefined method WebDriver\\Session\:\:getWindowHandle\(\)\.$#'
-        - '#^Call to an undefined method WebDriver\\Session\:\:postActions\(\)\.$#'
-        - '#^Call to an undefined method WebDriver\\Session\:\:deleteActions\(\)\.$#'
-        - '#^Call to an undefined method WebDriver\\Session|WebDriver\\Window\\:\:postRect\(\)\.$#'
-        - '#^Access to undefined constant WebDriver\\Element\:\:WEB_ELEMENT_ID\.$#'
-        - '#^Call to an undefined method WebDriver\\Element\:\:property\(\)\.$#'
 
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
