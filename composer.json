@@ -1,5 +1,5 @@
 {
-    "name": "behat/mink-selenium2-driver",
+    "name": "lullabot/mink-selenium2-driver",
     "description": "Selenium2 (WebDriver) driver for Mink framework",
     "keywords": ["selenium", "webdriver", "javascript", "ajax", "testing", "browser"],
     "homepage": "https://mink.behat.org/",
