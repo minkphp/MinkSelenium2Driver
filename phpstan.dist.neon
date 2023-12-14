@@ -7,9 +7,6 @@ parameters:
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
         - '#^Method Behat\\Mink\\Tests\\Driver\\Custom\\[^:]+Test(Case)?\:\:test\w*\(\) has no return type specified\.$#'
-        # instaclick/php-webdriver misses the @method for this magic method
-        - '#^Call to an undefined method WebDriver\\Session\:\:file\(\)\.$#'
-
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-phpunit/rules.neon

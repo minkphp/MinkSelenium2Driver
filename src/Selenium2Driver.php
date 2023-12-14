@@ -19,6 +19,7 @@ use WebDriver\Exception\StaleElementReference;
 use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Key;
+use WebDriver\LegacyWindow;
 use WebDriver\Session;
 use WebDriver\WebDriver;
 use WebDriver\Window;
@@ -215,6 +216,19 @@ class Selenium2Driver extends CoreDriver
     }
 
     /**
+     * Checks if the WebDriver session is W3C compatible.
+     *
+     * @return bool
+     * @throws DriverException
+     */
+    public function isW3C() {
+        if (method_exists($this->getWebDriverSession(), 'isW3C')) {
+           return $this->getWebDriverSession()->isW3C();
+        }
+        return false;
+    }
+
+    /**
      * Makes sure that the Syn event library has been injected into the current page,
      * and return $this for a fluid interface,
      *
@@ -317,10 +331,23 @@ class Selenium2Driver extends CoreDriver
     {
         $script  = str_replace('{{ELEMENT}}', 'arguments[0]', $script);
 
-        $options = array(
-            'script' => $script,
-            'args'   => array($element),
-        );
+        if ($this->isW3C()) {
+            $options = array(
+                'script' => $script,
+                'args'   => [
+                    [
+                        'ELEMENT' => $element->getID(),
+                        Element::WEB_ELEMENT_ID => $element->getID(),
+                    ]
+                ],
+            );
+        }
+        else {
+            $options = [
+                'script' => $script,
+                'args'   => [['ELEMENT' => $element->getID()]],
+            ];
+        }
 
         if ($sync) {
             return $this->getWebDriverSession()->execute($options);
@@ -425,12 +452,41 @@ class Selenium2Driver extends CoreDriver
 
     public function switchToWindow(?string $name = null)
     {
-        $this->getWebDriverSession()->focusWindow($name ?: '');
+        if ($this->isW3C()) {
+            $allHandles = $this->getWebDriverSession()->getWindowHandles();
+            foreach ($allHandles as $handle) {
+                $script = <<<JS
+return window.name;
+JS;
+
+                $this->getWebDriverSession()->focusWindow($handle);
+                $windowName = $this->getWebDriverSession()->execute(array('script' => $script, 'args' => array()));
+                if ($windowName === $name || (empty($name) && empty($windowName))) {
+                    break;
+                }
+            }
+        }
+        else {
+            $this->getWebDriverSession()->focusWindow($name ?: '');
+        }
     }
 
     public function switchToIFrame(?string $name = null)
     {
-        $this->getWebDriverSession()->frame(array('id' => $name));
+        if ($this->isW3C()) {
+            if (empty($name)) {
+                $this->getWebDriverSession()->frame(array('id' => null));
+            }
+            else {
+                $frameElement = $this->findElement("//iframe[@name='$name']");
+                $this->getWebDriverSession()->frame(array('id' => [
+                    Element::WEB_ELEMENT_ID => $frameElement->getID(),
+                ]));
+            }
+        }
+        else {
+            $this->getWebDriverSession()->frame(array('id' => $name));
+        }
     }
 
     public function setCookie(string $name, ?string $value = null)
@@ -492,13 +548,20 @@ class Selenium2Driver extends CoreDriver
 
     public function getWindowNames()
     {
+        if ($this->isW3C()) {
+            return $this->getWebDriverSession()->getWindowHandles();
+        }
+
         return $this->getWebDriverSession()->window_handles();
     }
 
     public function getWindowName()
     {
-        return $this->getWebDriverSession()->window_handle();
-    }
+        if ($this->isW3C()) {
+            return $this->getWebDriverSession()->getWindowHandle();
+        }
+
+        return $this->getWebDriverSession()->window_handle();    }
 
     /**
      * @protected
@@ -600,6 +663,10 @@ JS;
             return $this->executeJsOnElement($element, $script);
         }
 
+        if ($this->isW3C()) {
+            return $element->property('value');
+        }
+
         return $element->attribute('value');
     }
 
@@ -658,7 +725,12 @@ JS;
                     throw new DriverException('Only string values can be used for a file input.');
                 }
 
-                $element->postValue(array('value' => array(strval($value))));
+                if ($this->isW3C()) {
+                    $element->postValue(array('text' => $value));
+                }
+                else {
+                    $element->postValue(array('value' => array($value)));
+                }
 
                 return;
             }
@@ -671,11 +743,24 @@ JS;
         $value = strval($value);
 
         if (in_array($elementName, array('input', 'textarea'))) {
-            $existingValueLength = strlen($element->attribute('value'));
-            $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
+            if ($this->isW3C() && $elementName === 'textarea') {
+                // Backspace doesn't work for textareas for some reason, and
+                // sending ->clear() will trigger a change event.
+                $element->postValue(array('text' => Key::CONTROL . 'a'));
+                $element->postValue(array('text' => Key::DELETE));
+            }
+            else {
+                $existingValueLength = strlen($element->attribute('value'));
+                $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
+            }
         }
 
-        $element->postValue(array('value' => array($value)));
+        if ($this->isW3C()) {
+            $element->postValue(array('text' => $value));
+        }
+        else {
+            $element->postValue(array('value' => array($value)));
+        }
         // Remove the focus from the element if the field still has focus in
         // order to trigger the change event. By doing this instead of simply
         // triggering the change event for the given xpath we ensure that the
@@ -761,28 +846,70 @@ JS;
 
     private function clickOnElement(Element $element): void
     {
-        try {
+        if ($this->isW3C()) {
+            $element->click();
+        }
+        else {
             // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
             $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
-        } catch (UnknownCommand $e) {
-            // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
-        } catch (UnknownError $e) {
-            // Chromium driver sends back UnknownError (WebDriver\Exception with code 13)
+            $element->click();
         }
-
-        $element->click();
     }
 
     public function doubleClick(string $xpath)
     {
-        $this->mouseOver($xpath);
-        $this->getWebDriverSession()->doubleclick();
+        if ($this->isW3C()) {
+            $actions = array(
+                'actions' => [
+                    [
+                        'type' => 'pointer',
+                        'id' => 'mouse1',
+                        'parameters' => ['pointerType' => 'mouse'],
+                        'actions' => [
+                            ['type' => 'pointerMove', 'duration' => 0, 'origin' => [Element::WEB_ELEMENT_ID => $this->findElement($xpath)->getID()], 'x' => 0, 'y' => 0],
+                            ['type' => 'pointerDown', "button" => 0],
+                            ['type' => 'pointerUp', "button" => 0],
+                            ['type' => 'pause', 'duration' => 10],
+                            ['type' => 'pointerDown', "button" => 0],
+                            ['type' => 'pointerUp', "button" => 0],
+                        ],
+                    ],
+                ],
+            );
+            $this->getWebDriverSession()->postActions($actions);
+            $this->getWebDriverSession()->deleteActions();
+        }
+        else {
+            $this->mouseOver($xpath);
+            $this->getWebDriverSession()->doubleclick();
+        }
     }
 
     public function rightClick(string $xpath)
     {
-        $this->mouseOver($xpath);
-        $this->getWebDriverSession()->click(array('button' => 2));
+        if ($this->isW3C()) {
+            $actions = array(
+                'actions' => [
+                    [
+                        'type' => 'pointer',
+                        'id' => 'mouse1',
+                        'parameters' => ['pointerType' => 'mouse'],
+                        'actions' => [
+                            ['type' => 'pointerMove', 'duration' => 0, 'origin' => [Element::WEB_ELEMENT_ID => $this->findElement($xpath)->getID()], 'x' => 0, 'y' => 0],
+                            ['type' => 'pointerDown', "button" => 2],
+                            ['type' => 'pause', 'duration' => 500],
+                            ['type' => 'pointerUp', "button" => 2],
+                        ],
+                    ],
+                ],
+            );
+            $this->getWebDriverSession()->postActions($actions);
+            $this->getWebDriverSession()->deleteActions();
+        }
+        else {
+            $this->mouseOver($xpath);
+            $this->getWebDriverSession()->click(array('button' => 2));
+        }
     }
 
     public function attachFile(string $xpath, string $path)
@@ -800,7 +927,12 @@ JS;
           $remotePath = $path;
         }
 
-        $element->postValue(array('value' => array($remotePath)));
+        if ($this->isW3C()) {
+            $element->postValue(array('text' => $remotePath));
+        }
+        else {
+            $element->postValue(array('value' => array($remotePath)));
+        }
     }
 
     public function isVisible(string $xpath)
@@ -810,9 +942,27 @@ JS;
 
     public function mouseOver(string $xpath)
     {
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $this->findElement($xpath)->getID()
-        ));
+        if ($this->isW3C()) {
+            $actions = array(
+                'actions' => [
+                    [
+                        'type' => 'pointer',
+                        'id' => 'mouse1',
+                        'parameters' => ['pointerType' => 'mouse'],
+                        'actions' => [
+                            ['type' => 'pointerMove', 'duration' => 0, 'origin' => [Element::WEB_ELEMENT_ID => $this->findElement($xpath)->getID()], 'x' => 0, 'y' => 0],
+                        ],
+                    ],
+                ],
+            );
+            $this->getWebDriverSession()->postActions($actions);
+            $this->getWebDriverSession()->deleteActions();
+        }
+        else {
+            $this->getWebDriverSession()->moveto(array(
+                'element' => $this->findElement($xpath)->getID()
+            ));
+        }
     }
 
     public function focus(string $xpath)
@@ -848,11 +998,31 @@ JS;
         $source      = $this->findElement($sourceXpath);
         $destination = $this->findElement($destinationXpath);
 
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $source->getID()
-        ));
+        if ($this->isW3C()) {
+            $actions = array(
+                'actions' => [
+                    [
+                        'type' => 'pointer',
+                        'id' => 'mouse1',
+                        'parameters' => ['pointerType' => 'mouse'],
+                        'actions' => [
+                            ['type' => 'pointerMove', 'duration' => 0, 'origin' => [Element::WEB_ELEMENT_ID => $this->findElement($sourceXpath)->getID()], 'x' => 0, 'y' => 0],
+                            ['type' => 'pointerDown', "button" => 0],
+                            ['type' => 'pointerMove', 'duration' => 0, 'origin' => [Element::WEB_ELEMENT_ID => $this->findElement($destinationXpath)->getID()], 'x' => 0, 'y' => 0],
+                            ['type' => 'pointerUp', "button" => 0],
+                        ],
+                    ],
+                ],
+            );
+            $this->getWebDriverSession()->postActions($actions);
+            $this->getWebDriverSession()->deleteActions();
+        }
+        else {
+            $this->getWebDriverSession()->moveto(array(
+                'element' => $source->getID()
+            ));
 
-        $script = <<<JS
+            $script = <<<JS
 (function (element) {
     var event = document.createEvent("HTMLEvents");
 
@@ -862,15 +1032,15 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($source, $script);
+            $this->withSyn()->executeJsOnElement($source, $script);
 
-        $this->getWebDriverSession()->buttondown();
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $destination->getID()
-        ));
-        $this->getWebDriverSession()->buttonup();
+            $this->getWebDriverSession()->buttondown();
+            $this->getWebDriverSession()->moveto(array(
+                'element' => $destination->getID()
+            ));
+            $this->getWebDriverSession()->buttonup();
 
-        $script = <<<JS
+            $script = <<<JS
 (function (element) {
     var event = document.createEvent("HTMLEvents");
 
@@ -880,7 +1050,8 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($destination, $script);
+            $this->withSyn()->executeJsOnElement($destination, $script);
+        }
     }
 
     public function executeScript(string $script)
@@ -922,15 +1093,33 @@ JS;
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
         $window = $this->getWebDriverSession()->window($name ?: 'current');
-        \assert($window instanceof Window);
-        $window->postSize(
-            array('width' => $width, 'height' => $height)
-        );
+        if ($this->isW3C()) {
+            \assert($window instanceof Window);
+            $window->postRect(
+                array('width' => $width, 'height' => $height)
+            );
+        }
+        else {
+            \assert($window instanceof LegacyWindow);
+            $window->postSize(
+                array('width' => $width, 'height' => $height)
+            );
+        }
     }
 
     public function submitForm(string $xpath)
     {
-        $this->findElement($xpath)->submit();
+        if ($this->isW3C()) {
+            $script = <<<JS
+var node = {{ELEMENT}};
+node.submit();
+JS;
+
+            $this->executeJsOnElement($this->findElement($xpath), $script);
+        }
+        else {
+            $this->findElement($xpath)->submit();
+        }
     }
 
     public function maximizeWindow(?string $name = null)
