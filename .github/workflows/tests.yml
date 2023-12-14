@@ -41,7 +41,6 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --ansi --no-progress --prefer-dist --no-interaction
-          composer require lullabot/php-webdriver:dev-justafish/func-signatures
 
       - run: vendor/bin/phpstan analyze
 
@@ -75,7 +74,6 @@ jobs:
       - name: Install dependencies
         run: |
           composer update --no-interaction --prefer-dist
-          composer require lullabot/php-webdriver:dev-justafish/func-signatures
 
       - name: Setup Mink test server
         run: |
