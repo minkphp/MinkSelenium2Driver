@@ -1092,13 +1092,14 @@ JS;
 
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
+        $window = $this->getWebDriverSession()->window($name ?: 'current');
         if ($this->isW3C()) {
-            $this->getWebDriverSession()->window($name ? $name : 'current')->postRect(
+            \assert($window instanceof Window);
+            $window->postRect(
                 array('width' => $width, 'height' => $height)
             );
         }
         else {
-            $window = $this->getWebDriverSession()->window($name ?: 'current');
             \assert($window instanceof LegacyWindow);
             $window->postSize(
                 array('width' => $width, 'height' => $height)
