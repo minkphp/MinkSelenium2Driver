@@ -750,7 +750,7 @@ JS;
                 $element->postValue(array('text' => Key::DELETE));
             }
             else {
-                $existingValueLength = strlen($element->attribute('value'));
+                $existingValueLength = strlen($element->property('value'));
                 $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
             }
         }
