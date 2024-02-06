@@ -22,7 +22,7 @@
         "php": ">=7.2",
         "ext-json": "*",
         "behat/mink": "^1.11@dev",
-        "lullabot/php-webdriver": "^2.0"
+        "lullabot/php-webdriver": "dev-main"
     },
     "require-dev": {
         "mink/driver-testsuite": "dev-master",
