@@ -750,7 +750,12 @@ JS;
                 $element->postValue(array('text' => Key::DELETE));
             }
             else {
-                $existingValueLength = strlen($element->property('value'));
+                if ($this->isW3C()) {
+                    $existingValueLength = strlen($element->property('value'));
+                }
+                else {
+                    $existingValueLength = strlen($element->attribute('value'));
+                }
                 $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
             }
         }
