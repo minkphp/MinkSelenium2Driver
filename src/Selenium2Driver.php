@@ -743,21 +743,13 @@ JS;
         $value = strval($value);
 
         if (in_array($elementName, array('input', 'textarea'))) {
-            if ($this->isW3C() && $elementName === 'textarea') {
-                // Backspace doesn't work for textareas for some reason, and
-                // sending ->clear() will trigger a change event.
-                $element->postValue(array('text' => Key::CONTROL . 'a'));
-                $element->postValue(array('text' => Key::DELETE));
-            }
-            else {
-                if ($this->isW3C()) {
-                    $existingValueLength = strlen($element->property('value'));
-                }
-                else {
-                    $existingValueLength = strlen($element->attribute('value'));
-                }
-                $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
-            }
+             if ($this->isW3C()) {
+                 $existingValueLength = strlen($element->property('value'));
+             }
+             else {
+                 $existingValueLength = strlen($element->attribute('value'));
+             }
+             $value = str_repeat(Key::BACKSPACE . Key::DELETE, $existingValueLength) . $value;
         }
 
         if ($this->isW3C()) {
