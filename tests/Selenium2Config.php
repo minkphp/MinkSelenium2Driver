@@ -23,6 +23,16 @@ class Selenium2Config extends AbstractConfig
         return new Selenium2Driver($browser, null, $seleniumHost);
     }
 
+    public function mapRemoteFilePath($file): string
+    {
+        if (!isset($_SERVER['TEST_MACHINE_BASE_PATH'])) {
+            $webFixturesPath = dirname(__DIR__) . '/vendor/mink/driver-testsuite/web-fixtures';
+            $_SERVER['TEST_MACHINE_BASE_PATH'] = realpath($webFixturesPath) . DIRECTORY_SEPARATOR;
+        }
+
+        return parent::mapRemoteFilePath($file);
+    }
+
     public function skipMessage($testCase, $test): ?string
     {
         if (
