@@ -768,6 +768,9 @@ JS;
 
     private function clickOnElement(Element $element): void
     {
+        // Change the viewport, because Firefox can't move the mouse outside the viewport.
+        $this->scrollIntoView($element);
+
         try {
             // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
             $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
@@ -778,6 +781,14 @@ JS;
         }
 
         $element->click();
+    }
+
+    private function scrollIntoView(Element $element): void
+    {
+        $this->executeJsOnElement(
+            $element,
+            "arguments[0].scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' });"
+        );
     }
 
     public function doubleClick(string $xpath)
@@ -817,8 +828,13 @@ JS;
 
     public function mouseOver(string $xpath)
     {
+        $element = $this->findElement($xpath);
+
+        // Change the viewport, because Firefox can't move the mouse outside the viewport.
+        $this->scrollIntoView($element);
+
         $this->getWebDriverSession()->moveto(array(
-            'element' => $this->findElement($xpath)->getID()
+            'element' => $element->getID()
         ));
     }
 
