@@ -403,7 +403,19 @@ class Selenium2Driver extends CoreDriver
 
     public function reset()
     {
-        $this->getWebDriverSession()->deleteAllCookies();
+        $webDriverSession = $this->getWebDriverSession();
+
+        foreach ($this->getWindowNames() as $name) {
+            if ($name === $this->initialWindowName) {
+                continue;
+            }
+
+            $this->switchToWindow($name);
+            $webDriverSession->deleteWindow();
+            $this->switchToWindow();
+        }
+
+        $webDriverSession->deleteAllCookies();
     }
 
     public function visit(string $url)
