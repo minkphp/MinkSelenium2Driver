@@ -17,16 +17,19 @@ use Behat\Mink\Mink,
     Behat\Mink\Session,
     Behat\Mink\Driver\Selenium2Driver;
 
-use Selenium\Client as SeleniumClient;
+require_once __DIR__ . '/vendor/autoload.php';
 
-$browser = 'firefox';
+$browserName = 'firefox';
 $url = 'http://example.com';
 
 $mink = new Mink(array(
-    'selenium2' => new Session(new Selenium2Driver($browser, null, $url)),
+    'selenium2' => new Session(new Selenium2Driver($browserName)),
 ));
 
-$mink->getSession('selenium2')->getPage()->findLink('Chat')->click();
+$session = $mink->getSession('selenium2');
+$session->visit($url);
+
+$session->getPage()->findLink('Chat')->click();
 ```
 
 Please refer to [MinkExtension-example](https://github.com/Behat/MinkExtension-example) for an executable example.
