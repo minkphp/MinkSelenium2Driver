@@ -71,7 +71,7 @@ jobs:
 
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ./vendor/mink/driver-testsuite/web-fixtures:/fixtures --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |
@@ -79,6 +79,8 @@ jobs:
           while ! nc -z localhost 8002 </dev/null; do echo Waiting for PHP server to start...; sleep 1; done
 
       - name: Run tests
+        env:
+          DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
           vendor/bin/phpunit -v --coverage-clover=coverage.xml
 
@@ -91,6 +93,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-          name: logs_php-${{ matrix.php }}
+          name: logs_php-${{ matrix.php }}_selenium-2.53.1_firefox
           path: |
             logs
