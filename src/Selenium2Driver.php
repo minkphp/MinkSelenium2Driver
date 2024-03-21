@@ -30,6 +30,8 @@ use WebDriver\Window;
  */
 class Selenium2Driver extends CoreDriver
 {
+    private const W3C_WINDOW_HANDLE_PREFIX = 'w3cwh:';
+
     /**
      * Whether the browser has been started
      * @var bool
@@ -63,6 +65,11 @@ class Selenium2Driver extends CoreDriver
      * @var array{script?: int, implicit?: int, page?: int}
      */
     private $timeouts = array();
+
+    /**
+     * @var string|null
+     */
+    private $initialWindowName = null;
 
     /**
      * @var Escaper
@@ -340,6 +347,7 @@ class Selenium2Driver extends CoreDriver
         $this->started = true;
 
         $this->applyTimeouts();
+        $this->initialWindowName = $this->getWindowName();
     }
 
     /**
@@ -395,7 +403,20 @@ class Selenium2Driver extends CoreDriver
 
     public function reset()
     {
-        $this->getWebDriverSession()->deleteAllCookies();
+        $this->switchToWindow();
+        $webDriverSession = $this->getWebDriverSession();
+
+        foreach ($this->getWindowNames() as $name) {
+            if ($name === $this->initialWindowName) {
+                continue;
+            }
+
+            $this->withWindow($name, function () use ($webDriverSession) {
+                $webDriverSession->deleteWindow();
+            });
+        }
+
+        $webDriverSession->deleteAllCookies();
     }
 
     public function visit(string $url)
@@ -425,7 +446,44 @@ class Selenium2Driver extends CoreDriver
 
     public function switchToWindow(?string $name = null)
     {
-        $this->getWebDriverSession()->focusWindow($name ?: '');
+        if ($name === null) {
+            $name = $this->initialWindowName;
+        }
+
+        if (is_string($name)) {
+            $name = $this->getWindowHandleFromName($name);
+        }
+
+        $this->getWebDriverSession()->focusWindow($name);
+    }
+
+    /**
+     * @throws DriverException
+     */
+    private function getWindowHandleFromName(string $name): string
+    {
+        // if name is actually prefixed window handle, just remove the prefix
+        if (strpos($name, self::W3C_WINDOW_HANDLE_PREFIX) === 0) {
+            return substr($name, strlen(self::W3C_WINDOW_HANDLE_PREFIX));
+        }
+
+        // ..otherwise check if any existing window has the specified name
+
+        $origWindowHandle = $this->getWebDriverSession()->window_handle();
+
+        try {
+            foreach ($this->getWebDriverSession()->window_handles() as $handle) {
+                $this->getWebDriverSession()->focusWindow($handle);
+
+                if ($this->evaluateScript('window.name') === $name) {
+                    return $handle;
+                }
+            }
+
+            throw new DriverException("Could not find handle of window named \"$name\"");
+        } finally {
+            $this->getWebDriverSession()->focusWindow($origWindowHandle);
+        }
     }
 
     public function switchToIFrame(?string $name = null)
@@ -492,12 +550,29 @@ class Selenium2Driver extends CoreDriver
 
     public function getWindowNames()
     {
-        return $this->getWebDriverSession()->window_handles();
+        $origWindow = $this->getWebDriverSession()->window_handle();
+
+        try {
+            $result = array();
+            foreach ($this->getWebDriverSession()->window_handles() as $tempWindow) {
+                $this->getWebDriverSession()->focusWindow($tempWindow);
+                $result[] = $this->getWindowName();
+            }
+            return $result;
+        } finally {
+            $this->getWebDriverSession()->focusWindow($origWindow);
+        }
     }
 
     public function getWindowName()
     {
-        return $this->getWebDriverSession()->window_handle();
+        $name = (string) $this->evaluateScript('window.name');
+
+        if ($name === '') {
+            $name = self::W3C_WINDOW_HANDLE_PREFIX . $this->getWebDriverSession()->window_handle();
+        }
+
+        return $name;
     }
 
     /**
@@ -921,11 +996,13 @@ JS;
 
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
-        $window = $this->getWebDriverSession()->window($name ?: 'current');
-        \assert($window instanceof Window);
-        $window->postSize(
-            array('width' => $width, 'height' => $height)
-        );
+        $this->withWindow($name, function () use ($width, $height) {
+            $window = $this->getWebDriverSession()->window('current');
+            \assert($window instanceof Window);
+            $window->postSize(
+                array('width' => $width, 'height' => $height)
+            );
+        });
     }
 
     public function submitForm(string $xpath)
@@ -935,9 +1012,34 @@ JS;
 
     public function maximizeWindow(?string $name = null)
     {
-        $window = $this->getWebDriverSession()->window($name ?: 'current');
-        \assert($window instanceof Window);
-        $window->maximize();
+        $this->withWindow($name, function () {
+            $window = $this->getWebDriverSession()->window('current');
+            \assert($window instanceof Window);
+            $window->maximize();
+        });
+    }
+
+    private function withWindow(?string $name, callable $callback): void
+    {
+        if ($name === null) {
+            $callback();
+
+            return;
+        }
+
+        $origName = $this->getWindowName();
+
+        try {
+            if ($origName !== $name) {
+                $this->switchToWindow($name);
+            }
+
+            $callback();
+        } finally {
+            if ($origName !== $name) {
+                $this->switchToWindow($origName);
+            }
+        }
     }
 
     /**
