@@ -999,11 +999,13 @@ JS;
 
     public function resizeWindow(int $width, int $height, ?string $name = null)
     {
-        $window = $this->getWebDriverSession()->window($name ?: 'current');
-        \assert($window instanceof Window);
-        $window->postSize(
-            array('width' => $width, 'height' => $height)
-        );
+        $this->withWindow($name, function () use ($width, $height) {
+            $window = $this->getWebDriverSession()->window('current');
+            \assert($window instanceof Window);
+            $window->postSize(
+                array('width' => $width, 'height' => $height)
+            );
+        });
     }
 
     public function submitForm(string $xpath)
@@ -1013,9 +1015,34 @@ JS;
 
     public function maximizeWindow(?string $name = null)
     {
-        $window = $this->getWebDriverSession()->window($name ?: 'current');
-        \assert($window instanceof Window);
-        $window->maximize();
+        $this->withWindow($name, function () {
+            $window = $this->getWebDriverSession()->window('current');
+            \assert($window instanceof Window);
+            $window->maximize();
+        });
+    }
+
+    private function withWindow(?string $name, callable $callback): void
+    {
+        if ($name === null) {
+            $callback();
+
+            return;
+        }
+
+        $origName = $this->getWindowName();
+
+        try {
+            if ($origName !== $name) {
+                $this->switchToWindow($name);
+            }
+
+            $callback();
+        } finally {
+            if ($origName !== $name) {
+                $this->switchToWindow($origName);
+            }
+        }
     }
 
     /**
