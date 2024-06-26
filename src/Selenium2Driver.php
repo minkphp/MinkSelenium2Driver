@@ -118,6 +118,8 @@ class Selenium2Driver extends CoreDriver
             $desiredCapabilities = array();
         }
 
+        $desiredCapabilities['browserName'] = $this->browserName;
+
         // Join $desiredCapabilities with defaultCapabilities
         $desiredCapabilities = array_replace(self::getDefaultCapabilities(), $desiredCapabilities);
 
