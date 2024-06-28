@@ -883,6 +883,8 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
+        // Re-fetch destination in case mouseOver would make it stale.
+        $destination = $this->findElement($destinationXpath);
         $this->withSyn()->executeJsOnElement($destination, $script);
     }
 
