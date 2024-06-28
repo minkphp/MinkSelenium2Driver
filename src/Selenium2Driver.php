@@ -870,6 +870,7 @@ JS;
         $this->getWebDriverSession()->moveto(array(
             'element' => $destination->getID()
         ));
+        $this->mouseOver($destinationXpath);
         $this->getWebDriverSession()->buttonup();
 
         $script = <<<JS
