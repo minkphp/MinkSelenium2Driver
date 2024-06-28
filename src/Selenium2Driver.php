@@ -14,6 +14,7 @@ use Behat\Mink\Exception\DriverException;
 use Behat\Mink\KeyModifier;
 use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
+use WebDriver\Exception\InvalidArgument;
 use WebDriver\Exception\NoSuchElement;
 use WebDriver\Exception\StaleElementReference;
 use WebDriver\Exception\UnknownCommand;
@@ -372,6 +373,10 @@ class Selenium2Driver extends CoreDriver
                 $this->getWebDriverSession()->timeouts($type, $param);
             }
         } catch (UnknownError $e) {
+            // Selenium 2.x.
+            throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
+        } catch (InvalidArgument $e) {
+            // Selenium 3.x.
             throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
         }
     }
