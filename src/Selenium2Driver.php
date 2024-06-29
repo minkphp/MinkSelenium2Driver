@@ -437,7 +437,45 @@ class Selenium2Driver extends CoreDriver
 
     public function switchToIFrame(?string $name = null)
     {
-        $this->getWebDriverSession()->frame(array('id' => $name));
+        $frameQuery = $name;
+
+        if ($name) {
+            try {
+                $frameQuery = $this->getWebDriverSession()->element('id', $name);
+            } catch (NoSuchElement $e) {
+                $frameQuery = $this->getWebDriverSession()->element('name', $name);
+            }
+
+            $frameQuery = $this->serializeWebElement($frameQuery);
+        }
+
+        $this->getWebDriverSession()->frame(array('id' => $frameQuery));
+    }
+
+    /**
+     * Serialize an Web Element
+     *
+     * @param Element $webElement Web webElement.
+     *
+     * @return array
+     * @todo   Remove once the https://github.com/instaclick/php-webdriver/issues/131 is fixed.
+     */
+    private function serializeWebElement(Element $webElement)
+    {
+        // Code for WebDriver 2.x version.
+        if (class_exists('\WebDriver\LegacyElement') && \defined('\WebDriver\Element::WEB_ELEMENT_ID')) {
+            if ($webElement instanceof \WebDriver\LegacyElement) {
+                return array(\WebDriver\LegacyElement::LEGACY_ELEMENT_ID => $webElement->getID());
+            }
+
+            return array(Element::WEB_ELEMENT_ID => $webElement->getID());
+        }
+
+        // Code for WebDriver 1.x version.
+        return array(
+            \WebDriver\Container::WEBDRIVER_ELEMENT_ID => $webElement->getID(),
+            \WebDriver\Container::LEGACY_ELEMENT_ID => $webElement->getID(),
+        );
     }
 
     public function setCookie(string $name, ?string $value = null)
