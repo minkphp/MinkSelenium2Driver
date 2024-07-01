@@ -869,12 +869,14 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($source, $script);
+        $this->executeJsOnElement($source, $script);
 
         $this->getWebDriverSession()->buttondown();
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $destination->getID()
-        ));
+        if ($destination->getID() !== $source->getID()) {
+            $this->getWebDriverSession()->moveto(array(
+                'element' => $destination->getID()
+            ));
+        }
         $this->getWebDriverSession()->buttonup();
 
         $script = <<<JS
@@ -887,7 +889,7 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
-        $this->withSyn()->executeJsOnElement($destination, $script);
+        $this->executeJsOnElement($destination, $script);
     }
 
     public function executeScript(string $script)
