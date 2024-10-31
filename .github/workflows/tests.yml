@@ -38,11 +38,15 @@ jobs:
       - run: vendor/bin/phpstan analyze
 
   tests:
-    name: Tests
+    name: "Tests (PHP ${{ matrix.php }}, Selenium ${{ matrix.selenium_version }})"
     runs-on: ubuntu-20.04
     strategy:
       matrix:
+        selenium_version: [ '2.53.1' ]
         php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3' ]
+        include:
+          - selenium_version: '3.141.59'
+            php: '8.3'
       fail-fast: false
 
     steps:
@@ -71,7 +75,7 @@ jobs:
 
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ./vendor/mink/driver-testsuite/web-fixtures:/fixtures --shm-size 2g selenium/standalone-firefox:2.53.1 &> ./logs/selenium.log &
+          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ./vendor/mink/driver-testsuite/web-fixtures:/fixtures --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium_version }} &> ./logs/selenium.log &
 
       - name: Wait for browser & PHP to start
         run: |
@@ -94,6 +98,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: logs_php-${{ matrix.php }}_selenium-2.53.1_firefox
+          name: logs_php-${{ matrix.php }}_selenium-${{ matrix.selenium_version }}_firefox
           path: |
             logs
