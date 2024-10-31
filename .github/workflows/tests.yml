@@ -85,13 +85,14 @@ jobs:
           vendor/bin/phpunit -v --coverage-clover=coverage.xml
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
 
       - name: Archive logs artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: logs_php-${{ matrix.php }}_selenium-2.53.1_firefox
           path: |
