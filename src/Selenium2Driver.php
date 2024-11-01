@@ -638,8 +638,8 @@ class Selenium2Driver extends CoreDriver
 
     public function getText(string $xpath)
     {
-        return (string) str_replace(
-            array("\r", "\r\n", "\n"),
+        return str_replace(
+            array("\r\n", "\r", "\n"),
             ' ',
             $this->executeJsOnXpath($xpath, 'return {{ELEMENT}}.innerText;')
         );
