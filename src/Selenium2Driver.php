@@ -984,6 +984,7 @@ JS;
         $this->getWebDriverSession()->moveto(array(
             'element' => $destination->getID()
         ));
+        $this->mouseOver($destinationXpath);
         $this->getWebDriverSession()->buttonup();
 
         $script = <<<JS
@@ -996,6 +997,8 @@ JS;
     element.dispatchEvent(event);
 }({{ELEMENT}}));
 JS;
+        // Re-fetch destination in case mouseOver would make it stale.
+        $destination = $this->findElement($destinationXpath);
         $this->withSyn()->executeJsOnElement($destination, $script);
     }
 
