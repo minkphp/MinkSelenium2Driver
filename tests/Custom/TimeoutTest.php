@@ -81,11 +81,11 @@ class TimeoutTest extends TestCase
         $driver = $session->getDriver();
         \assert($driver instanceof Selenium2Driver);
 
-        $driver->setTimeouts(array($timeoutType => 1)); // Use 1ms timeout to avoid any successful page load.
+        $driver->setTimeouts(array($timeoutType => 500));
 
         $this->expectException('\Behat\Mink\Exception\DriverException');
         $this->expectExceptionMessage('Page failed to load: ');
-        $session->visit('https://www.webpagetest.org/'); // Use external URL, because it loads slower, then local.
+        $session->visit($this->pathTo('/page_load.php?sleep=2'));
     }
 
     public static function shortPageLoadTimeoutThrowsExceptionDataProvider(): array
