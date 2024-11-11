@@ -5,9 +5,12 @@ namespace Behat\Mink\Tests\Driver\Custom;
 use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Tests\Driver\TestCase;
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 
 class TimeoutTest extends TestCase
 {
+    use ExpectDeprecationTrait;
+
     /**
      * @after
      */

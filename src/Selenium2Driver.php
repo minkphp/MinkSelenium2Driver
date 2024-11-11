@@ -395,11 +395,11 @@ class Selenium2Driver extends CoreDriver
                 }
 
                 if ($type === 'page load' || $type === 'pageLoad') {
-                    $type = 'page';
                     @trigger_error(
                         'Using "' . $type . '" timeout type is deprecated, please use "page" instead',
                         E_USER_DEPRECATED
                     );
+                    $type = 'page';
                 }
 
                 if ($type === 'page') {
