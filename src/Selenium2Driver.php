@@ -412,11 +412,8 @@ class Selenium2Driver extends CoreDriver
                     $this->getWebDriverSession()->timeouts($type, $param);
                 }
             }
-        } catch (UnknownError $e) {
-            // Selenium 2.x.
-            throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
-        } catch (InvalidArgument $e) {
-            // Selenium 3.x.
+        } catch (UnknownError|InvalidArgument $e) {
+            // UnknownError (Selenium 2.x). InvalidArgument (Selenium 3.x).
             throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -463,11 +460,8 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->getWebDriverSession()->open($url);
-        } catch (Timeout $e) {
-            // The W3C compatible Selenium Server.
-            throw new DriverException('Page failed to load: ' . $e->getMessage(), 0, $e);
-        } catch (ScriptTimeout $e) {
-            // The Non-W3C compatible Selenium Server.
+        } catch (ScriptTimeout|Timeout $e) {
+            // ScriptTimeout (Selenium 2.x). Timeout (Selenium 3.x).
             throw new DriverException('Page failed to load: ' . $e->getMessage(), 0, $e);
         }
     }
