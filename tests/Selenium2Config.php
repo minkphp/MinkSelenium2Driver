@@ -62,6 +62,18 @@ class Selenium2Config extends AbstractConfig
             return 'Checking status code is not supported.';
         }
 
+        if (
+            'Behat\Mink\Tests\Driver\Js\JavascriptTest' === $testCase
+            && 'testDragDropOntoHiddenItself' === $test
+        ) {
+            $seleniumVersion = $_SERVER['SELENIUM_VERSION'] ?? null;
+            $browser = $_SERVER['WEB_FIXTURES_BROWSER'] ?? null;
+
+            if ($seleniumVersion && version_compare($seleniumVersion, '3.0.0', '<') && $browser === 'firefox') {
+                return 'The Firefox browser compatible with Selenium Server 2.x doesn\'t fully implement drag-n-drop support.';
+            }
+        }
+
         return parent::skipMessage($testCase, $test);
     }
 
