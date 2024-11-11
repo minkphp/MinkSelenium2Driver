@@ -3,10 +3,14 @@
 namespace Behat\Mink\Tests\Driver\Custom;
 
 use Behat\Mink\Driver\Selenium2Driver;
+use Behat\Mink\Exception\DriverException;
 use Behat\Mink\Tests\Driver\TestCase;
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 
 class TimeoutTest extends TestCase
 {
+    use ExpectDeprecationTrait;
+
     /**
      * @after
      */
@@ -36,7 +40,8 @@ class TimeoutTest extends TestCase
         $driver = $session->getDriver();
         \assert($driver instanceof Selenium2Driver);
 
-        $this->expectException('\Behat\Mink\Exception\DriverException');
+        $this->expectException(DriverException::class);
+        $this->expectExceptionMessage('Invalid timeout type: invalid');
         $driver->setTimeouts(array('invalid' => 0));
     }
 
@@ -69,5 +74,44 @@ class TimeoutTest extends TestCase
         $element = $session->getPage()->find('css', '#waitable > div');
 
         $this->assertNotNull($element);
+    }
+
+    public function testShortPageLoadTimeoutThrowsException()
+    {
+        $session = $this->getSession();
+        $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
+
+        $driver->setTimeouts(array('page' => 500));
+
+        $this->expectException(DriverException::class);
+        $this->expectExceptionMessage('Page failed to load: ');
+        $session->visit($this->pathTo('/page_load.php?sleep=2'));
+    }
+
+    /**
+     * @group legacy
+     * @dataProvider deprecatedPageLoadDataProvider
+     */
+    public function testDeprecatedShortPageLoadTimeoutThrowsException(string $type)
+    {
+        $session = $this->getSession();
+        $driver = $session->getDriver();
+        \assert($driver instanceof Selenium2Driver);
+
+        $this->expectDeprecation('Using "' . $type . '" timeout type is deprecated, please use "page" instead');
+        $driver->setTimeouts(array($type => 500));
+
+        $this->expectException(DriverException::class);
+        $this->expectExceptionMessage('Page failed to load: ');
+        $session->visit($this->pathTo('/page_load.php?sleep=2'));
+    }
+
+    public static function deprecatedPageLoadDataProvider(): array
+    {
+        return array(
+            'w3c style' => array('pageLoad'),
+            'non-w3c style' => array('page load'),
+        );
     }
 }

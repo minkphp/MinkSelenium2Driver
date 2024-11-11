@@ -16,7 +16,9 @@ use Behat\Mink\Selector\Xpath\Escaper;
 use WebDriver\Element;
 use WebDriver\Exception\InvalidArgument;
 use WebDriver\Exception\NoSuchElement;
+use WebDriver\Exception\ScriptTimeout;
 use WebDriver\Exception\StaleElementReference;
+use WebDriver\Exception\Timeout;
 use WebDriver\Exception\UnknownCommand;
 use WebDriver\Exception\UnknownError;
 use WebDriver\Key;
@@ -60,6 +62,11 @@ class Selenium2Driver extends CoreDriver
      * @var Session|null
      */
     private $wdSession;
+
+    /**
+     * @var bool
+     */
+    private $isW3C = false;
 
     /**
      * The timeout configuration
@@ -343,14 +350,17 @@ class Selenium2Driver extends CoreDriver
     {
         try {
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
+
+            $status = $this->webDriver->status();
+            $this->isW3C = version_compare($status['build']['version'], '3.0.0', '>=');
+
+            $this->applyTimeouts();
+            $this->initialWindowHandle = $this->getWebDriverSession()->window_handle();
         } catch (\Exception $e) {
             throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
         }
 
         $this->started = true;
-
-        $this->applyTimeouts();
-        $this->initialWindowHandle = $this->getWebDriverSession()->window_handle();
     }
 
     /**
@@ -376,15 +386,34 @@ class Selenium2Driver extends CoreDriver
      */
     private function applyTimeouts(): void
     {
+        $validTimeoutTypes = array('script', 'implicit', 'page', 'page load', 'pageLoad');
+
         try {
             foreach ($this->timeouts as $type => $param) {
-                $this->getWebDriverSession()->timeouts($type, $param);
+                if (!in_array($type, $validTimeoutTypes)) {
+                    throw new DriverException('Invalid timeout type: ' . $type);
+                }
+
+                if ($type === 'page load' || $type === 'pageLoad') {
+                    @trigger_error(
+                        'Using "' . $type . '" timeout type is deprecated, please use "page" instead',
+                        E_USER_DEPRECATED
+                    );
+                    $type = 'page';
+                }
+
+                if ($type === 'page') {
+                    $type = $this->isW3C ? 'pageLoad' : 'page load';
+                }
+
+                if ($this->isW3C) {
+                    $this->getWebDriverSession()->timeouts(array($type => $param));
+                } else {
+                    $this->getWebDriverSession()->timeouts($type, $param);
+                }
             }
-        } catch (UnknownError $e) {
-            // Selenium 2.x.
-            throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
-        } catch (InvalidArgument $e) {
-            // Selenium 3.x.
+        } catch (UnknownError|InvalidArgument $e) {
+            // UnknownError (Selenium 2.x). InvalidArgument (Selenium 3.x).
             throw new DriverException('Error setting timeout: ' . $e->getMessage(), 0, $e);
         }
     }
@@ -401,6 +430,7 @@ class Selenium2Driver extends CoreDriver
         }
 
         $this->started = false;
+        $this->isW3C = false;
         try {
             $this->wdSession->close();
         } catch (\Exception $e) {
@@ -428,7 +458,12 @@ class Selenium2Driver extends CoreDriver
 
     public function visit(string $url)
     {
-        $this->getWebDriverSession()->open($url);
+        try {
+            $this->getWebDriverSession()->open($url);
+        } catch (ScriptTimeout|Timeout $e) {
+            // ScriptTimeout (Selenium 2.x). Timeout (Selenium 3.x).
+            throw new DriverException('Page failed to load: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function getCurrentUrl()
