@@ -386,7 +386,7 @@ class Selenium2Driver extends CoreDriver
      */
     private function applyTimeouts(): void
     {
-        $validTimeoutTypes = array('script', 'implicit', 'page load', 'pageLoad');
+        $validTimeoutTypes = array('script', 'implicit', 'page', 'page load', 'pageLoad');
 
         try {
             foreach ($this->timeouts as $type => $param) {
@@ -394,10 +394,16 @@ class Selenium2Driver extends CoreDriver
                     throw new DriverException('Invalid timeout type: ' . $type);
                 }
 
-                if ($type === 'page load' && $this->isW3C) {
-                    $type = 'pageLoad';
-                } elseif ($type === 'pageLoad' && !$this->isW3C) {
-                    $type = 'page load';
+                if ($type === 'page load' || $type === 'pageLoad') {
+                    $type = 'page';
+                    @trigger_error(
+                        'Using "' . $type . '" timeout type is deprecated, please use "page" instead',
+                        E_USER_DEPRECATED
+                    );
+                }
+
+                if ($type === 'page') {
+                    $type = $this->isW3C ? 'pageLoad' : 'page load';
                 }
 
                 if ($this->isW3C) {
