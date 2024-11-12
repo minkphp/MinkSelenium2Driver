@@ -7,6 +7,7 @@ use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\Basic\BasicAuthTest;
 use Behat\Mink\Tests\Driver\Basic\HeaderTest;
 use Behat\Mink\Tests\Driver\Basic\StatusCodeTest;
+use Behat\Mink\Tests\Driver\Js\JavascriptTest;
 
 class Selenium2Config extends AbstractConfig
 {
@@ -60,6 +61,15 @@ class Selenium2Config extends AbstractConfig
 
         if (StatusCodeTest::class === $testCase) {
             return 'Checking status code is not supported.';
+        }
+
+        if (array(JavascriptTest::class, 'testDragDropOntoHiddenItself') === array($testCase, $test)) {
+            $seleniumVersion = $_SERVER['SELENIUM_VERSION'] ?? null;
+            $browser = $_SERVER['WEB_FIXTURES_BROWSER'] ?? null;
+
+            if ($seleniumVersion && version_compare($seleniumVersion, '3.0.0', '<') && $browser === 'firefox') {
+                return 'The Firefox browser compatible with Selenium Server 2.x doesn\'t fully implement drag-n-drop support.';
+            }
         }
 
         return parent::skipMessage($testCase, $test);
