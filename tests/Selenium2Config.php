@@ -7,6 +7,7 @@ use Behat\Mink\Driver\Selenium2Driver;
 use Behat\Mink\Tests\Driver\Basic\BasicAuthTest;
 use Behat\Mink\Tests\Driver\Basic\HeaderTest;
 use Behat\Mink\Tests\Driver\Basic\StatusCodeTest;
+use Behat\Mink\Tests\Driver\Js\JavascriptTest;
 
 class Selenium2Config extends AbstractConfig
 {
@@ -62,10 +63,7 @@ class Selenium2Config extends AbstractConfig
             return 'Checking status code is not supported.';
         }
 
-        if (
-            'Behat\Mink\Tests\Driver\Js\JavascriptTest' === $testCase
-            && 'testDragDropOntoHiddenItself' === $test
-        ) {
+        if (array(JavascriptTest::class, 'testDragDropOntoHiddenItself') === array($testCase, $test)) {
             $seleniumVersion = $_SERVER['SELENIUM_VERSION'] ?? null;
             $browser = $_SERVER['WEB_FIXTURES_BROWSER'] ?? null;
 
