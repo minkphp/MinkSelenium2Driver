@@ -46,7 +46,8 @@ jobs:
         php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
         with_coverage: [ false ]
         include:
-          - php: '8.3'
+          - selenium_version: '2.53.1'
+            php: '8.3'
             with_coverage: true
           - selenium_version: '3.141.59'
             php: '8.3'
