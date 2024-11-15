@@ -95,7 +95,7 @@ jobs:
           WEB_FIXTURES_BROWSER: firefox
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
-          vendor/bin/phpunit -v --coverage-clover=coverage.xml
+          vendor/bin/phpunit -v --coverage-clover=coverage.xml --log-junit junit.xml
 
       - name: Run tests without Coverage
         if: "${{ matrix.with_coverage == false }}"
@@ -107,12 +107,18 @@ jobs:
         run: |
           vendor/bin/phpunit -v
 
-      - name: Upload coverage
+      - name: Upload coverage to Codecov
         if: "${{ matrix.with_coverage == true }}"
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
+
+      - name: Upload test results to Codecov
+        if: ${{ matrix.with_coverage == true && !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Archive logs artifacts
         if: ${{ failure() }}
