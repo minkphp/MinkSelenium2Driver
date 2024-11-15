@@ -108,7 +108,7 @@ jobs:
           vendor/bin/phpunit -v
 
       - name: Upload coverage to Codecov
-        if: "${{ matrix.with_coverage == true }}"
+        if: ${{ matrix.with_coverage == true && !cancelled() }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
