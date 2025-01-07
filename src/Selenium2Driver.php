@@ -787,7 +787,11 @@ JS;
             }
 
             if ('checkbox' === $elementType) {
-                if ($element->selected() xor (bool) $value) {
+                if (!is_bool($value)) {
+                    throw new DriverException('Only boolean values can be used for a checkbox input.');
+                }
+
+                if ($element->selected() xor $value) {
                     $this->clickOnElement($element);
                 }
 
