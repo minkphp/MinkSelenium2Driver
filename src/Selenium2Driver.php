@@ -69,11 +69,6 @@ class Selenium2Driver extends CoreDriver
     private $isW3C = false;
 
     /**
-     * @var bool
-     */
-    private $isRightClickSupported = false;
-
-    /**
      * The timeout configuration
      * @var array{script?: int, implicit?: int, page?: int}
      */
@@ -354,12 +349,20 @@ class Selenium2Driver extends CoreDriver
     public function start()
     {
         try {
-            $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
-
             $status = $this->webDriver->status();
             $majorSeleniumServerVersion = (int)explode('.', $status['build']['version'])[0];
-            $this->isW3C = $majorSeleniumServerVersion >= 3;
-            $this->isRightClickSupported = $majorSeleniumServerVersion !== 3;
+
+            if ($majorSeleniumServerVersion > 3) {
+                throw new \Exception(<<<TEXT
+The Selenium Server {$status['build']['version']} is not supported.
+
+Please use the "mink/webdriver-classic-driver" Mink driver or switch to Selenium Server 2.x/3.x.
+TEXT
+                );
+            }
+
+            $this->isW3C = $majorSeleniumServerVersion === 3;
+            $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
 
             $this->applyTimeouts();
             $this->initialWindowHandle = $this->getWebDriverSession()->window_handle();
@@ -943,12 +946,12 @@ JS;
 
     public function rightClick(string $xpath)
     {
-        if (!$this->isRightClickSupported) {
+        if ($this->isW3C) {
             // See: https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264415c394905.
             throw new DriverException(<<<TEXT
-Right-clicking via JsonWireProtocol is not possible on Selenium Server 3.
+Right-clicking via JsonWireProtocol is not possible on Selenium Server 3.x.
 
-Please use the "mink/webdriver-classic-driver" Mink driver or switch to Selenium Server 2 or 4+.
+Please use the "mink/webdriver-classic-driver" Mink driver or switch to Selenium Server 2.x.
 TEXT
             );
         }

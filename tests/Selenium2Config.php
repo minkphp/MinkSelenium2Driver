@@ -80,7 +80,11 @@ class Selenium2Config extends AbstractConfig
             $majorSeleniumServerVersion = (int)explode('.', $_SERVER['SELENIUM_VERSION'] ?? '0.0.0')[0];
 
             if ($majorSeleniumServerVersion === 3) {
-                return 'The Selenium Server 3.x doesn\'t support right-clicking via JsonWireProtocol. See https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264415c394905.';
+                return <<<TEXT
+The Selenium Server 3.x doesn't support right-clicking via JsonWireProtocol.
+
+See https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264415c394905.
+TEXT;
             }
         }
 
