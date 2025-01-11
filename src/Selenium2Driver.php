@@ -1008,33 +1008,31 @@ JS;
         ));
 
         $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
+(function (sourceElement) {
+    window['__minkDragAndDropSourceElement'] = sourceElement;
 
-    event.initEvent("dragstart", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
+    sourceElement.dispatchEvent(new DragEvent('dragstart', {bubbles: true, cancelable: true}));
 }({{ELEMENT}}));
 JS;
         $this->executeJsOnElement($source, $script);
 
-        $this->getWebDriverSession()->buttondown();
-        if ($destination->getID() !== $source->getID()) {
+        if ($destination->getID() === $source->getID()) {
+            $this->getWebDriverSession()->click(0);
+        } else {
+            $this->getWebDriverSession()->buttondown();
             $this->getWebDriverSession()->moveto(array(
                 'element' => $destination->getID()
             ));
+            $this->getWebDriverSession()->buttonup();
         }
-        $this->getWebDriverSession()->buttonup();
 
         $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
+(function (targetElement) {
+    targetElement.dispatchEvent(new DragEvent('dragover', {bubbles: true, cancelable: true}));
 
-    event.initEvent("drop", true, true);
-    event.dataTransfer = {};
+    targetElement.dispatchEvent(new DragEvent('drop', {bubbles: true, cancelable: true}));
 
-    element.dispatchEvent(event);
+    window['__minkDragAndDropSourceElement'].dispatchEvent(new DragEvent('dragend', {bubbles: true, cancelable: true}));
 }({{ELEMENT}}));
 JS;
         $this->executeJsOnElement($destination, $script);
