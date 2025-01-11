@@ -39,7 +39,7 @@ jobs:
 
   tests:
     name: "Tests (PHP ${{ matrix.php }}, Selenium ${{ matrix.selenium_version }})${{ matrix.with_coverage == true && ' with coverage' || ''}}"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         selenium_version: [ '2.53.1' ]
@@ -74,24 +74,27 @@ jobs:
           composer update --no-interaction --prefer-dist
 
       - name: Setup Mink test server
+        env:
+          MINK_HOST: 0.0.0.0:8002
         run: |
           mkdir ./logs
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
       - name: Start Selenium
         run: |
-          docker run --net host --name selenium --volume /dev/shm:/dev/shm --volume ./vendor/mink/driver-testsuite/web-fixtures:/fixtures --shm-size 2g selenium/standalone-firefox:${{ matrix.selenium_version }} &> ./logs/selenium.log &
+          SELENIUM_IMAGE=selenium/standalone-firefox:${{ matrix.selenium_version }} docker compose up --wait
 
       - name: Wait for browser & PHP to start
         run: |
-          while ! nc -z localhost 4444 </dev/null; do echo Waiting for remote driver to start...; sleep 1; done
-          while ! nc -z localhost 8002 </dev/null; do echo Waiting for PHP server to start...; sleep 1; done
+          curl --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 --head -X GET http://localhost:4444/wd/hub/status
+          curl --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 --head -X GET http://localhost:8002/index.html
 
       - name: Run tests with Coverage
         if: "${{ matrix.with_coverage == true }}"
         env:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
+          WEB_FIXTURES_HOST: http://host.docker.internal:8002
           WEB_FIXTURES_BROWSER: firefox
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
@@ -102,6 +105,7 @@ jobs:
         env:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
+          WEB_FIXTURES_HOST: http://host.docker.internal:8002
           WEB_FIXTURES_BROWSER: firefox
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
@@ -119,6 +123,11 @@ jobs:
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Extract docker logs
+        if: ${{ failure() }}
+        run: |
+          docker compose logs --no-color &> ./logs/selenium.log
 
       - name: Archive logs artifacts
         if: ${{ failure() }}
