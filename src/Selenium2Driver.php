@@ -69,6 +69,11 @@ class Selenium2Driver extends CoreDriver
     private $isW3C = false;
 
     /**
+     * @var bool
+     */
+    private $isRightClickSupported = false;
+
+    /**
      * The timeout configuration
      * @var array{script?: int, implicit?: int, page?: int}
      */
@@ -352,7 +357,11 @@ class Selenium2Driver extends CoreDriver
             $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
 
             $status = $this->webDriver->status();
-            $this->isW3C = version_compare($status['build']['version'], '3.0.0', '>=');
+            list($majorSeleniumServerVersion) = explode('.', $status['build']['version']);
+            $this->isW3C = (int)$majorSeleniumServerVersion >= 3;
+
+            // See: https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264415c394905.
+            $this->isRightClickSupported = (int)$majorSeleniumServerVersion !== 3;
 
             $this->applyTimeouts();
             $this->initialWindowHandle = $this->getWebDriverSession()->window_handle();
@@ -936,6 +945,15 @@ JS;
 
     public function rightClick(string $xpath)
     {
+        if (!$this->isRightClickSupported) {
+            throw new DriverException(<<<TEXT
+The right-clicking functionality, via JsonWireProtocol, is not available on the Selenium Server 3.x.
+
+Please use "mink/webdriver-classic-driver" Mink driver or downgrade to Selenium Server 2.x.
+TEXT
+            );
+        }
+
         $this->mouseOver($xpath);
         $this->getWebDriverSession()->click(array('button' => 2));
     }
