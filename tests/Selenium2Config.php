@@ -77,9 +77,9 @@ class Selenium2Config extends AbstractConfig
         if (array(HoverTest::class, 'testRightClickHover') === array($testCase, $test)
             || array(EventsTest::class, 'testRightClick') === array($testCase, $test)
         ) {
-            list($majorSeleniumServerVersion) = explode('.', $_SERVER['SELENIUM_VERSION'] ?? '0.0.0');
+            $majorSeleniumServerVersion = (int)explode('.', $_SERVER['SELENIUM_VERSION'] ?? '0.0.0')[0];
 
-            if ((int)$majorSeleniumServerVersion === 3) {
+            if ($majorSeleniumServerVersion === 3) {
                 return 'The Selenium Server 3.x doesn\'t support right-clicking via JsonWireProtocol. See https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264415c394905.';
             }
         }
