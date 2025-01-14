@@ -88,8 +88,9 @@ TEXT;
             }
         }
 
+        // Skip right-clicking tests, when an unsupported Selenium version detected.
         if (([HoverTest::class, 'testRightClickHover'] === $testCallback || [EventsTest::class, 'testRightClick'] === $testCallback)
-            && $this->isRightClickingInSeleniumSupported()
+            && !$this->isRightClickingInSeleniumSupported()
         ) {
             return <<<TEXT
 Selenium 3.x does not support right-clicking via JsonWireProtocol.
