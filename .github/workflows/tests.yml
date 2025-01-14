@@ -52,6 +52,9 @@ jobs:
           - selenium_version: '3.141.59'
             php: '8.3'
             with_coverage: true
+          - selenium_version: '4'
+            php: '8.3'
+            with_coverage: true
       fail-fast: false
 
     steps:

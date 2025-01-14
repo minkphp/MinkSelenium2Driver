@@ -8,11 +8,23 @@ use Behat\Mink\Tests\Driver\Basic\BasicAuthTest;
 use Behat\Mink\Tests\Driver\Basic\HeaderTest;
 use Behat\Mink\Tests\Driver\Basic\StatusCodeTest;
 use Behat\Mink\Tests\Driver\Css\HoverTest;
+use Behat\Mink\Tests\Driver\Custom\SeleniumSupportTest;
 use Behat\Mink\Tests\Driver\Js\EventsTest;
 use Behat\Mink\Tests\Driver\Js\JavascriptTest;
 
 class Selenium2Config extends AbstractConfig
 {
+
+    /**
+     * @var integer
+     */
+    protected $seleniumMajorVersion;
+
+    public function __construct()
+    {
+        $this->seleniumMajorVersion = (int) explode('.', $_SERVER['SELENIUM_VERSION'] ?? '')[0];
+    }
+
     public static function getInstance(): self
     {
         return new self();
@@ -38,6 +50,8 @@ class Selenium2Config extends AbstractConfig
 
     public function skipMessage($testCase, $test): ?string
     {
+        $testCallback = [$testCase, $test];
+
         if (
             'Behat\Mink\Tests\Driver\Form\Html5Test' === $testCase
             && 'testHtml5Types' === $test
@@ -88,11 +102,28 @@ TEXT;
             }
         }
 
+        // Skips all tests, exception mentioned below for an unsupported Selenium version.
+        if ([SeleniumSupportTest::class, 'testDriverCannotBeUsedInUnsupportedSelenium'] !== $testCallback
+            && !$this->isSeleniumVersionSupported()
+        ) {
+            return 'Does not apply to unsupported Selenium versions.';
+        }
+
         return parent::skipMessage($testCase, $test);
     }
 
     protected function supportsCss(): bool
     {
         return true;
+    }
+
+    public function isSeleniumVersionSupported(): bool
+    {
+        return $this->getSeleniumMajorVersion() < 4;
+    }
+
+    protected function getSeleniumMajorVersion(): int
+    {
+        return $this->seleniumMajorVersion;
     }
 }
