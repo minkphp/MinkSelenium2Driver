@@ -27,8 +27,15 @@ final class SeleniumSupportTest extends TestCase
         }
 
         $this->expectException(DriverException::class);
-        $this->expectExceptionMessage('This driver requires Selenium version 3 or lower');
+        $this->expectExceptionMessage(<<<TEXT
+Right-clicking via JsonWireProtocol is not possible on Selenium Server 3.x.
 
-        $this->createDriver()->rightClick('//');
+Please use the "mink/webdriver-classic-driver" Mink driver or switch to Selenium Server 2.x.
+TEXT
+        );
+
+        $driver = $this->createDriver();
+        $driver->start();
+        $driver->rightClick('//');
     }
 }
