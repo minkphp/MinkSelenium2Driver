@@ -99,7 +99,7 @@ See https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264
 TEXT;
         }
 
-        // Skips all tests, exception mentioned below for an unsupported Selenium version.
+        // Skips all tests, except mentioned below, for an unsupported Selenium version.
         if ([SeleniumSupportTest::class, 'testDriverCannotBeUsedInUnsupportedSelenium'] !== $testCallback
             && !$this->isSeleniumVersionSupported()
         ) {
