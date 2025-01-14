@@ -19,4 +19,16 @@ final class SeleniumSupportTest extends TestCase
 
         $this->createDriver()->start();
     }
+
+    public function testThatRightClickingCannotBeUsedInUnsupportedSelenium(): void
+    {
+        if (Selenium2Config::getInstance()->isRightClickingInSeleniumSupported()) {
+            $this->markTestSkipped('This test applies to Selenium 3 only.');
+        }
+
+        $this->expectException(DriverException::class);
+        $this->expectExceptionMessage('This driver requires Selenium version 3 or lower');
+
+        $this->createDriver()->rightClick('//');
+    }
 }
