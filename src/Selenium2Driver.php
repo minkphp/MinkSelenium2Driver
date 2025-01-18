@@ -349,15 +349,30 @@ class Selenium2Driver extends CoreDriver
     public function start()
     {
         try {
-            $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
-
             $status = $this->webDriver->status();
-            $this->isW3C = version_compare($status['build']['version'], '3.0.0', '>=');
+            $seleniumVersion = $status['build']['version'] ?? $status['nodes'][0]['version'] ?? 'unknown';
+            $seleniumMajorVersion = (int) explode('.', $seleniumVersion)[0];
+        } catch (\Throwable $ex) {
+            throw new DriverException("Selenium Server version could not be detected: {$ex->getMessage()}", 0, $ex);
+        }
+
+        if ($seleniumMajorVersion > 3) {
+            throw new DriverException(<<<TEXT
+This driver requires Selenium version 3 or lower, but version {$seleniumVersion} was found.
+
+Please use the "mink/webdriver-classic-driver" Mink driver or switch to Selenium Server 2.x/3.x.
+TEXT
+            );
+        }
+
+        try {
+            $this->isW3C = $seleniumMajorVersion === 3;
+            $this->wdSession = $this->webDriver->session($this->browserName, $this->desiredCapabilities);
 
             $this->applyTimeouts();
             $this->initialWindowHandle = $this->getWebDriverSession()->window_handle();
         } catch (\Exception $e) {
-            throw new DriverException('Could not open connection: '.$e->getMessage(), 0, $e);
+            throw new DriverException('Could not open connection: ' . $e->getMessage(), 0, $e);
         }
 
         $this->started = true;
@@ -936,6 +951,16 @@ JS;
 
     public function rightClick(string $xpath)
     {
+        if ($this->isW3C) {
+            // See: https://github.com/SeleniumHQ/selenium/commit/085ceed1f55fbaaa1d419b19c73264415c394905.
+            throw new DriverException(<<<TEXT
+Right-clicking via JsonWireProtocol is not possible on Selenium Server 3.x.
+
+Please use the "mink/webdriver-classic-driver" Mink driver or switch to Selenium Server 2.x.
+TEXT
+            );
+        }
+
         $this->mouseOver($xpath);
         $this->getWebDriverSession()->click(array('button' => 2));
     }
