@@ -1,0 +1,20 @@
+services:
+    selenium:
+        image: ${SELENIUM_IMAGE:-selenium/standalone-chrome:4}
+        hostname: selenium
+        shm_size: 2g
+        environment:
+            VNC_NO_PASSWORD: 1
+            SCREEN_WIDTH: 1024
+            SCREEN_HEIGHT: 768
+        volumes:
+            - /dev/shm:/dev/shm
+            - ./vendor/mink/driver-testsuite/web-fixtures:/fixtures
+        ports:
+            - "4444:4444"
+            # VNC Web Viewer port (new images)
+            - "7900:7900"
+            # VNC Server port (old "-debug" images)
+            - "5900:5900"
+        extra_hosts:
+            - host.docker.internal:host-gateway
