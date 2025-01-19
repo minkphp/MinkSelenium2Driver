@@ -1028,7 +1028,7 @@ TEXT
         $source = $this->findElement($sourceXpath);
         $target = $this->findElement($destinationXpath);
 
-        $this->getWebDriverSession()->moveto(['element' => $source->getID()]);
+        $this->getWebDriverSession()->moveto(array('element' => $source->getID()));
         $this->getWebDriverSession()->buttondown();
 
         $this->executeJsOnElement($source, <<<'JS'
@@ -1040,7 +1040,7 @@ TEXT
 JS
         );
 
-        $this->getWebDriverSession()->moveto(['element' => $target->getID()]);
+        $this->getWebDriverSession()->moveto(array('element' => $target->getID()));
         $this->getWebDriverSession()->buttonup();
 
         $this->executeJsOnElement($target, <<<'JS'
