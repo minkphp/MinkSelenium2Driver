@@ -1,6 +1,6 @@
 services:
     selenium:
-        image: ${SELENIUM_IMAGE:-selenium/standalone-chrome:4}
+        image: ${SELENIUM_IMAGE:-selenium/standalone-chrome:2}
         hostname: selenium
         shm_size: 2g
         environment:
