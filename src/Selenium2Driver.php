@@ -1029,40 +1029,24 @@ TEXT
         $target = $this->findElement($destinationXpath);
 
         $this->getWebDriverSession()->moveto(['element' => $source->getID()]);
+        $this->getWebDriverSession()->buttondown();
 
         $this->executeJsOnElement($source, <<<'JS'
             (function (sourceElement) {
-                var withPointerEvents = 'PointerEvent' in window;
                 window['__minkDragAndDropSourceElement'] = sourceElement;
 
-                withPointerEvents && sourceElement.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true, cancelable: true}));
-                sourceElement.dispatchEvent(new MouseEvent('mousedown', {bubbles: true, cancelable: true}));
                 sourceElement.dispatchEvent(new DragEvent('dragstart', {bubbles: true, cancelable: true}));
-                withPointerEvents && sourceElement.dispatchEvent(new PointerEvent('pointercancel', {bubbles: true, cancelable: true}));
-                withPointerEvents && sourceElement.dispatchEvent(new PointerEvent('pointerout', {bubbles: true, cancelable: true}));
-                withPointerEvents && sourceElement.dispatchEvent(new PointerEvent('pointerleave', {bubbles: true, cancelable: true}));
             }({{ELEMENT}}));
 JS
         );
 
         $this->getWebDriverSession()->moveto(['element' => $target->getID()]);
+        $this->getWebDriverSession()->buttonup();
 
         $this->executeJsOnElement($target, <<<'JS'
             (function (targetElement) {
-                var withPointerEvents = 'PointerEvent' in window;
                 var sourceElement = window['__minkDragAndDropSourceElement'];
 
-                withPointerEvents && targetElement.dispatchEvent(new PointerEvent('pointerover', {bubbles: true, cancelable: true}));
-                withPointerEvents && targetElement.dispatchEvent(new PointerEvent('pointerenter', {bubbles: true, cancelable: true}));
-                sourceElement.dispatchEvent(new MouseEvent('mouseout', {bubbles: true, cancelable: true}));
-                sourceElement.dispatchEvent(new MouseEvent('mouseleave', {bubbles: true, cancelable: true}));
-                targetElement.dispatchEvent(new MouseEvent('mouseover', {bubbles: true, cancelable: true}));
-                targetElement.dispatchEvent(new MouseEvent('mouseenter', {bubbles: true, cancelable: true}));
-                targetElement.dispatchEvent(new MouseEvent('mousemove', {bubbles: true, cancelable: true}));
-                withPointerEvents && targetElement.dispatchEvent(new PointerEvent('pointerout', {bubbles: true, cancelable: true}));
-                withPointerEvents && targetElement.dispatchEvent(new PointerEvent('pointerleave', {bubbles: true, cancelable: true}));
-                targetElement.dispatchEvent(new MouseEvent('mouseout', {bubbles: true, cancelable: true}));
-                targetElement.dispatchEvent(new MouseEvent('mouseleave', {bubbles: true, cancelable: true}));
                 sourceElement.dispatchEvent(new DragEvent('drag', {bubbles: true, cancelable: true}));
                 targetElement.dispatchEvent(new DragEvent('dragover', {bubbles: true, cancelable: true}));
                 targetElement.dispatchEvent(new DragEvent('drop', {bubbles: true, cancelable: true}));
