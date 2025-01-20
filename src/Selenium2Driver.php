@@ -1025,44 +1025,35 @@ TEXT
 
     public function dragTo(string $sourceXpath, string $destinationXpath)
     {
-        $source      = $this->findElement($sourceXpath);
-        $destination = $this->findElement($destinationXpath);
+        $source = $this->findElement($sourceXpath);
+        $target = $this->findElement($destinationXpath);
 
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $source->getID()
-        ));
-
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
-
-    event.initEvent("dragstart", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
-        $this->executeJsOnElement($source, $script);
-
+        $this->getWebDriverSession()->moveto(array('element' => $source->getID()));
         $this->getWebDriverSession()->buttondown();
-        if ($destination->getID() !== $source->getID()) {
-            $this->getWebDriverSession()->moveto(array(
-                'element' => $destination->getID()
-            ));
-        }
+
+        $this->executeJsOnElement($source, <<<'JS'
+            (function (sourceElement) {
+                window['__minkDragAndDropSourceElement'] = sourceElement;
+
+                sourceElement.dispatchEvent(new DragEvent('dragstart', {bubbles: true, cancelable: true}));
+            }({{ELEMENT}}));
+JS
+        );
+
+        $this->getWebDriverSession()->moveto(array('element' => $target->getID()));
         $this->getWebDriverSession()->buttonup();
 
-        $script = <<<JS
-(function (element) {
-    var event = document.createEvent("HTMLEvents");
+        $this->executeJsOnElement($target, <<<'JS'
+            (function (targetElement) {
+                var sourceElement = window['__minkDragAndDropSourceElement'];
 
-    event.initEvent("drop", true, true);
-    event.dataTransfer = {};
-
-    element.dispatchEvent(event);
-}({{ELEMENT}}));
-JS;
-        $this->executeJsOnElement($destination, $script);
+                sourceElement.dispatchEvent(new DragEvent('drag', {bubbles: true, cancelable: true}));
+                targetElement.dispatchEvent(new DragEvent('dragover', {bubbles: true, cancelable: true}));
+                targetElement.dispatchEvent(new DragEvent('drop', {bubbles: true, cancelable: true}));
+                sourceElement.dispatchEvent(new DragEvent('dragend', {bubbles: true, cancelable: true}));
+            }({{ELEMENT}}));
+JS
+        );
     }
 
     public function executeScript(string $script)
