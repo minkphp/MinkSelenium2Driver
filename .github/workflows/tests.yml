@@ -38,18 +38,29 @@ jobs:
       - run: vendor/bin/phpstan analyze
 
   tests:
-    name: "Tests (PHP ${{ matrix.php }}, Selenium ${{ matrix.selenium_version }})${{ matrix.with_coverage == true && ' with coverage' || ''}}"
+    name: "Tests (PHP ${{ matrix.php }}, Sel. ${{ matrix.selenium_version }}), ${{ matrix.browser }}${{ matrix.with_coverage == true && ' with coverage' || ''}}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         selenium_version: [ '2.53.1' ]
+        browser: [ 'firefox' ]
         php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2' ]
         with_coverage: [ false ]
         include:
           - selenium_version: '2.53.1'
+            browser: 'firefox'
             php: '8.3'
             with_coverage: true
           - selenium_version: '3.141.59'
+            browser: 'firefox'
+            php: '8.3'
+            with_coverage: true
+          - selenium_version: '2.53.1'
+            browser: 'chrome'
+            php: '8.3'
+            with_coverage: true
+          - selenium_version: '3.141.59'
+            browser: 'chrome'
             php: '8.3'
             with_coverage: true
           - selenium_version: '4'
@@ -85,7 +96,7 @@ jobs:
 
       - name: Start Selenium
         run: |
-          SELENIUM_IMAGE=selenium/standalone-firefox:${{ matrix.selenium_version }} docker compose up --wait
+          SELENIUM_IMAGE=selenium/standalone-${{ matrix.browser }}:${{ matrix.selenium_version }} docker compose up --wait
 
       - name: Wait for browser & PHP to start
         run: |
@@ -98,7 +109,7 @@ jobs:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
           WEB_FIXTURES_HOST: http://host.docker.internal:8002
-          WEB_FIXTURES_BROWSER: firefox
+          WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
           vendor/bin/phpunit -v --coverage-clover=coverage.xml --log-junit junit.xml
@@ -109,7 +120,7 @@ jobs:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
           WEB_FIXTURES_HOST: http://host.docker.internal:8002
-          WEB_FIXTURES_BROWSER: firefox
+          WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
           vendor/bin/phpunit -v
@@ -136,6 +147,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: logs_php-${{ matrix.php }}_selenium-${{ matrix.selenium_version }}_firefox
+          name: logs_php-${{ matrix.php }}_selenium-${{ matrix.selenium_version }}_${{ matrix.browser }}
           path: |
             logs
