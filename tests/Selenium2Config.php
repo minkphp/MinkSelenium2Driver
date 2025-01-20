@@ -51,9 +51,9 @@ class Selenium2Config extends AbstractConfig
 
     public function skipMessage($testCase, $test): ?string
     {
-        $testCallback = [$testCase, $test];
+        $testCallback = array($testCase, $test);
 
-        if ([Html5Test::class, 'testHtml5Types'] === $testCallback) {
+        if (array(Html5Test::class, 'testHtml5Types') === $testCallback) {
             return <<<TEXT
 WebDriver does not support setting value in color inputs.
 
@@ -80,7 +80,7 @@ TEXT;
             return 'Checking status code is not supported.';
         }
 
-        if ([JavascriptTest::class, 'testDragDropOntoHiddenItself'] === $testCallback) {
+        if (array(JavascriptTest::class, 'testDragDropOntoHiddenItself') === $testCallback) {
             $browser = $_SERVER['WEB_FIXTURES_BROWSER'] ?? null;
 
             if ($browser === 'firefox' && $this->getSeleniumMajorVersion() === 2) {
@@ -89,7 +89,7 @@ TEXT;
         }
 
         // Skip right-clicking tests, when an unsupported Selenium version detected.
-        if (([HoverTest::class, 'testRightClickHover'] === $testCallback || [EventsTest::class, 'testRightClick'] === $testCallback)
+        if ((array(HoverTest::class, 'testRightClickHover') === $testCallback || array(EventsTest::class, 'testRightClick') === $testCallback)
             && !$this->isRightClickingInSeleniumSupported()
         ) {
             return <<<TEXT
@@ -100,7 +100,7 @@ TEXT;
         }
 
         // Skips all tests, except mentioned below, for an unsupported Selenium version.
-        if ([SeleniumSupportTest::class, 'testDriverCannotBeUsedInUnsupportedSelenium'] !== $testCallback
+        if (array(SeleniumSupportTest::class, 'testDriverCannotBeUsedInUnsupportedSelenium') !== $testCallback
             && !$this->isSeleniumVersionSupported()
         ) {
             return 'Does not apply to unsupported Selenium versions.';
