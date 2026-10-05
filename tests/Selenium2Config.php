@@ -33,10 +33,15 @@ class Selenium2Config extends AbstractConfig
 
     public function createDriver(): DriverInterface
     {
-        $browser = getenv('WEB_FIXTURES_BROWSER') ?: 'firefox';
+        $browser = $this->getBrowserName();
         $seleniumHost = $_SERVER['DRIVER_URL'];
 
         return new Selenium2Driver($browser, null, $seleniumHost);
+    }
+
+    public function getBrowserName(): string
+    {
+        return $_SERVER['WEB_FIXTURES_BROWSER'] ?? 'firefox';
     }
 
     public function mapRemoteFilePath($file): string
@@ -81,7 +86,7 @@ TEXT;
         }
 
         if (array(JavascriptTest::class, 'testDragDropOntoHiddenItself') === $testCallback) {
-            $browser = $_SERVER['WEB_FIXTURES_BROWSER'] ?? null;
+            $browser = $this->getBrowserName();
 
             if ($browser === 'firefox' && $this->getSeleniumMajorVersion() === 2) {
                 return 'The Firefox browser compatible with Selenium 2.x does not fully implement drag-n-drop support.';
