@@ -21,7 +21,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
-          php-version: '8.4'
+          php-version: '8.5'
       - run: composer validate --strict --no-check-lock
 
   static_analysis:
@@ -32,7 +32,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
-          php-version: '8.4'
+          php-version: '8.5'
       - name: Install dependencies
         run: composer update --ansi --no-progress --prefer-dist --no-interaction
       - run: vendor/bin/phpstan analyze
@@ -44,7 +44,7 @@ jobs:
       matrix:
         browser: [ 'firefox' ]
         selenium_version: [ '2.53.1' ]
-        php: [ '7.2', '7.4', '8.0', '8.1', '8.2', '8.3']
+        php: [ '7.2', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
         with_coverage: [ false ]
         include:
           # Cover code paths for PHP < 7.4
@@ -55,24 +55,24 @@ jobs:
           # Check each browser on each supported Selenium version
           - browser: 'firefox'
             selenium_version: '2.53.1'
-            php: '8.4'
+            php: '8.5'
             with_coverage: true
           - browser: 'firefox'
             selenium_version: '3'
-            php: '8.4'
+            php: '8.5'
             with_coverage: true
           - browser: 'chrome'
             selenium_version: '2.53.1'
-            php: '8.4'
+            php: '8.5'
             with_coverage: true
           - browser: 'chrome'
             selenium_version: '3'
-            php: '8.4'
+            php: '8.5'
             with_coverage: true
           # Check that unsupported Selenium version is rejected
           - browser: 'firefox'
             selenium_version: '4'
-            php: '8.4'
+            php: '8.5'
             with_coverage: true
       fail-fast: false
 
