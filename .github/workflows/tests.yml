@@ -64,11 +64,11 @@ jobs:
           - browser: 'chrome'
             selenium_version: '2.53.1'
             php: '8.5'
-            with_coverage: true
+            with_coverage: false
           - browser: 'chrome'
             selenium_version: '3'
             php: '8.5'
-            with_coverage: true
+            with_coverage: false
           # Check that unsupported Selenium version is rejected
           - browser: 'firefox'
             selenium_version: '4'
