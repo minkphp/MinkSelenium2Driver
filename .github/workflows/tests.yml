@@ -112,6 +112,10 @@ jobs:
           curl --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 --head -X GET http://localhost:4444/wd/hub/status
           curl --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 --head -X GET http://localhost:8002/index.html
 
+      - name: Show browser version
+        run: |
+          docker compose exec selenium sh -c 'google-chrome --version || chromium --version || microsoft-edge --version || firefox --version' 2>/dev/null
+
       - name: Run tests with Coverage
         if: "${{ matrix.with_coverage == true }}"
         env:
