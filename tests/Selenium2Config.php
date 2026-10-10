@@ -88,6 +88,14 @@ TEXT;
             }
         }
 
+        if (array(EventsTest::class, 'testKeyboardEvents') === $testCallback) {
+            $browser = $_SERVER['WEB_FIXTURES_BROWSER'] ?? null;
+
+            if ($browser === 'chrome' && $this->getSeleniumMajorVersion() === 2) {
+                return 'The Chrome browser compatible with Selenium 2.x ignores key codes in synthetic keyboard events.';
+            }
+        }
+
         // Skip right-clicking tests, when an unsupported Selenium version detected.
         if ((array(HoverTest::class, 'testRightClickHover') === $testCallback || array(EventsTest::class, 'testRightClick') === $testCallback)
             && !$this->isRightClickingInSeleniumSupported()
