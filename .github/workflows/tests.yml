@@ -136,7 +136,7 @@ jobs:
           WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
-          vendor/bin/phpunit -v
+          vendor/bin/phpunit -v --log-junit junit.xml
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.with_coverage == true && !cancelled() }}
@@ -146,7 +146,7 @@ jobs:
           files: coverage.xml
 
       - name: Upload test results to Codecov
-        if: ${{ matrix.with_coverage == true && !cancelled() }}
+        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
