@@ -113,6 +113,12 @@ jobs:
         with:
           install-chromedriver: true
 
+      # Chrome sandbox needs user namespaces, which AppArmor restricts on Ubuntu 24.04
+      # (see https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md)
+      - name: Allow Chrome sandbox
+        if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'chrome' }}
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Setup Firefox
         id: setup-firefox
         if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'firefox' }}
