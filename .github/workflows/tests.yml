@@ -41,7 +41,7 @@ jobs:
     name: "Tests (PHP ${{ matrix.php }}, ${{ matrix.browser }}, Selenium ${{ matrix.selenium_version }})${{ matrix.with_coverage == true && ' with coverage' || ''}}"
     runs-on: ubuntu-latest
     env:
-      # Selenium 3 runs on the runner with latest browser versions, other versions use Docker images with bundled browsers
+      # Selenium 3 runs on the runner with its preinstalled browsers, other versions use Docker images with bundled browsers
       SELENIUM_IN_DOCKER: ${{ matrix.selenium_version != '3' }}
     strategy:
       matrix:
@@ -106,24 +106,6 @@ jobs:
           mkdir ./logs
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
-      - name: Setup Chrome
-        id: setup-chrome
-        if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'chrome' }}
-        uses: browser-actions/setup-chrome@v2
-        with:
-          install-chromedriver: true
-
-      # Chrome sandbox needs user namespaces, which AppArmor restricts on Ubuntu 24.04
-      # (see https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md)
-      - name: Allow Chrome sandbox
-        if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'chrome' }}
-        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-
-      - name: Setup Firefox
-        id: setup-firefox
-        if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'firefox' }}
-        uses: browser-actions/setup-firefox@v1
-
       - name: Start Selenium in Docker
         if: ${{ env.SELENIUM_IN_DOCKER == 'true' }}
         run: |
@@ -133,14 +115,10 @@ jobs:
 
       - name: Start Selenium on runner
         if: ${{ env.SELENIUM_IN_DOCKER == 'false' }}
-        env:
-          BROWSER_BINARY: ${{ steps.setup-chrome.outputs.chrome-path || steps.setup-firefox.outputs.firefox-path }}
-          CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
         run: |
           curl -sSLO https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-server-standalone-3.141.59.jar
-          xvfb-run -a java -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -Dwebdriver.gecko.driver="$GECKOWEBDRIVER/geckodriver" -jar selenium-server-standalone-3.141.59.jar &> ./logs/selenium.log &
+          xvfb-run -a java -Dwebdriver.chrome.driver="$CHROMEWEBDRIVER/chromedriver" -Dwebdriver.gecko.driver="$GECKOWEBDRIVER/geckodriver" -jar selenium-server-standalone-3.141.59.jar &> ./logs/selenium.log &
           echo "WEB_FIXTURES_HOST=http://localhost:8002" >> "$GITHUB_ENV"
-          echo "BROWSER_BINARY=$BROWSER_BINARY" >> "$GITHUB_ENV"
 
       - name: Wait for browser & PHP to start
         run: |
@@ -152,7 +130,7 @@ jobs:
           if [ "$SELENIUM_IN_DOCKER" = true ]; then
             docker compose exec selenium sh -c 'google-chrome --version || chromium --version || microsoft-edge --version || firefox --version' 2>/dev/null
           else
-            "$BROWSER_BINARY" --version
+            ${{ matrix.browser == 'chrome' && 'google-chrome' || 'firefox' }} --version
           fi
 
       - name: Run tests with Coverage
