@@ -11,10 +11,14 @@
     <php>
         <var name="driver_config_factory" value="Behat\Mink\Tests\Driver\Selenium2Config::getInstance" />
 
+        <!-- keep commented-out, so CI env vars can set it -->
+        <!--<server name="SELENIUM_VERSION" value="3"/>-->
+
         <!--server name="WEB_FIXTURES_HOST" value="http://test.mink.dev" /-->
         <!-- MacOS -->
         <!--<server name="WEB_FIXTURES_HOST" value="http://docker.for.mac.localhost:8002"/>-->
 
+        <!-- keep commented-out, so CI env vars can set it -->
         <!--<server name="WEB_FIXTURES_BROWSER" value="firefox"/>-->
 
         <!-- where driver will connect to -->
