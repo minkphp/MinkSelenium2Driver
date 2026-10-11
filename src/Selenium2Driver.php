@@ -931,12 +931,9 @@ JS;
 
     private function clickOnElement(Element $element): void
     {
-        // Change the viewport, because Firefox can't move the mouse outside the viewport.
-        $this->scrollIntoView($element);
-
         try {
             // Move the mouse to the element as Selenium does not allow clicking on an element which is outside the viewport
-            $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
+            $this->moveMouseToElement($element);
         } catch (UnknownCommand $e) {
             // If the Webdriver implementation does not support moveto (which is not part of the W3C WebDriver spec), proceed to the click
         } catch (UnknownError $e) {
@@ -946,12 +943,16 @@ JS;
         $element->click();
     }
 
-    private function scrollIntoView(Element $element): void
+    private function moveMouseToElement(Element $element): void
     {
+        // Scroll the same way as php-webdriver does, because Firefox can't move the mouse outside the viewport:
+        // https://github.com/php-webdriver/php-webdriver/blob/1.16.0/lib/Remote/RemoteWebElement.php#L249
         $this->executeJsOnElement(
             $element,
             "arguments[0].scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' });"
         );
+
+        $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
     }
 
     public function doubleClick(string $xpath)
@@ -1001,14 +1002,7 @@ TEXT
 
     public function mouseOver(string $xpath)
     {
-        $element = $this->findElement($xpath);
-
-        // Change the viewport, because Firefox can't move the mouse outside the viewport.
-        $this->scrollIntoView($element);
-
-        $this->getWebDriverSession()->moveto(array(
-            'element' => $element->getID()
-        ));
+        $this->moveMouseToElement($this->findElement($xpath));
     }
 
     public function focus(string $xpath)
