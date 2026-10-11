@@ -40,6 +40,9 @@ jobs:
   tests:
     name: "Tests (PHP ${{ matrix.php }}, ${{ matrix.browser }}, Selenium ${{ matrix.selenium_version }})${{ matrix.with_coverage == true && ' with coverage' || ''}}"
     runs-on: ubuntu-latest
+    env:
+      # Selenium 3 runs on the runner with latest browser versions, other versions use Docker images with bundled browsers
+      SELENIUM_IN_DOCKER: ${{ matrix.selenium_version != '3' }}
     strategy:
       matrix:
         browser: [ 'firefox' ]
@@ -103,9 +106,35 @@ jobs:
           mkdir ./logs
           ./vendor/bin/mink-test-server &> ./logs/mink-test-server.log &
 
-      - name: Start Selenium
+      - name: Setup Chrome
+        id: setup-chrome
+        if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'chrome' }}
+        uses: browser-actions/setup-chrome@v2
+        with:
+          install-chromedriver: true
+
+      - name: Setup Firefox
+        id: setup-firefox
+        if: ${{ env.SELENIUM_IN_DOCKER == 'false' && matrix.browser == 'firefox' }}
+        uses: browser-actions/setup-firefox@v1
+
+      - name: Start Selenium in Docker
+        if: ${{ env.SELENIUM_IN_DOCKER == 'true' }}
         run: |
           SELENIUM_IMAGE=selenium/standalone-${{ matrix.browser }}:${{ matrix.selenium_version }} docker compose up --wait
+          echo "WEB_FIXTURES_HOST=http://host.docker.internal:8002" >> "$GITHUB_ENV"
+          echo "DRIVER_MACHINE_BASE_PATH=/fixtures/" >> "$GITHUB_ENV"
+
+      - name: Start Selenium on runner
+        if: ${{ env.SELENIUM_IN_DOCKER == 'false' }}
+        env:
+          BROWSER_BINARY: ${{ steps.setup-chrome.outputs.chrome-path || steps.setup-firefox.outputs.firefox-path }}
+          CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
+        run: |
+          curl -sSLO https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-server-standalone-3.141.59.jar
+          xvfb-run -a java -Dwebdriver.chrome.driver="$CHROMEDRIVER_PATH" -Dwebdriver.gecko.driver="$GECKOWEBDRIVER/geckodriver" -jar selenium-server-standalone-3.141.59.jar &> ./logs/selenium.log &
+          echo "WEB_FIXTURES_HOST=http://localhost:8002" >> "$GITHUB_ENV"
+          echo "BROWSER_BINARY=$BROWSER_BINARY" >> "$GITHUB_ENV"
 
       - name: Wait for browser & PHP to start
         run: |
@@ -114,16 +143,18 @@ jobs:
 
       - name: Show browser version
         run: |
-          docker compose exec selenium sh -c 'google-chrome --version || chromium --version || microsoft-edge --version || firefox --version' 2>/dev/null
+          if [ "$SELENIUM_IN_DOCKER" = true ]; then
+            docker compose exec selenium sh -c 'google-chrome --version || chromium --version || microsoft-edge --version || firefox --version' 2>/dev/null
+          else
+            "$BROWSER_BINARY" --version
+          fi
 
       - name: Run tests with Coverage
         if: "${{ matrix.with_coverage == true }}"
         env:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
-          WEB_FIXTURES_HOST: http://host.docker.internal:8002
           WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
-          DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
           vendor/bin/phpunit -v --coverage-clover=coverage.xml --log-junit junit.xml
 
@@ -132,9 +163,7 @@ jobs:
         env:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
-          WEB_FIXTURES_HOST: http://host.docker.internal:8002
           WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
-          DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
           vendor/bin/phpunit -v --log-junit junit.xml
 
@@ -154,7 +183,7 @@ jobs:
           report_type: test_results
 
       - name: Extract docker logs
-        if: ${{ failure() }}
+        if: ${{ failure() && env.SELENIUM_IN_DOCKER == 'true' }}
         run: |
           docker compose logs --no-color &> ./logs/selenium.log
 

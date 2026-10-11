@@ -35,8 +35,14 @@ class Selenium2Config extends AbstractConfig
     {
         $browser = getenv('WEB_FIXTURES_BROWSER') ?: 'firefox';
         $seleniumHost = $_SERVER['DRIVER_URL'];
+        $desiredCapabilities = null;
 
-        return new Selenium2Driver($browser, null, $seleniumHost);
+        if (isset($_SERVER['BROWSER_BINARY'])) {
+            $optionsKey = $browser === 'chrome' ? 'goog:chromeOptions' : 'moz:firefoxOptions';
+            $desiredCapabilities = array($optionsKey => array('binary' => $_SERVER['BROWSER_BINARY']));
+        }
+
+        return new Selenium2Driver($browser, $desiredCapabilities, $seleniumHost);
     }
 
     public function mapRemoteFilePath($file): string
