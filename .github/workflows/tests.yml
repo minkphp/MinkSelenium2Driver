@@ -21,7 +21,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
-          php-version: '8.4'
+          php-version: '8.5'
       - run: composer validate --strict --no-check-lock
 
   static_analysis:
@@ -32,28 +32,47 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           coverage: none
-          php-version: '8.4'
+          php-version: '8.5'
       - name: Install dependencies
         run: composer update --ansi --no-progress --prefer-dist --no-interaction
       - run: vendor/bin/phpstan analyze
 
   tests:
-    name: "Tests (PHP ${{ matrix.php }}, Selenium ${{ matrix.selenium_version }})${{ matrix.with_coverage == true && ' with coverage' || ''}}"
+    name: "Tests (PHP ${{ matrix.php }}, ${{ matrix.browser }}, Selenium ${{ matrix.selenium_version }})${{ matrix.with_coverage == true && ' with coverage' || ''}}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        browser: [ 'firefox' ]
         selenium_version: [ '2.53.1' ]
-        php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+        php: [ '7.2', '7.4', '8.0', '8.1', '8.2', '8.3', '8.4']
         with_coverage: [ false ]
         include:
-          - selenium_version: '2.53.1'
-            php: '8.4'
+          # Cover code paths for PHP < 7.4
+          - browser: 'firefox'
+            selenium_version: '2.53.1'
+            php: '7.3'
             with_coverage: true
-          - selenium_version: '3.141.59'
-            php: '8.4'
+          # Check each browser on each supported Selenium version
+          - browser: 'firefox'
+            selenium_version: '2.53.1'
+            php: '8.5'
             with_coverage: true
-          - selenium_version: '4'
-            php: '8.4'
+          - browser: 'firefox'
+            selenium_version: '3'
+            php: '8.5'
+            with_coverage: true
+          - browser: 'chrome'
+            selenium_version: '2.53.1'
+            php: '8.5'
+            with_coverage: false
+          - browser: 'chrome'
+            selenium_version: '3'
+            php: '8.5'
+            with_coverage: false
+          # Check that unsupported Selenium version is rejected
+          - browser: 'firefox'
+            selenium_version: '4'
+            php: '8.5'
             with_coverage: true
       fail-fast: false
 
@@ -86,12 +105,16 @@ jobs:
 
       - name: Start Selenium
         run: |
-          SELENIUM_IMAGE=selenium/standalone-firefox:${{ matrix.selenium_version }} docker compose up --wait
+          SELENIUM_IMAGE=selenium/standalone-${{ matrix.browser }}:${{ matrix.selenium_version }} docker compose up --wait
 
       - name: Wait for browser & PHP to start
         run: |
           curl --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 --head -X GET http://localhost:4444/wd/hub/status
           curl --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 --head -X GET http://localhost:8002/index.html
+
+      - name: Show browser version
+        run: |
+          docker compose exec selenium sh -c 'google-chrome --version || chromium --version || microsoft-edge --version || firefox --version' 2>/dev/null
 
       - name: Run tests with Coverage
         if: "${{ matrix.with_coverage == true }}"
@@ -99,7 +122,7 @@ jobs:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
           WEB_FIXTURES_HOST: http://host.docker.internal:8002
-          WEB_FIXTURES_BROWSER: firefox
+          WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
           vendor/bin/phpunit -v --coverage-clover=coverage.xml --log-junit junit.xml
@@ -110,23 +133,25 @@ jobs:
           SELENIUM_VERSION: ${{ matrix.selenium_version }}
           DRIVER_URL: http://localhost:4444/wd/hub
           WEB_FIXTURES_HOST: http://host.docker.internal:8002
-          WEB_FIXTURES_BROWSER: firefox
+          WEB_FIXTURES_BROWSER: ${{ matrix.browser }}
           DRIVER_MACHINE_BASE_PATH: /fixtures/
         run: |
-          vendor/bin/phpunit -v
+          vendor/bin/phpunit -v --log-junit junit.xml
 
       - name: Upload coverage to Codecov
         if: ${{ matrix.with_coverage == true && !cancelled() }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
 
       - name: Upload test results to Codecov
-        if: ${{ matrix.with_coverage == true && !cancelled() }}
-        uses: codecov/test-results-action@v1
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: junit.xml
+          report_type: test_results
 
       - name: Extract docker logs
         if: ${{ failure() }}
@@ -137,6 +162,6 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
-          name: logs_php-${{ matrix.php }}_selenium-${{ matrix.selenium_version }}_firefox
+          name: logs_php-${{ matrix.php }}_selenium-${{ matrix.selenium_version }}_${{ matrix.browser }}
           path: |
             logs
