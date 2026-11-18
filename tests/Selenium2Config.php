@@ -12,6 +12,7 @@ use Behat\Mink\Tests\Driver\Custom\SeleniumSupportTest;
 use Behat\Mink\Tests\Driver\Form\Html5Test;
 use Behat\Mink\Tests\Driver\Js\EventsTest;
 use Behat\Mink\Tests\Driver\Js\JavascriptTest;
+use Behat\Mink\Tests\Driver\Js\OutsideViewportTest;
 
 class Selenium2Config extends AbstractConfig
 {
@@ -97,9 +98,13 @@ TEXT;
         }
 
         // Skip right-clicking tests, when an unsupported Selenium version detected.
-        if ((array(HoverTest::class, 'testRightClickHover') === $testCallback || array(EventsTest::class, 'testRightClick') === $testCallback)
-            && !$this->isRightClickingInSeleniumSupported()
-        ) {
+        $rightClickTests = array(
+            array(HoverTest::class, 'testRightClickHover'),
+            array(EventsTest::class, 'testRightClick'),
+            array(OutsideViewportTest::class, 'testRightClick'),
+        );
+
+        if (in_array($testCallback, $rightClickTests, true) && !$this->isRightClickingInSeleniumSupported()) {
             return <<<TEXT
 Selenium 3.x does not support right-clicking via JsonWireProtocol.
 
