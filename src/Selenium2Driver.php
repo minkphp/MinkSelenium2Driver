@@ -945,12 +945,17 @@ JS;
 
     private function moveMouseToElement(Element $element): void
     {
-        // Scroll the same way as php-webdriver does, because Firefox can't move the mouse outside the viewport:
-        // https://github.com/php-webdriver/php-webdriver/blob/1.16.0/lib/Remote/RemoteWebElement.php#L249
-        $this->executeJsOnElement(
-            $element,
-            "arguments[0].scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' });"
-        );
+        // Firefox can't move the mouse outside the viewport, so scroll like the WebDriver spec's "scroll into view":
+        // only when the element isn't already in view (https://w3c.github.io/webdriver/#dfn-scrolls-into-view).
+        $script = <<<JS
+var node = {{ELEMENT}};
+var rect = node.getBoundingClientRect();
+if (rect.top < 0 || rect.left < 0 || rect.bottom > window.innerHeight || rect.right > window.innerWidth) {
+  node.scrollIntoView({ behavior: 'instant', block: 'end', inline: 'nearest' });
+}
+JS;
+
+        $this->executeJsOnElement($element, $script);
 
         $this->getWebDriverSession()->moveto(array('element' => $element->getID()));
     }
